@@ -1,50 +1,23 @@
-use iced::{
-    widget::{button, column},
-    Element, Task,
-};
+use iced::{Element, Task};
+
+use dregg::{frontend, Message, Screen, State};
 
 fn main() -> iced::Result {
     iced::run("Dregg", update, view)
 }
 
-#[derive(Default)]
-struct State {
-    screen: Screen,
-}
-
-#[derive(Default)]
-enum Screen {
-    #[default]
-    Main,
-    LoadCharacter,
-    NewCharacter,
-}
-
-#[derive(Debug, Clone)]
-enum Message {
-    Main,
-    LoadCharacter,
-    NewCharacter,
-}
-
 fn update(state: &mut State, message: Message) -> Task<Message> {
     match message {
-        Message::Main => state.screen = Screen::Main,
-        Message::LoadCharacter => state.screen = Screen::LoadCharacter,
-        Message::NewCharacter => state.screen = Screen::NewCharacter,
+        Message::Main => frontend::main_page::update(state, message),
+        Message::LoadCharacter => frontend::load_char_page::update(state),
+        Message::NewCharacter => frontend::new_char_page::update(state),
     }
-
-    Task::none()
 }
 
 fn view(state: &State) -> Element<Message> {
     match state.screen {
-        Screen::Main => column![
-            button("Load Character").on_press(Message::LoadCharacter),
-            button("New Character").on_press(Message::NewCharacter),
-        ]
-        .into(),
-        Screen::LoadCharacter => button("Main Menu").on_press(Message::Main).into(),
-        Screen::NewCharacter => button("Main Menu").on_press(Message::Main).into(),
+        Screen::Main => frontend::main_page::view(state),
+        Screen::LoadCharacter => frontend::load_char_page::view(state),
+        Screen::NewCharacter => frontend::new_char_page::view(state),
     }
 }
