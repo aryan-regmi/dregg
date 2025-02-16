@@ -8,16 +8,29 @@ fn main() -> iced::Result {
 
 fn update(state: &mut State, message: Message) -> Task<Message> {
     match message {
-        Message::Main => frontend::main_page::update(state, message),
-        Message::LoadCharacter => frontend::load_char_page::update(state),
-        Message::NewCharacter => frontend::new_char_page::update(state),
+        Message::Main => {
+            state.screen = Screen::Main;
+            frontend::main_page::update(message)
+        }
+        Message::LoadCharacter => {
+            state.screen = Screen::LoadCharacter;
+            frontend::load_char_page::update(message)
+        }
+        Message::NewCharacter => {
+            let new_char_page = frontend::new_char_page::NewCharacterPage::new();
+            state.screen = Screen::NewCharacter(new_char_page);
+            match &state.screen {
+                Screen::NewCharacter(page) => page.update(message),
+                _ => unreachable!(),
+            }
+        }
     }
 }
 
 fn view(state: &State) -> Element<Message> {
-    match state.screen {
+    match &state.screen {
         Screen::Main => frontend::main_page::view(state),
         Screen::LoadCharacter => frontend::load_char_page::view(state),
-        Screen::NewCharacter => frontend::new_char_page::view(state),
+        Screen::NewCharacter(new_char_page) => new_char_page.view(),
     }
 }

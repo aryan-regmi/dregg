@@ -3,7 +3,7 @@ use iced::{
     Element, Length, Task,
 };
 
-use crate::{Message, Screen, State};
+use crate::{Message, State};
 
 pub fn view(_: &State) -> Element<Message> {
     container(
@@ -19,7 +19,6 @@ pub fn view(_: &State) -> Element<Message> {
     .into()
 }
 
-pub fn update(state: &mut State, _: Message) -> Task<Message> {
-    state.screen = Screen::Main;
+pub fn update(_: Message) -> Task<Message> {
     Task::none()
 }
