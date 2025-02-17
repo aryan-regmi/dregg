@@ -32,22 +32,22 @@ impl State {
 
         Self { panes }
     }
+}
 
-    pub fn view(&self) -> Element<Message> {
-        let pane_grid = PaneGrid::new(&self.panes, |_pane, state, _is_maximized| {
-            pane_grid::Content::new(match state {
-                Pane::Menu => text("Menu Items"),
-                Pane::Main => text("Main window"),
-            })
-            .style(style::pane_active)
-        });
+pub fn view(state: &State) -> Element<Message> {
+    let pane_grid = PaneGrid::new(&state.panes, |_pane, state, _is_maximized| {
+        pane_grid::Content::new(match state {
+            Pane::Menu => text("Menu Items"),
+            Pane::Main => text("Main window"),
+        })
+        .style(style::pane_active)
+    });
 
-        pane_grid.into()
-    }
+    pane_grid.into()
+}
 
-    pub fn update(&self, _message: Message) -> Action {
-        Action::None
-    }
+pub fn update(_state: &State, _message: Message) -> Action {
+    Action::None
 }
 
 mod style {

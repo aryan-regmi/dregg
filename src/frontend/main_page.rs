@@ -1,17 +1,25 @@
 use iced::{
     widget::{button, column, container},
-    Element, Length, Task,
+    Element, Length,
 };
 
-use crate::{Message, State};
+#[derive(Debug, Clone)]
+pub enum Message {
+    LoadCharacter,
+    NewCharacter,
+}
 
-use super::new_char_page;
+pub struct State {}
+
+pub enum Action {
+    None,
+}
 
 pub fn view(_: &State) -> Element<Message> {
     container(
         column![
             button("Load Character").on_press(Message::LoadCharacter),
-            button("New Character").on_press(Message::NewCharacter(new_char_page::Message::None)),
+            button("New Character").on_press(Message::NewCharacter),
         ]
         .spacing(20)
         .padding(20),
@@ -21,6 +29,6 @@ pub fn view(_: &State) -> Element<Message> {
     .into()
 }
 
-pub fn update(_: Message) -> Task<Message> {
-    Task::none()
+pub fn update(_: Message) -> Action {
+    Action::None
 }

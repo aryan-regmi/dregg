@@ -1,11 +1,17 @@
-use super::main_menu_btn;
-use crate::{Message, State};
-use iced::{Element, Task};
-
-pub fn view(_: &State) -> Element<Message> {
-    main_menu_btn()
+#[derive(Debug, Clone)]
+pub enum Message {
+    None,
 }
 
-pub fn update(_: Message) -> Task<Message> {
-    Task::none()
+pub enum Action {
+    None,
+}
+
+pub struct State {}
+
+// TODO: Change output to `Element<Message>`
+pub fn view(_: &State) {}
+
+pub fn update(_: Message) -> Action {
+    Action::None
 }
