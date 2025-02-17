@@ -1,6 +1,6 @@
 use iced::{
     widget::{button, column, container, pane_grid, responsive, text, PaneGrid},
-    Alignment, Color, Element, Length, Padding,
+    Element, Length, Padding,
 };
 
 #[derive(Debug, Clone, PartialEq)]
@@ -8,6 +8,7 @@ pub enum Message {
     None,
     Race,
     Class,
+    Tst,
 }
 
 pub enum Action {
@@ -42,23 +43,25 @@ impl State {
 
 fn menu_btn<'a>(state: &State, name: &'a str, on_press: Message) -> Element<'a, Message> {
     let tb_pad = 10.0;
-    let lr_pad_offset = 24.0 + name.len() as f32;
+    let lr_pad_offset = (name.len() * 4) as f32;
+    // let lr_pad_offset = 0.0;
     if state.clicked == on_press {
         container(responsive(move |size| {
             container(
                 button(name)
                     .padding(Padding {
                         left: (size.width / 2.) - lr_pad_offset,
-                        right: (size.width / 2.) - lr_pad_offset,
+                        right: 0.0,
                         top: tb_pad,
                         bottom: tb_pad,
                     })
+                    .width(size.width)
                     .on_press(on_press.clone())
                     .style(style::menu_btn_clicked),
             )
-            .center_x(Length::Fill)
             .into()
         }))
+        .center_x(Length::Fill)
         .padding(2)
         .height(50)
         .into()
@@ -68,10 +71,11 @@ fn menu_btn<'a>(state: &State, name: &'a str, on_press: Message) -> Element<'a, 
                 button(name)
                     .padding(Padding {
                         left: (size.width / 2.) - lr_pad_offset,
-                        right: (size.width / 2.) - lr_pad_offset,
+                        right: 0.0,
                         top: tb_pad,
                         bottom: tb_pad,
                     })
+                    .width(size.width)
                     .on_press(on_press.clone())
                     .style(style::menu_btn),
             )
@@ -90,7 +94,7 @@ pub fn view(state: &State) -> Element<Message> {
             Pane::Menu => column![
                 menu_btn(&state, "Race", Message::Race), // .explain(Color::from_rgb8(100, 255, 50)),
                 menu_btn(&state, "Class", Message::Class),
-                menu_btn(&state, "Longer Name", Message::Class),
+                menu_btn(&state, "Longer Name", Message::Tst),
             ]
             .spacing(1),
             Pane::Main => column![text("Main window")].padding(2).spacing(10),
