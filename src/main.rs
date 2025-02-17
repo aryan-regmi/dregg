@@ -1,10 +1,10 @@
 use iced::{
-    widget::{column, container},
-    Element, Task,
+    widget::{button, column, container},
+    Element, Length, Task,
 };
 
 use dregg::{
-    frontend::{self, load_char_page, main_menu_btn, main_page, new_char_page},
+    frontend::{self, load_char_page, main_menu_btn, new_char_page},
     Message, Screen, State,
 };
 
@@ -14,12 +14,9 @@ fn main() -> iced::Result {
 
 fn update(state: &mut State, message: Message) -> Task<Message> {
     match message {
-        Message::Main(msg) => {
-            state.screen = Screen::Main(main_page::State {});
-            let action = frontend::main_page::update(msg);
-            match action {
-                frontend::main_page::Action::None => Task::none(),
-            }
+        Message::Main => {
+            state.screen = Screen::Main;
+            Task::none()
         }
         Message::LoadCharacter(msg) => {
             state.screen = Screen::LoadCharacter(load_char_page::State {});
@@ -45,17 +42,26 @@ fn update(state: &mut State, message: Message) -> Task<Message> {
 
 fn view(state: &State) -> Element<Message> {
     match &state.screen {
-        Screen::Main(state) => {
-            frontend::main_page::view(state);
-            container(main_menu_btn().map(Message::Main)).into()
-        }
+        Screen::Main => container(
+            column![
+                button("Load Character")
+                    .on_press(Message::LoadCharacter(load_char_page::Message::None)),
+                button("New Character")
+                    .on_press(Message::NewCharacter(new_char_page::Message::None)),
+            ]
+            .spacing(20)
+            .padding(20),
+        )
+        .center_x(Length::Fill)
+        .center_y(Length::Fill)
+        .into(),
         Screen::LoadCharacter(state) => {
             frontend::load_char_page::view(state);
-            container(main_menu_btn().map(Message::Main)).into()
+            main_menu_btn()
         }
         Screen::NewCharacter(state) => container(column![
             new_char_page::view(state).map(Message::NewCharacter),
-            main_menu_btn().map(Message::Main)
+            main_menu_btn()
         ])
         .into(),
     }
