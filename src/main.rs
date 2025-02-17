@@ -27,7 +27,7 @@ fn update(state: &mut State, message: Message) -> Task<Message> {
         }
         Message::NewCharacter(msg) => {
             state.screen = Screen::NewCharacter(new_char_page::State::new());
-            match &state.screen {
+            match &mut state.screen {
                 Screen::NewCharacter(state) => {
                     let action = new_char_page::update(state, msg);
                     match action {
