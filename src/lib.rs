@@ -1,4 +1,4 @@
-use frontend::new_char_page::NewCharacterPage;
+use frontend::new_char_page;
 
 pub mod frontend;
 
@@ -12,12 +12,12 @@ pub enum Screen {
     #[default]
     Main,
     LoadCharacter,
-    NewCharacter(NewCharacterPage),
+    NewCharacter(new_char_page::State),
 }
 
 #[derive(Debug, Clone)]
 pub enum Message {
     Main,
     LoadCharacter,
-    NewCharacter,
+    NewCharacter(new_char_page::Message),
 }

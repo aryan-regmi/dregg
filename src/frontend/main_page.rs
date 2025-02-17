@@ -5,11 +5,13 @@ use iced::{
 
 use crate::{Message, State};
 
+use super::new_char_page;
+
 pub fn view(_: &State) -> Element<Message> {
     container(
         column![
             button("Load Character").on_press(Message::LoadCharacter),
-            button("New Character").on_press(Message::NewCharacter)
+            button("New Character").on_press(Message::NewCharacter(new_char_page::Message::None)),
         ]
         .spacing(20)
         .padding(20),

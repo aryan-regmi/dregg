@@ -1,24 +1,31 @@
-use super::main_menu_btn;
-use crate::{Message, Screen, State};
 use iced::{
-    widget::{column, container, pane_grid, text, PaneGrid},
-    Element, Task,
+    widget::{pane_grid, text, PaneGrid},
+    Element,
 };
 
-pub enum NewCharPagePane {
+#[derive(Debug, Clone)]
+pub enum Message {
+    None,
+}
+
+pub enum Action {
+    None,
+}
+
+pub enum Pane {
     Menu,
     Main,
 }
 
-pub struct NewCharacterPage {
-    panes: pane_grid::State<NewCharPagePane>,
+pub struct State {
+    panes: pane_grid::State<Pane>,
 }
 
-impl NewCharacterPage {
+impl State {
     pub fn new() -> Self {
         // Create new pane grid and split into `menu` and `main` panes
-        let (mut panes, pane) = pane_grid::State::new(NewCharPagePane::Menu);
-        let split = panes.split(pane_grid::Axis::Vertical, pane, NewCharPagePane::Main);
+        let (mut panes, pane) = pane_grid::State::new(Pane::Menu);
+        let split = panes.split(pane_grid::Axis::Vertical, pane, Pane::Main);
 
         // Make the `menu` pain smaller
         panes.resize(split.expect("Invalid split").1, 0.3);
@@ -29,18 +36,17 @@ impl NewCharacterPage {
     pub fn view(&self) -> Element<Message> {
         let pane_grid = PaneGrid::new(&self.panes, |_pane, state, _is_maximized| {
             pane_grid::Content::new(match state {
-                NewCharPagePane::Menu => text("Menu Items"),
-                NewCharPagePane::Main => text("Main window"),
+                Pane::Menu => text("Menu Items"),
+                Pane::Main => text("Main window"),
             })
             .style(style::pane_active)
         });
 
-        container(column![pane_grid, main_menu_btn()]).into()
+        pane_grid.into()
     }
 
-    pub fn update(&self, _message: Message) -> Task<Message> {
-        // TODO: Need to implement!
-        Task::none()
+    pub fn update(&self, _message: Message) -> Action {
+        Action::None
     }
 }
 
