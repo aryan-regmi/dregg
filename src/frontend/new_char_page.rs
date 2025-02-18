@@ -57,68 +57,10 @@ impl State {
     }
 }
 
-/// Creates a menu button with the given name and message to send when clicked.
-fn menu_btn<'a>(state: &State, name: &'a str, on_press: Message) -> Element<'a, Message> {
-    let tb_pad = 10.0;
-    let lr_pad_offset = (name.len() * 4) as f32;
-    if state.menu_opt == on_press {
-        container(responsive(move |size| {
-            container(
-                button(name)
-                    .padding(Padding {
-                        left: (size.width / 2.) - lr_pad_offset,
-                        right: 0.0,
-                        top: tb_pad,
-                        bottom: tb_pad,
-                    })
-                    .width(size.width)
-                    .on_press(on_press.clone())
-                    .style(style::menu_btn_clicked),
-            )
-            .into()
-        }))
-        .center_x(Length::Fill)
-        .padding(2)
-        .height(50)
-        .into()
-    } else {
-        container(responsive(move |size| {
-            container(
-                button(name)
-                    .padding(Padding {
-                        left: (size.width / 2.) - lr_pad_offset,
-                        right: 0.0,
-                        top: tb_pad,
-                        bottom: tb_pad,
-                    })
-                    .width(size.width)
-                    .on_press(on_press.clone())
-                    .style(style::menu_btn),
-            )
-            .into()
-        }))
-        .center_x(Length::Fill)
-        .padding(2)
-        .height(50)
-        .into()
-    }
-}
-
-fn races_list<'a>(state: &State) -> Element<'a, Message> {
-    let race_list = pick_list(
-        &RaceName::ALL[..],
-        state.selected_race,
-        Message::RaceSelected,
-    )
-    .placeholder("Select your race:");
-    let content = column![race_list];
-    scrollable(content).into()
-}
-
 fn view_main_pane<'a>(state: &State) -> Element<'a, Message> {
     match state.menu_opt {
         Message::None => unreachable!("There is no `None` button to click"),
-        Message::Race | Message::RaceSelected(_) => races_list(state),
+        Message::Race | Message::RaceSelected(_) => helpers::races_list(state),
         Message::Class => column![].into(),
     }
 }
@@ -126,14 +68,19 @@ fn view_main_pane<'a>(state: &State) -> Element<'a, Message> {
 pub fn view<'a>(state: &'a State) -> Element<'a, Message> {
     let pane_grid = PaneGrid::new(&state.panes, |_pane, pane_state, _is_maximized| {
         pane_grid::Content::new(match pane_state {
-            Pane::Menu => column![
-                menu_btn(&state, "Race", Message::Race), // .explain(Color::from_rgb8(100, 255, 50)),
-                menu_btn(&state, "Class", Message::Class),
-            ]
-            .spacing(1),
+            // The navigation menu pane
+            Pane::Menu => {
+                column![
+                    helpers::menu_btn(&state, "Race", Message::Race), // .explain(Color::from_rgb8(100, 255, 50)),
+                    helpers::menu_btn(&state, "Class", Message::Class),
+                ]
+                .spacing(1)
+            }
+
+            // The content pane
             Pane::Main => {
                 column![view_main_pane(state)]
-            } // column![text("Main window")].padding(2).spacing(10),
+            }
         })
         .style(style::pane_active)
     });
@@ -149,9 +96,80 @@ pub fn update<'a>(state: &mut State, message: Message) -> Command {
             Command::None
         }
         Message::RaceSelected(race_name) => {
+            // Send the selected race to parent state (2-way binding)
             state.selected_race = Some(race_name);
             Command::RaceSelected(race_name.into())
         }
+    }
+}
+
+mod helpers {
+    use iced::{
+        widget::{button, column, container, pick_list, responsive, scrollable},
+        Element, Length, Padding,
+    };
+
+    use crate::frontend::race::RaceName;
+
+    use super::{style, Message, State};
+
+    /// Creates a menu button with the given name and message to send when clicked.
+    pub fn menu_btn<'a>(state: &State, name: &'a str, on_press: Message) -> Element<'a, Message> {
+        let tb_pad = 10.0;
+        let lr_pad_offset = (name.len() * 4) as f32;
+        if state.menu_opt == on_press {
+            container(responsive(move |size| {
+                container(
+                    button(name)
+                        .padding(Padding {
+                            left: (size.width / 2.) - lr_pad_offset,
+                            right: 0.0,
+                            top: tb_pad,
+                            bottom: tb_pad,
+                        })
+                        .width(size.width)
+                        .on_press(on_press.clone())
+                        .style(style::menu_btn_clicked),
+                )
+                .into()
+            }))
+            .center_x(Length::Fill)
+            .padding(2)
+            .height(50)
+            .into()
+        } else {
+            container(responsive(move |size| {
+                container(
+                    button(name)
+                        .padding(Padding {
+                            left: (size.width / 2.) - lr_pad_offset,
+                            right: 0.0,
+                            top: tb_pad,
+                            bottom: tb_pad,
+                        })
+                        .width(size.width)
+                        .on_press(on_press.clone())
+                        .style(style::menu_btn),
+                )
+                .into()
+            }))
+            .center_x(Length::Fill)
+            .padding(2)
+            .height(50)
+            .into()
+        }
+    }
+
+    /// Creates a dropdown list of races.
+    pub fn races_list<'a>(state: &State) -> Element<'a, Message> {
+        let race_list = pick_list(
+            &RaceName::ALL[..],
+            state.selected_race,
+            Message::RaceSelected,
+        )
+        .placeholder("Select your race:");
+        let content = column![race_list];
+        scrollable(content).into()
     }
 }
 
