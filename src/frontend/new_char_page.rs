@@ -28,7 +28,6 @@ pub enum Pane {
 pub struct State {
     panes: pane_grid::State<Pane>,
     menu_opt: Message,
-    race_opt: Option<RaceName>,
     selected_race: Option<RaceName>,
 }
 
@@ -36,7 +35,7 @@ impl std::fmt::Debug for State {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("State")
             .field("menu_opt", &self.menu_opt)
-            .field("race_opt", &self.race_opt)
+            .field("selected_race", &self.selected_race)
             .finish()
     }
 }
@@ -53,7 +52,6 @@ impl State {
         Self {
             panes,
             menu_opt: Message::Race,
-            race_opt: None,
             selected_race,
         }
     }
@@ -151,7 +149,7 @@ pub fn update<'a>(state: &mut State, message: Message) -> Command {
             Command::None
         }
         Message::RaceSelected(race_name) => {
-            state.race_opt = Some(race_name);
+            state.selected_race = Some(race_name);
             Command::RaceSelected(race_name.into())
         }
     }
