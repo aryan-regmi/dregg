@@ -12,7 +12,7 @@ fn main() -> iced::Result {
     iced::run("Dregg", update, view)
 }
 
-fn update(state: &mut State, message: Message) -> Task<Message> {
+fn update<'a>(state: &mut State, message: Message) -> Task<Message> {
     match message {
         Message::Main => {
             state.screen = Screen::Main;
@@ -22,16 +22,20 @@ fn update(state: &mut State, message: Message) -> Task<Message> {
             state.screen = Screen::LoadCharacter(load_char_page::State {});
             let action = frontend::load_char_page::update(msg);
             match action {
-                frontend::load_char_page::Action::None => Task::none(),
+                frontend::load_char_page::Command::None => Task::none(),
             }
         }
         Message::NewCharacter(msg) => {
-            state.screen = Screen::NewCharacter(new_char_page::State::new());
+            state.screen = Screen::NewCharacter(new_char_page::State::new(state.selected_race));
             match &mut state.screen {
-                Screen::NewCharacter(state) => {
-                    let action = new_char_page::update(state, msg);
+                Screen::NewCharacter(new_char_state) => {
+                    let action = new_char_page::update(new_char_state, msg);
                     match action {
-                        frontend::new_char_page::Action::None => Task::none(),
+                        new_char_page::Command::None => Task::none(),
+                        new_char_page::Command::RaceSelected(race) => {
+                            state.selected_race = Some(race.into());
+                            Task::none()
+                        }
                     }
                 }
                 _ => unreachable!(),
@@ -40,7 +44,7 @@ fn update(state: &mut State, message: Message) -> Task<Message> {
     }
 }
 
-fn view(state: &State) -> Element<Message> {
+fn view<'a>(state: &'a State) -> Element<'a, Message> {
     match &state.screen {
         Screen::Main => container(
             column![
@@ -55,12 +59,12 @@ fn view(state: &State) -> Element<Message> {
         .center_x(Length::Fill)
         .center_y(Length::Fill)
         .into(),
-        Screen::LoadCharacter(state) => {
-            frontend::load_char_page::view(state);
+        Screen::LoadCharacter(load_char_state) => {
+            frontend::load_char_page::view(load_char_state);
             main_menu_btn()
         }
-        Screen::NewCharacter(state) => container(column![
-            new_char_page::view(state).map(Message::NewCharacter),
+        Screen::NewCharacter(new_char_state) => container(column![
+            new_char_page::view(new_char_state).map(Message::NewCharacter),
             main_menu_btn()
         ])
         .into(),

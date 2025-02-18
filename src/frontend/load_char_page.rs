@@ -3,15 +3,16 @@ pub enum Message {
     None,
 }
 
-pub enum Action {
+pub enum Command {
     None,
 }
 
+#[derive(Debug)]
 pub struct State {}
 
 // TODO: Change output to `Element<Message>`
 pub fn view(_: &State) {}
 
-pub fn update(_: Message) -> Action {
-    Action::None
+pub fn update(_: Message) -> Command {
+    Command::None
 }

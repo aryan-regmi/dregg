@@ -1,5 +1,9 @@
+use super::race::{self, Race, RaceName};
 use iced::{
-    widget::{button, column, container, pane_grid, responsive, text, PaneGrid},
+    widget::{
+        button, column, container, pane_grid, pick_list, responsive, scrollable,
+        shader::wgpu::hal::auxil::db, text, PaneGrid,
+    },
     Element, Length, Padding,
 };
 
@@ -8,11 +12,12 @@ pub enum Message {
     None,
     Race,
     Class,
-    Tst,
+    RaceSelected(RaceName),
 }
 
-pub enum Action {
+pub enum Command {
     None,
+    RaceSelected(Race),
 }
 
 pub enum Pane {
@@ -22,11 +27,22 @@ pub enum Pane {
 
 pub struct State {
     panes: pane_grid::State<Pane>,
-    clicked: Message,
+    menu_opt: Message,
+    race_opt: Option<RaceName>,
+    selected_race: Option<RaceName>,
+}
+
+impl std::fmt::Debug for State {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("State")
+            .field("menu_opt", &self.menu_opt)
+            .field("race_opt", &self.race_opt)
+            .finish()
+    }
 }
 
 impl State {
-    pub fn new() -> Self {
+    pub fn new(selected_race: Option<RaceName>) -> Self {
         // Create new pane grid and split into `menu` and `main` panes
         let (mut panes, pane) = pane_grid::State::new(Pane::Menu);
         let split = panes.split(pane_grid::Axis::Vertical, pane, Pane::Main);
@@ -36,15 +52,18 @@ impl State {
 
         Self {
             panes,
-            clicked: Message::Race,
+            menu_opt: Message::Race,
+            race_opt: None,
+            selected_race,
         }
     }
 }
 
+/// Creates a menu button with the given name and message to send when clicked.
 fn menu_btn<'a>(state: &State, name: &'a str, on_press: Message) -> Element<'a, Message> {
     let tb_pad = 10.0;
     let lr_pad_offset = (name.len() * 4) as f32;
-    if state.clicked == on_press {
+    if state.menu_opt == on_press {
         container(responsive(move |size| {
             container(
                 button(name)
@@ -87,16 +106,36 @@ fn menu_btn<'a>(state: &State, name: &'a str, on_press: Message) -> Element<'a, 
     }
 }
 
-pub fn view(state: &State) -> Element<Message> {
+fn races_list<'a>(state: &State) -> Element<'a, Message> {
+    let race_list = pick_list(
+        &RaceName::ALL[..],
+        state.selected_race,
+        Message::RaceSelected,
+    )
+    .placeholder("Select your race:");
+    let content = column![race_list];
+    scrollable(content).into()
+}
+
+fn view_main_pane<'a>(state: &State) -> Element<'a, Message> {
+    match state.menu_opt {
+        Message::None => unreachable!("There is no `None` button to click"),
+        Message::Race | Message::RaceSelected(_) => races_list(state),
+        Message::Class => column![].into(),
+    }
+}
+
+pub fn view<'a>(state: &'a State) -> Element<'a, Message> {
     let pane_grid = PaneGrid::new(&state.panes, |_pane, pane_state, _is_maximized| {
         pane_grid::Content::new(match pane_state {
             Pane::Menu => column![
                 menu_btn(&state, "Race", Message::Race), // .explain(Color::from_rgb8(100, 255, 50)),
                 menu_btn(&state, "Class", Message::Class),
-                menu_btn(&state, "Longer Name", Message::Tst),
             ]
             .spacing(1),
-            Pane::Main => column![text("Main window")].padding(2).spacing(10),
+            Pane::Main => {
+                column![view_main_pane(state)]
+            } // column![text("Main window")].padding(2).spacing(10),
         })
         .style(style::pane_active)
     });
@@ -104,12 +143,18 @@ pub fn view(state: &State) -> Element<Message> {
     pane_grid.into()
 }
 
-pub fn update(state: &mut State, message: Message) -> Action {
+pub fn update<'a>(state: &mut State, message: Message) -> Command {
     match message {
-        Message::None => {}
-        _ => state.clicked = message,
+        Message::None => Command::None,
+        Message::Race | Message::Class => {
+            state.menu_opt = message;
+            Command::None
+        }
+        Message::RaceSelected(race_name) => {
+            state.race_opt = Some(race_name);
+            Command::RaceSelected(race_name.into())
+        }
     }
-    Action::None
 }
 
 mod style {
