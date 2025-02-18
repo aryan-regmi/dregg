@@ -44,7 +44,6 @@ impl State {
 fn menu_btn<'a>(state: &State, name: &'a str, on_press: Message) -> Element<'a, Message> {
     let tb_pad = 10.0;
     let lr_pad_offset = (name.len() * 4) as f32;
-    // let lr_pad_offset = 0.0;
     if state.clicked == on_press {
         container(responsive(move |size| {
             container(
@@ -114,7 +113,6 @@ pub fn update(state: &mut State, message: Message) -> Action {
 }
 
 mod style {
-
     use iced::{
         border::Radius,
         widget::{
