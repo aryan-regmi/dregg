@@ -57,10 +57,15 @@ impl State {
     }
 }
 
-fn view_main_pane<'a>(state: &State) -> Element<'a, Message> {
+fn view_main_pane(state: &State) -> Element<Message> {
     match state.menu_opt {
         Message::None => unreachable!("There is no `None` button to click"),
-        Message::Race | Message::RaceSelected(_) => helpers::races_list(state),
+
+        // FIXME: Change to display race data!
+        Message::Race | Message::RaceSelected(_) => {
+            column![helpers::races_list(state), helpers::race_info_view(state)].into()
+        }
+
         Message::Class => column![].into(),
     }
 }
@@ -105,11 +110,11 @@ pub fn update<'a>(state: &mut State, message: Message) -> Command {
 
 mod helpers {
     use iced::{
-        widget::{button, column, container, pick_list, responsive, scrollable},
-        Element, Length, Padding,
+        widget::{button, column, container, pick_list, responsive, scrollable, Text},
+        Element, Font, Length, Padding,
     };
 
-    use crate::frontend::race::RaceName;
+    use crate::frontend::race::{Race, RaceName};
 
     use super::{style, Message, State};
 
@@ -169,11 +174,71 @@ mod helpers {
         )
         .placeholder("Select your race:");
         let content = column![race_list];
-        scrollable(content).into()
+        container(scrollable(content))
+            .padding(5)
+            .center_x(Length::Fill)
+            .into()
+    }
+
+    pub fn race_info_view(state: &State) -> Element<Message> {
+        const FONT_SIZE: f32 = 28.0;
+
+        if let Some(race) = state.selected_race {
+            let race: Race = race.into();
+
+            container(responsive(move |size| {
+                let font_size = (size.width + size.height) / FONT_SIZE;
+                let title = container(
+                    container(Text::new(race.name.clone()).size(font_size))
+                        .height(Length::Shrink)
+                        .padding(5)
+                        .center_x(Length::Fill)
+                        .style(style::race_title),
+                )
+                .padding(20);
+
+                let summary = container(Text::new(race.summary.clone()))
+                    .center(Length::Fill)
+                    .height(Length::Shrink);
+
+                let mut asi_txt = String::with_capacity(30);
+                for asi in &race.asi {
+                    let txt = match asi {
+                        crate::frontend::race::Attribute::Strength(amount) => {
+                            format!("Strength score increases by {amount}. ")
+                        }
+                        crate::frontend::race::Attribute::Dexterity(amount) => {
+                            format!("Dexterity score increases by {amount}. ")
+                        }
+                        crate::frontend::race::Attribute::Constitution(amount) => {
+                            format!("Constitution score increases by {amount}. ")
+                        }
+                        crate::frontend::race::Attribute::Intelligence(amount) => {
+                            format!("Intelligence score increases by {amount}. ")
+                        }
+                        crate::frontend::race::Attribute::Wisdom(amount) => {
+                            format!("Wisdom score increases by {amount}. ")
+                        }
+                        crate::frontend::race::Attribute::Charisma(amount) => {
+                            format!("Charisma score increases by {amount}. ")
+                        }
+                    };
+                    asi_txt.push_str(&txt);
+                }
+                let asi = container(Text::new(asi_txt));
+
+                // TODO: Add rest
+                column![title, summary, asi].into()
+            }))
+            .into()
+        } else {
+            column![].into()
+        }
     }
 }
 
 mod style {
+
     use iced::{
         border::Radius,
         widget::{
@@ -184,12 +249,13 @@ mod style {
     };
 
     pub fn pane_active(theme: &Theme) -> container::Style {
+        const PANE_BORDER_WIDTH: f32 = 2.0;
         let palette = theme.palette();
 
         container::Style {
             background: Some(Background::Color(palette.background)),
             border: Border {
-                width: 2.0,
+                width: PANE_BORDER_WIDTH,
                 color: Color::from_rgb8(0, 0, 0),
                 ..Border::default()
             },
@@ -198,6 +264,7 @@ mod style {
     }
 
     pub fn menu_btn(theme: &Theme, status: Status) -> button::Style {
+        const MENU_BTN_BORDER_WIDTH: f32 = 0.5;
         let palette = theme.palette();
 
         match status {
@@ -206,7 +273,7 @@ mod style {
                 text_color: palette.text,
                 border: Border {
                     color: Color::from_rgb8(0, 0, 0),
-                    width: 0.5,
+                    width: MENU_BTN_BORDER_WIDTH,
                     radius: Radius::default(),
                 },
                 ..Default::default()
@@ -217,7 +284,7 @@ mod style {
                 text_color: palette.text,
                 border: Border {
                     color: Color::from_rgb8(0, 0, 0),
-                    width: 0.5,
+                    width: MENU_BTN_BORDER_WIDTH,
                     radius: Radius::default(),
                 },
                 ..Default::default()
@@ -228,7 +295,7 @@ mod style {
                 text_color: palette.text,
                 border: Border {
                     color: Color::from_rgb8(0, 0, 0),
-                    width: 0.5,
+                    width: MENU_BTN_BORDER_WIDTH,
                     radius: Radius::default(),
                 },
                 ..Default::default()
@@ -237,14 +304,31 @@ mod style {
     }
 
     pub fn menu_btn_clicked(theme: &Theme, _: Status) -> button::Style {
+        const MENU_BTN_BORDER_WIDTH: f32 = 0.5;
         let palette = theme.palette();
         button::Style {
             background: Some(Background::Color(palette.danger)),
             text_color: palette.text,
             border: Border {
                 color: Color::from_rgb8(0, 0, 0),
-                width: 0.5,
+                width: MENU_BTN_BORDER_WIDTH,
                 radius: Radius::default(),
+            },
+            ..Default::default()
+        }
+    }
+
+    pub fn race_title(theme: &Theme) -> container::Style {
+        const RACE_TITLE_BORDER_WIDTH: f32 = 1.0;
+        const RACE_TITLE_BORDER_RADIUS: f32 = 3.0;
+        let palette = theme.palette();
+
+        container::Style {
+            background: Some(Background::Color(Color::from_rgb8(100, 100, 100))),
+            border: Border {
+                color: Color::from_rgb8(0, 0, 0),
+                width: RACE_TITLE_BORDER_WIDTH,
+                radius: RACE_TITLE_BORDER_RADIUS.into(),
             },
             ..Default::default()
         }
