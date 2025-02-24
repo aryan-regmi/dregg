@@ -87,13 +87,13 @@ pub struct Age {
 #[derive(Debug, Clone, PartialEq)]
 pub struct RacialTrait {
     /// The name of an action.
-    name: &'static str,
+    pub name: &'static str,
 
     /// The summary/description of the action.
-    summary: &'static str,
+    pub summary: &'static str,
 
     /// The type of action (`Action`, `Bonus Action`, or `Reaction`).
-    action_type: Action,
+    pub action_type: Action,
 }
 
 #[derive(Debug, Clone, PartialEq)]

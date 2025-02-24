@@ -108,6 +108,7 @@ pub fn update<'a>(state: &mut State, message: Message) -> Command {
     }
 }
 
+// TODO: Move what's possible to it's own view function (i.e. RacialTrait, etc)
 mod helpers {
     use iced::{
         widget::{button, column, container, pick_list, responsive, row, scrollable, Text},
@@ -253,7 +254,7 @@ mod helpers {
                     row![
                         Text::new("Age: ").font(bold_font),
                         Text::new(format!("{} are considered an adult at {} years old. On average, they live about {} years.", race.plural_name,race.age.adult, race.age.lifespan)),
-                    ].padding(container_pad)
+                    ].padding(Padding { bottom: 0.0, ..container_pad})
                 ).padding(container_pad);
 
                 // Size
@@ -286,7 +287,7 @@ mod helpers {
                 container(row![
                     Text::new("Size: ").font(bold_font),
                     Text::new(size_txt)
-                ].padding(container_pad)).padding(container_pad)
+                ].padding(Padding { bottom: 0.0, ..container_pad })).padding(container_pad)
                 };
 
                 // Speed
@@ -303,6 +304,7 @@ mod helpers {
                 container(column![
                     container(Text::new("Speed: ").font(bold_font))
                     .padding(container_pad),
+                    // .padding(Padding { bottom: 0.0, ..container_pad }),
                     container(Text::new(speed_txt)).padding(Padding {
                         left: 20.0,
                         ..Default::default()
@@ -345,8 +347,33 @@ mod helpers {
 
                 // Racial traits
                 let racial_traits = {
-                    container(column![])
+                    let mut column = column![];
+                    for racial_trait in &race.traits {
+                        let mut row = row![];
+                    
+                        // Add trait title to row
+                        let name = Text::new(format!("{}: ", racial_trait.name)).font(bold_font);
+                        row = row.push(container(name).padding(Padding {
+                            bottom: 10.0,
+                            ..container_pad
+                        }));
+                         
+                        // Add trait summary to row
+                        let trait_txt = format!("{}", racial_trait.summary);
+                        row = row.push(container(Text::new(trait_txt)).padding(Padding {
+                            bottom: 10.0,
+                            ..container_pad
+                        }));
+
+                        // Add row to the column
+                        column = column.push(row);
+                    }
+                    container(column)
+                        .height(Length::Shrink)
+                        .padding(container_pad)
                 };
+            
+                // TODO: Languages
                 
                 // TODO: Add rest of sections
                 scrollable(column![
@@ -358,8 +385,11 @@ mod helpers {
                     speed,
                     proficiencies,
                     racial_traits
-                ]).style(style::scrollbar).into()
+                ])
+                    .style(style::scrollbar)
+                    .into()
             }))
+            .height(Length::Shrink)
             .padding(2)
             .into()
         } else {
