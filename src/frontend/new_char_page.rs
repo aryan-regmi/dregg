@@ -312,9 +312,11 @@ mod helpers {
                 .padding(container_pad)
                 };
                 
-                // TODO: Add rest
-                scrollable(column![title, summary, asi, age, size, speed]).style(style::scrollbar).spacing(2).into()
+                // TODO: Add rest of sections
+                
+                scrollable(column![title, summary, asi, age, size, speed]).style(style::scrollbar).into()
             }))
+            .padding(2)
             .into()
         } else {
             column![].into()
@@ -419,49 +421,24 @@ mod style {
         }
     }
 
-    // TODO: Check status and only make visible when it is active!
     pub fn scrollbar(theme: &Theme, _status: scrollable::Status) -> scrollable::Style {
         let palette = theme.palette();
-        let color = Color::from_rgb8(0,0,0);
-        let mut lighter_background = {
-            let bg = palette.background;
-            let red = (bg.r + 100.0) as u8;
-            let green = (bg.g + 100.0) as u8;
-            let blue = (bg.b + 100.0) as u8;
-            Color::from_rgb8(red, green, blue)
-        };
         scrollable::Style { 
             container: container::Style::default(),
             vertical_rail: scrollable::Rail {
                 background: Some(Background::Color(palette.background)),
-                border: Border { 
-                    color,
-                    width: 1.0,
-                    ..Default::default()
-                },
+                border: Border::default(),
                 scroller: scrollable::Scroller { 
-                    color: lighter_background,
-                    border: Border { 
-                        color,
-                        width: 0.5,
-                        ..Default::default()
-                    } 
+                    color: palette.background,
+                    border: Border::default()
                 },
             },
             horizontal_rail: scrollable::Rail {
                 background: Some(Background::Color(palette.background)),
-                border: Border { 
-                    color,
-                    width: 1.0,
-                    ..Default::default()
-                },
+                border: Border::default(),
                 scroller: scrollable::Scroller { 
-                    color: lighter_background,
-                    border: Border { 
-                        color,
-                        width: 0.5,
-                        ..Default::default()
-                    } 
+                    color: palette.background,
+                    border: Border::default()
                 },
             },
             gap: None,
