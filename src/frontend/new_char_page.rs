@@ -312,9 +312,53 @@ mod helpers {
                 .padding(container_pad)
                 };
                 
-                // TODO: Add rest of sections
+                // Proficiencies
+                let proficiencies = {
+                    let mut proficiencies_txt = String::with_capacity(40);
+                    for proficiency in &race.proficiencies {
+                        match proficiency {
+                            crate::frontend::race::Choices::One(choices) => {
+                                proficiencies_txt.push_str(&format!(
+                                        "You gain proficiency with one of the following of your choice: {}",
+                                        choices.join(", ")
+                                ));
+                            },
+                            crate::frontend::race::Choices::All(choices) => {
+                                proficiencies_txt.push_str(&format!(
+                                        "You gain proficiency with all of the following: {}",
+                                        choices.join(", ")
+                                ));
+                            },
+                        }
+                        proficiencies_txt.push('.');
+                    }
+                    container(column![
+                        container(Text::new("Proficiencies: ").font(bold_font)).padding(container_pad),
+                        container(Text::new(proficiencies_txt)).padding(Padding {
+                            left: 20.0,
+                            ..Default::default()
+                        }),
+                    ])
+                        .height(Length::Shrink)
+                        .padding(container_pad)
+                };
+
+                // Racial traits
+                let racial_traits = {
+                    container(column![])
+                };
                 
-                scrollable(column![title, summary, asi, age, size, speed]).style(style::scrollbar).into()
+                // TODO: Add rest of sections
+                scrollable(column![
+                    title,
+                    summary,
+                    asi,
+                    age,
+                    size,
+                    speed,
+                    proficiencies,
+                    racial_traits
+                ]).style(style::scrollbar).into()
             }))
             .padding(2)
             .into()
@@ -325,7 +369,6 @@ mod helpers {
 }
 
 mod style {
-
     use iced::{
         border::Radius,
         widget::{

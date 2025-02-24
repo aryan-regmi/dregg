@@ -22,12 +22,12 @@ pub fn dwarf() -> Race {
             .into_iter()
             .map(String::from)
             .collect(),
-        proficiencies: Choices::One(
+        proficiencies: vec![Choices::One(
             vec!["Smith's Tools", "Brewer's Supplies", "Mason's Tools"]
                 .into_iter()
                 .map(String::from)
                 .collect(),
-        ),
+        )],
         subraces: vec![hill_dwarf()],
         traits: vec![DWARVEN_RESILIENCE, DARKVISION],
     }
