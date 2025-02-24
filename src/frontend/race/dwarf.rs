@@ -1,16 +1,23 @@
-use super::{Action, Age, Attribute, Choices, Race, RacialTrait, Size, Subrace};
+use super::{
+    Action, Age, Attribute, Choices, Race, RacialTrait, Size, SizeCategory, Speed, Subrace,
+};
 
 pub fn dwarf() -> Race {
     Race {
         name: "Dwarf".into(),
+        plural_name: "Dwarves".into(),
         summary: "TODO: Need to fill in summary!".into(),
-        asi: vec![Attribute::Constitution(2)],
+        asi: vec![Attribute::Constitution(2), Attribute::Strength(1)], // TODO: REmove 2nd one!
         age: Age {
             adult: 50,
             lifespan: 350,
         },
-        size: Size::Medium,
-        speed: 25,
+        size: Size {
+            size: SizeCategory::Medium,
+            height: Some(4.0),
+            weight: Some(150.0),
+        },
+        speed: vec![Speed::Walking(25)],
         languages: vec!["Common", "Dwarvish"]
             .into_iter()
             .map(String::from)
@@ -70,5 +77,11 @@ const DWARVEN_TOUGHNESS: RacialTrait = RacialTrait {
 const DWARVEN_ARMOR_TRAINING: RacialTrait = RacialTrait {
     name: "Dwarven Armor Training",
     summary: "TODO: Need to fill summary!",
+    action_type: Action::None,
+};
+
+const DWARVEN_SPEED: RacialTrait = RacialTrait {
+    name: "Dwarven Speed",
+    summary: "Your speed is not reduced by wearing heavy armor.",
     action_type: Action::None,
 };

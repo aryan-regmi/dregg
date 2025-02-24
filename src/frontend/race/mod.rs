@@ -14,6 +14,9 @@ pub struct Race {
     /// Name of the race.
     pub name: String,
 
+    /// The plural form of the race.
+    pub plural_name: String,
+
     /// The summary/description of the race.
     pub summary: String,
 
@@ -27,7 +30,7 @@ pub struct Race {
     pub size: Size,
 
     /// The speed of the race.
-    pub speed: u16,
+    pub speed: Vec<Speed>,
 
     /// The various languages that a character of the race can speak.
     pub languages: Vec<String>,
@@ -75,10 +78,10 @@ pub struct Subrace {
 #[derive(Debug, Clone, PartialEq)]
 pub struct Age {
     /// The age at which a character of the race is considered an adult.
-    adult: u16,
+    pub adult: u16,
 
     /// The average/expected lifespan of a character of the race.
-    lifespan: u16,
+    pub lifespan: u16,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -112,12 +115,32 @@ pub enum Attribute {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub enum Size {
+pub struct Size {
+    /// The size category.
+    pub size: SizeCategory,
+
+    /// Height in feet.
+    pub height: Option<f32>,
+
+    /// Weight in pounds.
+    pub weight: Option<f32>,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum SizeCategory {
     Tiny,
     Small,
     Medium,
     Large,
     Gargantuan,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum Speed {
+    Walking(u16),
+    Flying(u16),
+    Swimming(u16),
+    Climbing(u16),
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]

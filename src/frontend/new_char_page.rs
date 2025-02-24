@@ -110,7 +110,7 @@ pub fn update<'a>(state: &mut State, message: Message) -> Command {
 
 mod helpers {
     use iced::{
-        widget::{button, column, container, pick_list, responsive, scrollable, Text},
+        widget::{button, column, container, pick_list, responsive, row, scrollable, Text},
         Element, Font, Length, Padding,
     };
 
@@ -181,54 +181,139 @@ mod helpers {
     }
 
     pub fn race_info_view(state: &State) -> Element<Message> {
+        const PAD: u16 = 10;
         const FONT_SIZE: f32 = 28.0;
+        let bold_font: Font = Font {
+            weight: iced::font::Weight::Bold,
+            ..Default::default()
+        };
+        let container_pad: Padding = Padding { left: PAD as f32, right: 0.0, top: 5.0, bottom: 5.0 };
 
         if let Some(race) = state.selected_race {
             let race: Race = race.into();
-
-            container(responsive(move |size| {
-                let font_size = (size.width + size.height) / FONT_SIZE;
-                let title = container(
+            container(responsive(move |dim| {
+                // Title
+                let title = {
+                let font_size = (dim.width + dim.height) / FONT_SIZE;
+                container(
                     container(Text::new(race.name.clone()).size(font_size))
                         .height(Length::Shrink)
                         .padding(5)
                         .center_x(Length::Fill)
                         .style(style::race_title),
                 )
-                .padding(20);
+                .padding(20)
+                };
 
+                // Summary
                 let summary = container(Text::new(race.summary.clone()))
                     .center(Length::Fill)
                     .height(Length::Shrink);
 
+                // ASI
+                let asi = {
                 let mut asi_txt = String::with_capacity(30);
                 for asi in &race.asi {
                     let txt = match asi {
                         crate::frontend::race::Attribute::Strength(amount) => {
-                            format!("Strength score increases by {amount}. ")
+                            format!("Strength score increases by {amount}.\n")
                         }
                         crate::frontend::race::Attribute::Dexterity(amount) => {
-                            format!("Dexterity score increases by {amount}. ")
+                            format!("Dexterity score increases by {amount}.\n")
                         }
                         crate::frontend::race::Attribute::Constitution(amount) => {
-                            format!("Constitution score increases by {amount}. ")
+                            format!("Constitution score increases by {amount}.\n")
                         }
                         crate::frontend::race::Attribute::Intelligence(amount) => {
-                            format!("Intelligence score increases by {amount}. ")
+                            format!("Intelligence score increases by {amount}.\n")
                         }
                         crate::frontend::race::Attribute::Wisdom(amount) => {
-                            format!("Wisdom score increases by {amount}. ")
+                            format!("Wisdom score increases by {amount}.\n")
                         }
                         crate::frontend::race::Attribute::Charisma(amount) => {
-                            format!("Charisma score increases by {amount}. ")
+                            format!("Charisma score increases by {amount}.\n")
                         }
                     };
                     asi_txt.push_str(&txt);
                 }
-                let asi = container(Text::new(asi_txt));
+                container(column![
+                    container(Text::new("Ability Score Increase: ").font(bold_font))
+                    .padding(container_pad),
+                    container(Text::new(asi_txt)).padding(Padding {
+                        left: 20.0,
+                        ..Default::default()
+                    })
+                ])
+                .height(Length::Shrink)
+                .padding(container_pad)
+                };
 
+                // Age
+                let mut age = container(
+                    row![
+                        Text::new("Age: ").font(bold_font),
+                        Text::new(format!("{} are considered an adult at {} years old. On average, they live about {} years.", race.plural_name,race.age.adult, race.age.lifespan)),
+                    ].padding(container_pad)
+                ).padding(container_pad);
+
+                // Size
+                let size = {
+                let size_category = match race.size.size {
+                    crate::frontend::race::SizeCategory::Tiny => "Tiny",
+                    crate::frontend::race::SizeCategory::Small => "Small",
+                    crate::frontend::race::SizeCategory::Medium => "Medium",
+                    crate::frontend::race::SizeCategory::Large => "Large",
+                    crate::frontend::race::SizeCategory::Gargantuan => "Gargantuan",
+                };
+                let size_txt = {
+                    let plural_name = race.plural_name.clone();
+                    let has_height = race.size.height.is_some();
+                    let has_weight = race.size.weight.is_some();
+                    if has_height && has_weight {
+                        let height = race.size.height.unwrap();
+                        let weight = race.size.height.unwrap();
+                        format!("{plural_name} stand at around {height} feet tall and about {weight} pounds. Your size is {size_category}.")
+                    } else if has_height && !has_weight {
+                        let height = race.size.height.unwrap();
+                        format!("{plural_name} stand at around {height} feet tall. Your size is {size_category}.")
+                    } else if !has_height && has_weight {
+                        let weight = race.size.height.unwrap();
+                        format!("{plural_name} are about {weight} pounds. Your size is {size_category}.")
+                    } else {
+                        format!("Your size is {size_category}.")
+                    }
+                };
+                container(row![
+                    Text::new("Size: ").font(bold_font),
+                    Text::new(size_txt)
+                ].padding(container_pad)).padding(container_pad)
+                };
+
+                // Speed
+                let speed = {
+                let mut speed_txt = String::with_capacity(30);
+                for speed in &race.speed {
+                    match speed {
+                        crate::frontend::race::Speed::Walking(distance) => speed_txt.push_str(&format!("Walking speed of {distance} feet.")),
+                        crate::frontend::race::Speed::Flying(distance) => speed_txt.push_str(&format!("Flying speed of {distance} feet.")),
+                        crate::frontend::race::Speed::Climbing(distance) => speed_txt.push_str(&format!("Climbing speed of {distance} feet.")),
+                        crate::frontend::race::Speed::Swimming(distance) => speed_txt.push_str(&format!("Swimming speed of {distance} feet.")),
+                    }
+                }
+                container(column![
+                    container(Text::new("Speed: ").font(bold_font))
+                    .padding(container_pad),
+                    container(Text::new(speed_txt)).padding(Padding {
+                        left: 20.0,
+                        ..Default::default()
+                    })
+                ])
+                .height(Length::Shrink)
+                .padding(container_pad)
+                };
+                
                 // TODO: Add rest
-                column![title, summary, asi].into()
+                scrollable(column![title, summary, asi, age, size, speed]).style(style::scrollbar).spacing(2).into()
             }))
             .into()
         } else {
@@ -243,7 +328,7 @@ mod style {
         border::Radius,
         widget::{
             button::{self, Status},
-            container,
+            container, scrollable,
         },
         Background, Border, Color, Theme,
     };
@@ -331,6 +416,55 @@ mod style {
                 radius: RACE_TITLE_BORDER_RADIUS.into(),
             },
             ..Default::default()
+        }
+    }
+
+    // TODO: Check status and only make visible when it is active!
+    pub fn scrollbar(theme: &Theme, _status: scrollable::Status) -> scrollable::Style {
+        let palette = theme.palette();
+        let color = Color::from_rgb8(0,0,0);
+        let mut lighter_background = {
+            let bg = palette.background;
+            let red = (bg.r + 100.0) as u8;
+            let green = (bg.g + 100.0) as u8;
+            let blue = (bg.b + 100.0) as u8;
+            Color::from_rgb8(red, green, blue)
+        };
+        scrollable::Style { 
+            container: container::Style::default(),
+            vertical_rail: scrollable::Rail {
+                background: Some(Background::Color(palette.background)),
+                border: Border { 
+                    color,
+                    width: 1.0,
+                    ..Default::default()
+                },
+                scroller: scrollable::Scroller { 
+                    color: lighter_background,
+                    border: Border { 
+                        color,
+                        width: 0.5,
+                        ..Default::default()
+                    } 
+                },
+            },
+            horizontal_rail: scrollable::Rail {
+                background: Some(Background::Color(palette.background)),
+                border: Border { 
+                    color,
+                    width: 1.0,
+                    ..Default::default()
+                },
+                scroller: scrollable::Scroller { 
+                    color: lighter_background,
+                    border: Border { 
+                        color,
+                        width: 0.5,
+                        ..Default::default()
+                    } 
+                },
+            },
+            gap: None,
         }
     }
 }
