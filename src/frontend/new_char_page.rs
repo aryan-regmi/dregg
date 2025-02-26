@@ -304,7 +304,6 @@ mod helpers {
                 container(column![
                     container(Text::new("Speed: ").font(bold_font))
                     .padding(container_pad),
-                    // .padding(Padding { bottom: 0.0, ..container_pad }),
                     container(Text::new(speed_txt)).padding(Padding {
                         left: 20.0,
                         ..Default::default()
@@ -347,6 +346,7 @@ mod helpers {
 
                 // Racial traits
                 let racial_traits = {
+                    const TRAIT_PAD: f32 = 5.0;
                     let mut column = column![];
                     for racial_trait in &race.traits {
                         let mut row = row![];
@@ -354,14 +354,14 @@ mod helpers {
                         // Add trait title to row
                         let name = Text::new(format!("{}: ", racial_trait.name)).font(bold_font);
                         row = row.push(container(name).padding(Padding {
-                            bottom: 10.0,
+                            bottom: TRAIT_PAD,
                             ..container_pad
                         }));
                          
                         // Add trait summary to row
                         let trait_txt = format!("{}", racial_trait.summary);
                         row = row.push(container(Text::new(trait_txt)).padding(Padding {
-                            bottom: 10.0,
+                            bottom: TRAIT_PAD,
                             ..container_pad
                         }));
 
@@ -373,7 +373,28 @@ mod helpers {
                         .padding(container_pad)
                 };
             
-                // TODO: Languages
+                // Languages
+                let languages = {
+                    let mut languages_txt = String::with_capacity(30);
+                    for language in &race.languages {
+                        languages_txt.push_str(&format!("{}\n", language));
+                    }
+                    container(column![
+                        container(Text::new("Languages: ")
+                            .font(bold_font))
+                            .padding(Padding {
+                                left: container_pad.left,
+                                ..Default::default() 
+                            }),
+                        container(Text::new(languages_txt))
+                            .padding(Padding { 
+                                left: container_pad.left * 4.0,
+                                ..Default::default() 
+                            })
+                    ])
+                        .height(Length::Shrink)
+                        .padding(container_pad)
+                };
                 
                 // TODO: Add rest of sections
                 scrollable(column![
@@ -384,7 +405,8 @@ mod helpers {
                     size,
                     speed,
                     proficiencies,
-                    racial_traits
+                    racial_traits,
+                    languages,
                 ])
                     .style(style::scrollbar)
                     .into()
