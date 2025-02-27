@@ -181,7 +181,7 @@ mod helpers {
             .into()
     }
 
-    pub fn race_info_view(state: &State) -> Element<Message> {
+    pub fn race_info_view_old(state: &State) -> Element<Message> {
         const PAD: u16 = 10;
         const FONT_SIZE: f32 = 28.0;
         let bold_font: Font = Font {
@@ -414,6 +414,222 @@ mod helpers {
             .height(Length::Shrink)
             .padding(2)
             .into()
+        } else {
+            column![].into()
+        }
+    }
+
+    pub fn race_info_view(state: &State) -> Element<Message> {
+        const PAD: u16 = 20;
+        const TITLE_PAD: u16 = 20;
+        const INDENT_FACTOR: f32 = 1.5;
+        const FONT_SIZE: f32 = 28.0;
+        let bold_font: Font = Font {
+            weight: iced::font::Weight::Bold,
+            ..Default::default()
+        };
+        let container_pad: Padding = Padding { 
+            left: PAD as f32,
+            right: 0.0,
+            top: 5.0,
+            bottom: 5.0 
+        };
+        let padded_indent = Padding {
+            left: container_pad.left * INDENT_FACTOR,
+            ..Default::default() 
+        };
+        
+        if let Some(race) = state.selected_race {
+            let race: Race = race.into();
+            container(responsive(move |dim| {
+                let title = {
+                    let font_size = (dim.width + dim.height) / FONT_SIZE;
+                    container(
+                        container(Text::new(race.name.clone()).size(font_size))
+                            .height(Length::Shrink)
+                            .center_x(Length::Fill)
+                            .style(style::race_title),
+                    )
+                    .padding(TITLE_PAD)
+                };
+              
+                let summary = container(Text::new(race.summary.clone()))
+                    .center(Length::Fill)
+                    .height(Length::Shrink);
+
+                let asi = {
+                    let mut content = column![
+                        Text::new("Ability Score Increase: ").font(bold_font)
+                    ].spacing(container_pad.bottom);
+                    
+                    for asi in &race.asi {
+                        content = content.push(container(
+                            Text::new(asi.text())
+                        ).padding(padded_indent));
+                    }
+                    
+                    container(content)
+                        .height(Length::Shrink)
+                        .padding(container_pad)
+                };
+
+                let age = {
+                    let age_txt = format!(
+                        "{} are considered adults at {} years old. On average, they live about {} years.",
+                        race.plural_name,
+                        race.age.adult,
+                        race.age.lifespan,
+                    );
+                    container(row![
+                        Text::new("Age: ").font(bold_font),
+                        Text::new(age_txt)
+                    ])
+                        .height(Length::Shrink)
+                        .padding(container_pad)
+                };
+
+                let size = {
+                    let category = race.size.size.text();
+                    let has_height = race.size.height.is_some();
+                    let has_weight = race.size.weight.is_some();
+                    
+                    let size_txt = if has_height && has_weight  {
+                        format!(
+                            "{} stand at around {} feet tall and about {} pounds. Your size is {}.",
+                            race.plural_name,
+                            race.size.height.unwrap(),
+                            race.size.weight.unwrap(),
+                            category,
+                        )
+                    } else if has_height && !has_weight {
+                        format!(
+                            "{} stand at around {} feet tall. Your size is {}.",
+                            race.plural_name,
+                            race.size.height.unwrap(),
+                            category,
+                        )
+                    } else if !has_height && has_weight {
+                        format!(
+                            "{} are about {} pounds. Your size is {}.",
+                            race.plural_name,
+                            race.size.weight.unwrap(),
+                            category,
+                        )
+                    } else {
+                        format!("Your size is {}.", category)
+                    };
+
+                    container(row![
+                        Text::new("Size: ").font(bold_font),
+                        Text::new(size_txt),
+                    ])
+                        .height(Length::Shrink)
+                        .padding(container_pad)
+                };
+
+                let speed = {
+                    let mut content = column![
+                        Text::new("Speed: ").font(bold_font)
+                    ].spacing(container_pad.bottom);
+
+                    for speed in &race.speed {
+                        content = content.push(container(
+                                Text::new(speed.text())
+                        ).padding(padded_indent));
+                    }
+
+                    container(content)
+                        .height(Length::Shrink)
+                        .padding(container_pad)
+                };
+              
+                let proficiencies = {
+                    let mut content = column![
+                        Text::new("Proficiencies: ").font(bold_font)
+                    ].spacing(container_pad.bottom);
+
+                    for proficiency_list in &race.proficiencies {
+                        content = content.push(container(
+                            Text::new(proficiency_list.text("You gain proficiency with "))
+                        ).padding(padded_indent));
+                    }
+                        
+                    container(content)
+                        .height(Length::Shrink)
+                        .padding(container_pad)
+                };
+
+                let racial_traits = {
+                    let mut content = column![].spacing(container_pad.bottom * 2.0);
+
+                    for racial_trait in &race.traits {
+                        let mut inner_content = row![];
+                        let name = Text::new(format!("{}: ", racial_trait.name)).font(bold_font);
+                        let summary = Text::new(racial_trait.summary);
+                        inner_content = inner_content.push(name);
+                        inner_content = inner_content.push(summary);
+                        content = content.push(inner_content);
+                    }
+
+                    container(content)
+                        .height(Length::Shrink)
+                        .padding(container_pad)
+                };
+
+                let languages = {
+                    let mut languages_txt = String::with_capacity(30);
+                    let num_languages = race.languages.len();
+                    // for (i, language) in race.languages.iter().enumerate() {
+                    //     // if i != num_languages {
+                    //         languages_txt.push_str(" and ");
+                    //     }
+                    //     languages_txt.push_str(&format!("{}, ", language));
+                    // }
+
+                    container(row![
+                        Text::new("Languages: ").font(bold_font),
+                        // Text::new(format!("You can speak, read, and write {}"))
+                    ])
+                        .height(Length::Shrink)
+                        .padding(container_pad)
+                };
+                
+                // let languages = {
+                //     container(column![
+                //         container(Text::new("Languages: ")
+                //             .font(bold_font))
+                //             .padding(Padding {
+                //                 left: container_pad.left,
+                //                 ..Default::default() 
+                //             }),
+                //         container(Text::new(languages_txt))
+                //             .padding(Padding { 
+                //                 left: container_pad.left * 4.0,
+                //                 ..Default::default() 
+                //             })
+                //     ])
+                //         .height(Length::Shrink)
+                //         .padding(container_pad)
+                // };
+                
+                scrollable(column![
+                    title,
+                    summary,
+                    asi,
+                    age,
+                    size,
+                    speed,
+                    proficiencies,
+                    racial_traits,
+                    languages,
+                ])
+                    .style(style::scrollbar)
+                    .into()
+                    
+            }))
+                .height(Length::Shrink)
+                .padding(2)
+                .into()
         } else {
             column![].into()
         }

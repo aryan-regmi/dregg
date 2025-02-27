@@ -1,3 +1,5 @@
+use iced::Element;
+
 pub mod dwarf;
 
 #[derive(Debug, Clone, PartialEq)]
@@ -7,6 +9,21 @@ pub enum Choices {
 
     /// A list all choices a character gets.
     All(Vec<String>),
+}
+
+impl Choices {
+    pub fn text(&self, header: &str) -> String {
+        match self {
+            Choices::One(items) => format!(
+                "{} one of the following of your choice: {}.",
+                header,
+                items.join(", ")
+            ),
+            Choices::All(items) => {
+                format!("{} all of the following: {}.", header, items.join(", "))
+            }
+        }
+    }
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -114,6 +131,23 @@ pub enum Attribute {
     Charisma(u8),
 }
 
+impl Attribute {
+    pub fn text(&self) -> String {
+        match self {
+            Attribute::Strength(amount) => format!("Strength score increases by {amount}.\n"),
+            Attribute::Dexterity(amount) => format!("Dexterity score increases by {amount}.\n"),
+            Attribute::Constitution(amount) => {
+                format!("Constitution score increases by {amount}.\n")
+            }
+            Attribute::Intelligence(amount) => {
+                format!("Intelligence score increases by {amount}.\n")
+            }
+            Attribute::Wisdom(amount) => format!("Wisdom score increases by {amount}.\n"),
+            Attribute::Charisma(amount) => format!("Charisma score increases by {amount}.\n"),
+        }
+    }
+}
+
 #[derive(Debug, Clone, PartialEq)]
 pub struct Size {
     /// The size category.
@@ -135,12 +169,35 @@ pub enum SizeCategory {
     Gargantuan,
 }
 
+impl SizeCategory {
+    pub fn text(&self) -> String {
+        match self {
+            SizeCategory::Tiny => "Tiny".into(),
+            SizeCategory::Small => "Small".into(),
+            SizeCategory::Medium => "Medium".into(),
+            SizeCategory::Large => "Large".into(),
+            SizeCategory::Gargantuan => "Gargantuan".into(),
+        }
+    }
+}
+
 #[derive(Debug, Clone, PartialEq)]
 pub enum Speed {
     Walking(u16),
     Flying(u16),
     Swimming(u16),
     Climbing(u16),
+}
+
+impl Speed {
+    pub fn text(&self) -> String {
+        match self {
+            Speed::Walking(distance) => format!("Walking speed of {distance} feet."),
+            Speed::Flying(distance) => format!("Flying speed of {distance} feet."),
+            Speed::Swimming(distance) => format!("Swimming speed of {distance} feet."),
+            Speed::Climbing(distance) => format!("Climbing speed of {distance} feet."),
+        }
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
