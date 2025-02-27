@@ -181,244 +181,6 @@ mod helpers {
             .into()
     }
 
-    pub fn race_info_view_old(state: &State) -> Element<Message> {
-        const PAD: u16 = 10;
-        const FONT_SIZE: f32 = 28.0;
-        let bold_font: Font = Font {
-            weight: iced::font::Weight::Bold,
-            ..Default::default()
-        };
-        let container_pad: Padding = Padding { left: PAD as f32, right: 0.0, top: 5.0, bottom: 5.0 };
-
-        if let Some(race) = state.selected_race {
-            let race: Race = race.into();
-            container(responsive(move |dim| {
-                // Title
-                let title = {
-                let font_size = (dim.width + dim.height) / FONT_SIZE;
-                container(
-                    container(Text::new(race.name.clone()).size(font_size))
-                        .height(Length::Shrink)
-                        .padding(5)
-                        .center_x(Length::Fill)
-                        .style(style::race_title),
-                )
-                .padding(20)
-                };
-
-                // Summary
-                let summary = container(Text::new(race.summary.clone()))
-                    .center(Length::Fill)
-                    .height(Length::Shrink);
-
-                // ASI
-                let asi = {
-                let mut asi_txt = String::with_capacity(30);
-                for asi in &race.asi {
-                    let txt = match asi {
-                        crate::frontend::race::Attribute::Strength(amount) => {
-                            format!("Strength score increases by {amount}.\n")
-                        }
-                        crate::frontend::race::Attribute::Dexterity(amount) => {
-                            format!("Dexterity score increases by {amount}.\n")
-                        }
-                        crate::frontend::race::Attribute::Constitution(amount) => {
-                            format!("Constitution score increases by {amount}.\n")
-                        }
-                        crate::frontend::race::Attribute::Intelligence(amount) => {
-                            format!("Intelligence score increases by {amount}.\n")
-                        }
-                        crate::frontend::race::Attribute::Wisdom(amount) => {
-                            format!("Wisdom score increases by {amount}.\n")
-                        }
-                        crate::frontend::race::Attribute::Charisma(amount) => {
-                            format!("Charisma score increases by {amount}.\n")
-                        }
-                    };
-                    asi_txt.push_str(&txt);
-                }
-                container(column![
-                    container(Text::new("Ability Score Increase: ").font(bold_font))
-                    .padding(container_pad),
-                    container(Text::new(asi_txt)).padding(Padding {
-                        left: 20.0,
-                        ..Default::default()
-                    })
-                ])
-                .height(Length::Shrink)
-                .padding(container_pad)
-                };
-
-                // Age
-                let mut age = container(
-                    row![
-                        Text::new("Age: ").font(bold_font),
-                        Text::new(format!("{} are considered an adult at {} years old. On average, they live about {} years.", race.plural_name,race.age.adult, race.age.lifespan)),
-                    ].padding(Padding { bottom: 0.0, ..container_pad})
-                ).padding(container_pad);
-
-                // Size
-                let size = {
-                let size_category = match race.size.size {
-                    crate::frontend::race::SizeCategory::Tiny => "Tiny",
-                    crate::frontend::race::SizeCategory::Small => "Small",
-                    crate::frontend::race::SizeCategory::Medium => "Medium",
-                    crate::frontend::race::SizeCategory::Large => "Large",
-                    crate::frontend::race::SizeCategory::Gargantuan => "Gargantuan",
-                };
-                let size_txt = {
-                    let plural_name = race.plural_name.clone();
-                    let has_height = race.size.height.is_some();
-                    let has_weight = race.size.weight.is_some();
-                    if has_height && has_weight {
-                        let height = race.size.height.unwrap();
-                        let weight = race.size.height.unwrap();
-                        format!("{plural_name} stand at around {height} feet tall and about {weight} pounds. Your size is {size_category}.")
-                    } else if has_height && !has_weight {
-                        let height = race.size.height.unwrap();
-                        format!("{plural_name} stand at around {height} feet tall. Your size is {size_category}.")
-                    } else if !has_height && has_weight {
-                        let weight = race.size.height.unwrap();
-                        format!("{plural_name} are about {weight} pounds. Your size is {size_category}.")
-                    } else {
-                        format!("Your size is {size_category}.")
-                    }
-                };
-                container(row![
-                    Text::new("Size: ").font(bold_font),
-                    Text::new(size_txt)
-                ].padding(Padding { bottom: 0.0, ..container_pad })).padding(container_pad)
-                };
-
-                // Speed
-                let speed = {
-                let mut speed_txt = String::with_capacity(30);
-                for speed in &race.speed {
-                    match speed {
-                        crate::frontend::race::Speed::Walking(distance) => speed_txt.push_str(&format!("Walking speed of {distance} feet.")),
-                        crate::frontend::race::Speed::Flying(distance) => speed_txt.push_str(&format!("Flying speed of {distance} feet.")),
-                        crate::frontend::race::Speed::Climbing(distance) => speed_txt.push_str(&format!("Climbing speed of {distance} feet.")),
-                        crate::frontend::race::Speed::Swimming(distance) => speed_txt.push_str(&format!("Swimming speed of {distance} feet.")),
-                    }
-                }
-                container(column![
-                    container(Text::new("Speed: ").font(bold_font))
-                    .padding(container_pad),
-                    container(Text::new(speed_txt)).padding(Padding {
-                        left: 20.0,
-                        ..Default::default()
-                    })
-                ])
-                .height(Length::Shrink)
-                .padding(container_pad)
-                };
-                
-                // Proficiencies
-                let proficiencies = {
-                    let mut proficiencies_txt = String::with_capacity(40);
-                    for proficiency in &race.proficiencies {
-                        match proficiency {
-                            crate::frontend::race::Choices::One(choices) => {
-                                proficiencies_txt.push_str(&format!(
-                                        "You gain proficiency with one of the following of your choice: {}",
-                                        choices.join(", ")
-                                ));
-                            },
-                            crate::frontend::race::Choices::All(choices) => {
-                                proficiencies_txt.push_str(&format!(
-                                        "You gain proficiency with all of the following: {}",
-                                        choices.join(", ")
-                                ));
-                            },
-                        }
-                        proficiencies_txt.push('.');
-                    }
-                    container(column![
-                        container(Text::new("Proficiencies: ").font(bold_font)).padding(container_pad),
-                        container(Text::new(proficiencies_txt)).padding(Padding {
-                            left: 20.0,
-                            ..Default::default()
-                        }),
-                    ])
-                        .height(Length::Shrink)
-                        .padding(container_pad)
-                };
-
-                // Racial traits
-                let racial_traits = {
-                    const TRAIT_PAD: f32 = 5.0;
-                    let mut column = column![];
-                    for racial_trait in &race.traits {
-                        let mut row = row![];
-                    
-                        // Add trait title to row
-                        let name = Text::new(format!("{}: ", racial_trait.name)).font(bold_font);
-                        row = row.push(container(name).padding(Padding {
-                            bottom: TRAIT_PAD,
-                            ..container_pad
-                        }));
-                         
-                        // Add trait summary to row
-                        let trait_txt = format!("{}", racial_trait.summary);
-                        row = row.push(container(Text::new(trait_txt)).padding(Padding {
-                            bottom: TRAIT_PAD,
-                            ..container_pad
-                        }));
-
-                        // Add row to the column
-                        column = column.push(row);
-                    }
-                    container(column)
-                        .height(Length::Shrink)
-                        .padding(container_pad)
-                };
-            
-                // Languages
-                let languages = {
-                    let mut languages_txt = String::with_capacity(30);
-                    for language in &race.languages {
-                        languages_txt.push_str(&format!("{}\n", language));
-                    }
-                    container(column![
-                        container(Text::new("Languages: ")
-                            .font(bold_font))
-                            .padding(Padding {
-                                left: container_pad.left,
-                                ..Default::default() 
-                            }),
-                        container(Text::new(languages_txt))
-                            .padding(Padding { 
-                                left: container_pad.left * 4.0,
-                                ..Default::default() 
-                            })
-                    ])
-                        .height(Length::Shrink)
-                        .padding(container_pad)
-                };
-                
-                // TODO: Add rest of sections
-                scrollable(column![
-                    title,
-                    summary,
-                    asi,
-                    age,
-                    size,
-                    speed,
-                    proficiencies,
-                    racial_traits,
-                    languages,
-                ])
-                    .style(style::scrollbar)
-                    .into()
-            }))
-            .height(Length::Shrink)
-            .padding(2)
-            .into()
-        } else {
-            column![].into()
-        }
-    }
-
     pub fn race_info_view(state: &State) -> Element<Message> {
         const PAD: u16 = 20;
         const TITLE_PAD: u16 = 20;
@@ -579,38 +341,25 @@ mod helpers {
                 let languages = {
                     let mut languages_txt = String::with_capacity(30);
                     let num_languages = race.languages.len();
-                    // for (i, language) in race.languages.iter().enumerate() {
-                    //     // if i != num_languages {
-                    //         languages_txt.push_str(" and ");
-                    //     }
-                    //     languages_txt.push_str(&format!("{}, ", language));
-                    // }
+                    for (i, language) in race.languages.iter().enumerate() {
+                        if i == num_languages - 1 {
+                            languages_txt.push_str("and ");
+                            languages_txt.push_str(&format!("{}.", language));
+                        } else {
+                            if num_languages > 2 {
+                                languages_txt.push_str(", ");
+                            }
+                            languages_txt.push_str(&format!("{} ", language));
+                        }
+                    }
 
                     container(row![
                         Text::new("Languages: ").font(bold_font),
-                        // Text::new(format!("You can speak, read, and write {}"))
+                        Text::new(format!("You can speak, read, and write {}", languages_txt))
                     ])
                         .height(Length::Shrink)
                         .padding(container_pad)
                 };
-                
-                // let languages = {
-                //     container(column![
-                //         container(Text::new("Languages: ")
-                //             .font(bold_font))
-                //             .padding(Padding {
-                //                 left: container_pad.left,
-                //                 ..Default::default() 
-                //             }),
-                //         container(Text::new(languages_txt))
-                //             .padding(Padding { 
-                //                 left: container_pad.left * 4.0,
-                //                 ..Default::default() 
-                //             })
-                //     ])
-                //         .height(Length::Shrink)
-                //         .padding(container_pad)
-                // };
                 
                 scrollable(column![
                     title,

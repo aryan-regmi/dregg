@@ -29,7 +29,7 @@ pub fn dwarf() -> Race {
                 .collect(),
         )],
         subraces: vec![hill_dwarf()],
-        traits: vec![DWARVEN_RESILIENCE, DARKVISION],
+        traits: vec![DWARVEN_RESILIENCE, DARKVISION, DWARVEN_SPEED, STONECUNNING],
     }
 }
 
@@ -83,5 +83,11 @@ const DWARVEN_ARMOR_TRAINING: RacialTrait = RacialTrait {
 const DWARVEN_SPEED: RacialTrait = RacialTrait {
     name: "Dwarven Speed",
     summary: "Your speed is not reduced by wearing heavy armor.",
+    action_type: Action::None,
+};
+
+const STONECUNNING: RacialTrait = RacialTrait {
+    name: "Stonecunning",
+    summary: "TODO: Add summary!!!",
     action_type: Action::None,
 };
