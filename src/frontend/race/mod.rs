@@ -1,8 +1,11 @@
+use std::fmt::Display;
+
+use dwarf::{hill_dwarf, mountain_dwarf};
 use iced::Element;
 
 pub mod dwarf;
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Choices {
     /// A list of choices out of which only one can be selected.
     One(Vec<String>),
@@ -71,25 +74,31 @@ impl Into<RaceName> for Race {
     }
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Subrace {
     /// Name of the race.
-    name: String,
+    pub name: String,
 
     /// The summary/description of the race.
-    summary: String,
+    pub summary: String,
 
     /// Ability score increases provided by the race.
-    asi: Vec<Attribute>,
+    pub asi: Vec<Attribute>,
 
     /// The proficiencies the race provides.
-    proficiencies: Option<Choices>,
+    pub proficiencies: Vec<Choices>,
 
     /// The various languages that a character of the race can speak.
-    languages: Option<Vec<String>>,
+    pub languages: Option<Vec<String>>,
 
     /// A list of traits the race provides.
-    traits: Vec<RacialTrait>,
+    pub traits: Vec<RacialTrait>,
+}
+
+impl ToString for Subrace {
+    fn to_string(&self) -> String {
+        format!("{:?}", self)
+    }
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -101,7 +110,7 @@ pub struct Age {
     pub lifespan: u16,
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct RacialTrait {
     /// The name of an action.
     pub name: &'static str,
@@ -113,7 +122,7 @@ pub struct RacialTrait {
     pub action_type: Action,
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Action {
     None,
     Action,
@@ -121,7 +130,7 @@ pub enum Action {
     Reaction,
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Attribute {
     Strength(u8),
     Dexterity(u8),

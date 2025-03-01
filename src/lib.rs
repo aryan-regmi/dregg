@@ -1,6 +1,9 @@
 #![allow(unused)]
 
-use frontend::{load_char_page, new_char_page, race::RaceName};
+use frontend::{
+    load_char_page, new_char_page,
+    race::{RaceName, Subrace},
+};
 
 pub mod frontend;
 
@@ -8,6 +11,7 @@ pub mod frontend;
 pub struct State {
     pub screen: Screen,
     pub selected_race: Option<RaceName>,
+    pub selected_subrace: Option<Subrace>,
 }
 
 #[derive(Default, Debug)]

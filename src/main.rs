@@ -26,7 +26,10 @@ fn update<'a>(state: &mut State, message: Message) -> Task<Message> {
             }
         }
         Message::NewCharacter(msg) => {
-            state.screen = Screen::NewCharacter(new_char_page::State::new(state.selected_race));
+            state.screen = Screen::NewCharacter(new_char_page::State::new(
+                state.selected_race,
+                state.selected_subrace.clone(),
+            ));
             match &mut state.screen {
                 Screen::NewCharacter(new_char_state) => {
                     let action = new_char_page::update(new_char_state, msg);
@@ -34,6 +37,10 @@ fn update<'a>(state: &mut State, message: Message) -> Task<Message> {
                         new_char_page::Command::None => Task::none(),
                         new_char_page::Command::RaceSelected(race) => {
                             state.selected_race = Some(race.into());
+                            Task::none()
+                        }
+                        new_char_page::Command::SubraceSelected(subrace) => {
+                            state.selected_subrace = Some(subrace.into());
                             Task::none()
                         }
                     }

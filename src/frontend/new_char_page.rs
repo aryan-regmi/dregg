@@ -1,4 +1,4 @@
-use super::race::{self, Race, RaceName};
+use super::race::{self, Race, RaceName, Subrace};
 use iced::{
     widget::{
         button, column, container, pane_grid, pick_list, responsive, scrollable,
@@ -7,17 +7,21 @@ use iced::{
     Element, Length, Padding,
 };
 
+const SPLIT_RATIO: f32 = 0.2;
+
 #[derive(Debug, Clone, PartialEq)]
 pub enum Message {
     None,
     Race,
     Class,
     RaceSelected(RaceName),
+    SubraceSelected(Subrace),
 }
 
 pub enum Command {
     None,
     RaceSelected(Race),
+    SubraceSelected(Subrace),
 }
 
 pub enum Pane {
@@ -29,6 +33,8 @@ pub struct State {
     panes: pane_grid::State<Pane>,
     menu_opt: Message,
     selected_race: Option<RaceName>,
+    selected_subrace: Option<Subrace>,
+    subrace_checked: Vec<bool>,
 }
 
 impl std::fmt::Debug for State {
@@ -41,18 +47,20 @@ impl std::fmt::Debug for State {
 }
 
 impl State {
-    pub fn new(selected_race: Option<RaceName>) -> Self {
+    pub fn new(selected_race: Option<RaceName>, selected_subrace: Option<Subrace>) -> Self {
         // Create new pane grid and split into `menu` and `main` panes
         let (mut panes, pane) = pane_grid::State::new(Pane::Menu);
         let split = panes.split(pane_grid::Axis::Vertical, pane, Pane::Main);
 
         // Make the `menu` pain smaller
-        panes.resize(split.expect("Invalid split").1, 0.3);
+        panes.resize(split.expect("Invalid split").1, SPLIT_RATIO);
 
         Self {
             panes,
             menu_opt: Message::Race,
             selected_race,
+            selected_subrace,
+            subrace_checked: vec![],
         }
     }
 }
@@ -60,12 +68,10 @@ impl State {
 fn view_main_pane(state: &State) -> Element<Message> {
     match state.menu_opt {
         Message::None => unreachable!("There is no `None` button to click"),
-
-        // FIXME: Change to display race data!
-        Message::Race | Message::RaceSelected(_) => {
+        Message::Race | Message::RaceSelected(_) | Message::SubraceSelected(_) =>
+        {
             column![helpers::races_list(state), helpers::race_info_view(state)].into()
         }
-
         Message::Class => column![].into(),
     }
 }
@@ -105,17 +111,22 @@ pub fn update<'a>(state: &mut State, message: Message) -> Command {
             state.selected_race = Some(race_name);
             Command::RaceSelected(race_name.into())
         }
+        Message::SubraceSelected(subrace) => {
+            // Send the selected subrace to parent state (2-way binding)
+            state.selected_subrace = Some(subrace.clone().into());
+            Command::SubraceSelected(subrace.into())
+        },
     }
 }
 
 // TODO: Move what's possible to it's own view function (i.e. RacialTrait, etc)
 mod helpers {
     use iced::{
-        widget::{button, column, container, pick_list, responsive, row, scrollable, Text},
+        widget::{button, checkbox, column, container, pick_list, radio, responsive, row, scrollable, Column, Text},
         Element, Font, Length, Padding,
     };
 
-    use crate::frontend::race::{Race, RaceName};
+    use crate::frontend::race::{Race, RaceName, Subrace};
 
     use super::{style, Message, State};
 
@@ -192,7 +203,7 @@ mod helpers {
         };
         let container_pad: Padding = Padding { 
             left: PAD as f32,
-            right: 0.0,
+            right: PAD as f32,
             top: 5.0,
             bottom: 5.0 
         };
@@ -200,6 +211,7 @@ mod helpers {
             left: container_pad.left * INDENT_FACTOR,
             ..Default::default() 
         };
+        let column_spacing = container_pad.bottom;
         
         if let Some(race) = state.selected_race {
             let race: Race = race.into();
@@ -217,12 +229,17 @@ mod helpers {
               
                 let summary = container(Text::new(race.summary.clone()))
                     .center(Length::Fill)
-                    .height(Length::Shrink);
+                    .height(Length::Shrink)
+                    .padding(Padding { 
+                        right: container_pad.left,
+                        bottom: container_pad.bottom * 3.0,
+                        ..container_pad 
+                    });
 
                 let asi = {
                     let mut content = column![
                         Text::new("Ability Score Increase: ").font(bold_font)
-                    ].spacing(container_pad.bottom);
+                    ].spacing(column_spacing);
                     
                     for asi in &race.asi {
                         content = content.push(container(
@@ -292,7 +309,7 @@ mod helpers {
                 let speed = {
                     let mut content = column![
                         Text::new("Speed: ").font(bold_font)
-                    ].spacing(container_pad.bottom);
+                    ].spacing(column_spacing);
 
                     for speed in &race.speed {
                         content = content.push(container(
@@ -308,7 +325,7 @@ mod helpers {
                 let proficiencies = {
                     let mut content = column![
                         Text::new("Proficiencies: ").font(bold_font)
-                    ].spacing(container_pad.bottom);
+                    ].spacing(column_spacing);
 
                     for proficiency_list in &race.proficiencies {
                         content = content.push(container(
@@ -322,12 +339,13 @@ mod helpers {
                 };
 
                 let racial_traits = {
-                    let mut content = column![].spacing(container_pad.bottom * 2.0);
+                    let mut content = column![].spacing(column_spacing * 2.0);
 
                     for racial_trait in &race.traits {
                         let mut inner_content = row![];
                         let name = Text::new(format!("{}: ", racial_trait.name)).font(bold_font);
-                        let summary = Text::new(racial_trait.summary);
+                        let summary = container(Text::new(racial_trait.summary))
+                            .padding(Padding { right: container_pad.top, ..Default::default() });
                         inner_content = inner_content.push(name);
                         inner_content = inner_content.push(summary);
                         content = content.push(inner_content);
@@ -361,6 +379,52 @@ mod helpers {
                         .padding(container_pad)
                 };
                 
+                let subraces = {
+                    let mut content = column![].spacing(column_spacing);
+
+                    let subrace_list =  {
+                        let mut subrace_content = column![
+                            container(Text::new("Select a subrace:").font(bold_font))
+                                .padding(container_pad)
+                        ].spacing(column_spacing);
+                       
+                        // Create radio option for each subrace
+                        for (i, subrace) in race.subraces.iter().enumerate() {
+                            let subrace_toggle = container(radio(
+                                &subrace.name,
+                                subrace,
+                                state.selected_subrace.as_ref(),
+                                |v| Message::SubraceSelected(v.clone())
+                            )).padding(Padding { bottom: container_pad.bottom, ..padded_indent });
+                            subrace_content = subrace_content.push(subrace_toggle)
+                        }
+
+                        // Display info for selected subrace
+                        if let Some(selected_subrace) = &state.selected_subrace {
+                            let font_size = ((dim.width + dim.height) / FONT_SIZE) / 2.0;
+                            subrace_content = subrace_content.push(subrace_info_view(
+                                selected_subrace, 
+                                StyleInfo {
+                                    font_size,
+                                    title_pad: TITLE_PAD,
+                                    container_pad,
+                                    bold_font,
+                                    column_spacing,
+                                    padded_indent 
+                                }
+                            ));
+                        }
+                        
+                        subrace_content
+                    };
+                       
+                    content = content.push(subrace_list);
+                        
+                    container(scrollable(content))
+                        .height(Length::Shrink)
+                        .padding(Padding { bottom: container_pad.bottom, ..Default::default() })
+                };
+                
                 scrollable(column![
                     title,
                     summary,
@@ -371,6 +435,7 @@ mod helpers {
                     proficiencies,
                     racial_traits,
                     languages,
+                    subraces,
                 ])
                     .style(style::scrollbar)
                     .into()
@@ -382,6 +447,129 @@ mod helpers {
         } else {
             column![].into()
         }
+    }
+
+    pub struct StyleInfo {
+        font_size: f32,
+        title_pad: u16,
+        container_pad: Padding,
+        bold_font: Font,
+        column_spacing: f32,
+        padded_indent: Padding,
+    }
+
+    pub fn subrace_info_view(subrace: &Subrace, style_info: StyleInfo) -> Element<Message> {
+        let title = {
+            container(
+                container(Text::new(subrace.name.clone()).size(style_info.font_size))
+                    .height(Length::Shrink)
+                    .center_x(Length::Fill)
+                    .style(style::race_title),
+            )
+            .padding(style_info.title_pad/2)
+        };
+
+        let summary = container(Text::new(subrace.summary.clone()))
+            .center(Length::Fill)
+            .height(Length::Shrink)
+            .padding(Padding { 
+                left: style_info.container_pad.left,
+                right: style_info.container_pad.right,
+                bottom: style_info.container_pad.left,
+                ..Default::default()
+            });
+
+        
+        let asi = if subrace.asi.len() > 0 {
+            let mut content = column![
+                Text::new("Ability Score Increase: ").font(style_info.bold_font)
+            ].spacing(style_info.column_spacing);
+            
+            for asi in &subrace.asi {
+                content = content.push(container(
+                    Text::new(asi.text())
+                ).padding(style_info.padded_indent));
+            }
+            
+            container(content)
+                .height(Length::Shrink)
+                .padding(Padding { top: 0.0, ..style_info.container_pad })
+        } else {
+            container(column![])
+        };
+
+        let proficiencies = if subrace.proficiencies.len() > 0 {
+            let mut content = column![
+                Text::new("Proficiencies: ").font(style_info.bold_font)
+            ].spacing(style_info.column_spacing);
+
+            for proficiency_list in &subrace.proficiencies {
+                content = content.push(container(
+                    Text::new(proficiency_list.text("You gain proficiency with "))
+                ).padding(style_info.padded_indent));
+            }
+                
+            container(content)
+                .height(Length::Shrink)
+                .padding(style_info.container_pad)
+        } else {
+            container(column![])
+        };
+
+        let racial_traits = {
+            let mut content = column![].spacing(style_info.column_spacing * 2.0);
+
+            for racial_trait in &subrace.traits {
+                let mut inner_content = row![];
+                let name = Text::new(format!("{}: ", racial_trait.name)).font(style_info.bold_font);
+                let summary = container(Text::new(racial_trait.summary)).padding(2);
+                inner_content = inner_content.push(name);
+                inner_content = inner_content.push(summary);
+                content = content.push(inner_content);
+            }
+
+            container(content)
+                .height(Length::Shrink)
+                .padding(style_info.container_pad)
+        };
+        
+        let languages = if let Some(languages) = &subrace.languages {
+            let mut languages_txt = String::with_capacity(30);
+            let num_languages = languages.len();
+            for (i, language) in languages.iter().enumerate() {
+                if i == num_languages - 1 {
+                    languages_txt.push_str("and ");
+                    languages_txt.push_str(&format!("{}.", language));
+                } else {
+                    if num_languages > 2 {
+                        languages_txt.push_str(", ");
+                    }
+                    languages_txt.push_str(&format!("{} ", language));
+                }
+            }
+
+            container(row![
+                Text::new("Languages: ").font(style_info.bold_font),
+                Text::new(format!("You can speak, read, and write {}", languages_txt))
+            ])
+                .height(Length::Shrink)
+                .padding(style_info.container_pad)
+        } else {
+            container(column![])
+        };
+        
+        container(column![
+            title,
+            summary,
+            asi,
+            proficiencies,
+            languages,
+            racial_traits
+        ])
+            .height(Length::Shrink)
+            .padding(style_info.container_pad)
+            .into()
+
     }
 }
 
@@ -481,6 +669,7 @@ mod style {
         }
     }
 
+    // TODO: Show icon at bottom of screen when scrollbar can be scrolled
     pub fn scrollbar(theme: &Theme, _status: scrollable::Status) -> scrollable::Style {
         let palette = theme.palette();
         scrollable::Style { 
