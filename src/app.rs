@@ -6,7 +6,7 @@ use iced::{
 
 use crate::frontend::{
     new_character_page::{self, NewCharacterPage},
-    races::RaceName,
+    race::RaceName,
 };
 
 #[derive(Debug, Clone)]

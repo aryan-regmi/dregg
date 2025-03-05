@@ -3,7 +3,7 @@ use iced::{
     Element, Length,
 };
 
-use super::races::RaceName;
+use super::race::RaceName;
 
 #[derive(Debug, Clone, Default)]
 pub enum Message {
