@@ -1,6 +1,6 @@
 use iced::{
-    widget::{button, column, container, pane_grid, responsive, PaneGrid, Text},
-    Alignment, Element, Length, Padding,
+    widget::{button, column, container, pane_grid, pick_list, PaneGrid, Text},
+    Element, Length,
 };
 
 #[derive(Debug, Clone, Default)]
@@ -109,18 +109,13 @@ impl NewCharacterPage {
             styles::menu_button
         };
 
-        // TODO: Center text inside button
-        container(
-            container(
-                button(name)
-                    .style(style)
-                    .on_press(on_press)
-                    .padding(10)
-                    .width(Length::Fill),
-            )
-            .align_x(Alignment::Center)
-            .center_x(Length::Fill),
-        )
+        container(container(
+            button(Text::new(name).width(Length::Fill).center())
+                .style(style)
+                .on_press(on_press)
+                .padding(10)
+                .width(Length::Fill),
+        ))
         .padding(5.0)
         .center_x(Length::Fill)
         .into()

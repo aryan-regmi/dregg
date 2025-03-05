@@ -61,11 +61,14 @@ impl Page {
             )
             .center(Length::Fill)
             .into(),
+
             Page::LoadCharacter => main_menu_btn,
+
             Page::NewCharacter(page) => container(column![
                 page.view().map(Message::NewCharacterButtonPressed),
                 main_menu_btn
             ])
+            .padding(1)
             .into(),
         }
     }
