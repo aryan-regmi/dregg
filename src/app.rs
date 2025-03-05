@@ -26,8 +26,17 @@ impl Page {
         match message {
             Message::MainMenuButtonPressed => (Page::Main, Task::none()),
             Message::LoadCharacterButtonPressed => (Page::LoadCharacter, Task::none()),
-            Message::NewCharacterButtonPressed(_msg) => {
-                (Page::NewCharacter(NewCharacterPage::new()), Task::none())
+            Message::NewCharacterButtonPressed(msg) => {
+                let mut page = Page::NewCharacter(NewCharacterPage::new());
+                match &mut page {
+                    Page::NewCharacter(new_character_page) => {
+                        let command = new_character_page.update(msg);
+                        match command {
+                            new_character_page::Command::None => (page, Task::none()),
+                        }
+                    }
+                    _ => unreachable!(),
+                }
             }
         }
     }

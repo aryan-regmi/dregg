@@ -1,8 +1,6 @@
-#![allow(unused)]
-
 use iced::{
-    widget::{button, column, container, pane_grid, PaneGrid, Text},
-    Element, Length,
+    widget::{button, column, container, pane_grid, responsive, PaneGrid, Text},
+    Alignment, Element, Length, Padding,
 };
 
 #[derive(Debug, Clone, Default)]
@@ -32,10 +30,20 @@ pub enum Command {
 }
 
 /// Menu options for the `New Character` page.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 enum MenuOpts {
     Race,
     Class,
+}
+
+impl From<Message> for MenuOpts {
+    fn from(value: Message) -> Self {
+        match value {
+            Message::RaceButtonPressed => Self::Race,
+            Message::ClassButtonPressed => Self::Class,
+            Message::RaceSelected(_) => unreachable!(),
+        }
+    }
 }
 
 #[derive(Debug)]
@@ -79,13 +87,14 @@ impl NewCharacterPage {
             pane_grid::Content::new(match pane_state {
                 // The navigation menu pane
                 Pane::Menu => column![
-                    Self::menu_pane_button("Race", Message::RaceButtonPressed),
-                    Self::menu_pane_button("Class", Message::ClassButtonPressed),
+                    self.menu_pane_button("Race", Message::RaceButtonPressed),
+                    self.menu_pane_button("Class", Message::ClassButtonPressed),
                 ],
 
                 // The content pane
                 Pane::Info => column![self.view_info_pane()],
             })
+            .style(styles::panes)
         });
         pane_grid.into()
     }
@@ -93,16 +102,26 @@ impl NewCharacterPage {
 
 impl NewCharacterPage {
     /// Creates a button in the menu pane.
-    fn menu_pane_button(name: &str, on_press: Message) -> Element<Message> {
+    fn menu_pane_button<'a>(&'a self, name: &'a str, on_press: Message) -> Element<Message> {
+        let style = if self.menu_option == on_press.clone().into() {
+            styles::selected_menu_button
+        } else {
+            styles::menu_button
+        };
+
+        // TODO: Center text inside button
         container(
             container(
                 button(name)
-                    .width(Length::Fill)
+                    .style(style)
+                    .on_press(on_press)
                     .padding(10)
-                    .on_press(on_press.clone()),
+                    .width(Length::Fill),
             )
+            .align_x(Alignment::Center)
             .center_x(Length::Fill),
         )
+        .padding(5.0)
         .center_x(Length::Fill)
         .into()
     }
@@ -111,12 +130,89 @@ impl NewCharacterPage {
     fn view_info_pane(&self) -> Element<Message> {
         match self.menu_option {
             MenuOpts::Race => column![self.races_list()].into(),
-            MenuOpts::Class => todo!(),
+            MenuOpts::Class => column![].into(), // TODO: Implement!
         }
     }
 
     /// Creates a dropdown list of races.
     fn races_list(&self) -> Element<Message> {
         container(Text::new("Hello")).into()
+    }
+}
+
+mod styles {
+    use iced::{
+        theme::palette,
+        widget::{
+            button::{self, Status},
+            container,
+        },
+        Background, Border, Color, Theme,
+    };
+
+    /// Style for the menu and info panes.
+    pub fn panes(theme: &Theme) -> container::Style {
+        let palette = theme.extended_palette();
+
+        container::Style {
+            background: Some(Background::Color(palette.background.base.color)),
+            border: Border {
+                color: Color::from_rgb8(0, 0, 0),
+                width: 2.0,
+                ..Border::default()
+            },
+            ..Default::default()
+        }
+    }
+
+    /// Style for the menu buttons.
+    pub fn menu_button(theme: &Theme, status: Status) -> button::Style {
+        let palette = theme.extended_palette();
+        let base = base_button(palette.primary.strong);
+
+        match status {
+            Status::Active | Status::Pressed => base,
+            Status::Hovered => button::Style {
+                background: Some(Background::Color(palette.success.strong.color)),
+                ..base
+            },
+            Status::Disabled => disabled_button(base),
+        }
+    }
+
+    /// Style for the currently selected menu button.
+    pub fn selected_menu_button(theme: &Theme, _: Status) -> button::Style {
+        let palette = theme.extended_palette();
+        let base = base_button(palette.primary.strong);
+        button::Style {
+            background: Some(Background::Color(palette.success.strong.color)),
+            ..base
+        }
+    }
+
+    /// The base style shared by all buttons.
+    fn base_button(pair: palette::Pair) -> button::Style {
+        button::Style {
+            background: Some(Background::Color(pair.color)),
+            text_color: pair.text,
+            border: Border {
+                color: Color::from_rgb8(0, 0, 0),
+                width: 0.5,
+                ..Border::default()
+            },
+            ..Default::default()
+        }
+    }
+
+    /// The styling for disabled buttons.
+    fn disabled_button(style: button::Style) -> button::Style {
+        const ALPHA_SCALE_FACTOR: f32 = 0.5;
+        button::Style {
+            background: style
+                .background
+                .map(|bg| bg.scale_alpha(ALPHA_SCALE_FACTOR)),
+            text_color: style.text_color.scale_alpha(ALPHA_SCALE_FACTOR),
+            ..style
+        }
     }
 }
