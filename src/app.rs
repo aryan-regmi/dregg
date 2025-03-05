@@ -4,7 +4,10 @@ use iced::{
     Element, Length, Task, Theme,
 };
 
-use crate::views::new_character_page::{self, NewCharacterPage};
+use crate::frontend::{
+    new_character_page::{self, NewCharacterPage},
+    races::RaceName,
+};
 
 #[derive(Debug, Clone)]
 pub enum Message {
@@ -22,25 +25,6 @@ enum Page {
 }
 
 impl Page {
-    fn update(&self, message: Message) -> (Self, Task<Message>) {
-        match message {
-            Message::MainMenuButtonPressed => (Page::Main, Task::none()),
-            Message::LoadCharacterButtonPressed => (Page::LoadCharacter, Task::none()),
-            Message::NewCharacterButtonPressed(msg) => {
-                let mut page = Page::NewCharacter(NewCharacterPage::new());
-                match &mut page {
-                    Page::NewCharacter(new_character_page) => {
-                        let command = new_character_page.update(msg);
-                        match command {
-                            new_character_page::Command::None => (page, Task::none()),
-                        }
-                    }
-                    _ => unreachable!(),
-                }
-            }
-        }
-    }
-
     fn view(&self) -> Element<Message> {
         let main_menu_btn = container(button("Main Menu").on_press(Message::MainMenuButtonPressed))
             .padding(20)
@@ -91,6 +75,9 @@ pub struct App {
 
     /// The current page being displayed.
     page: Page,
+
+    /// The selected race for the character.
+    selected_race: Option<RaceName>,
 }
 
 impl App {
@@ -98,6 +85,7 @@ impl App {
         Self {
             theme: Theme::default(),
             page: Page::default(),
+            selected_race: None,
         }
     }
 
@@ -106,9 +94,32 @@ impl App {
     }
 
     pub fn update(&mut self, message: Message) -> Task<Message> {
-        let (page, task) = self.page.update(message);
-        self.page = page;
-        task
+        match message {
+            Message::MainMenuButtonPressed => {
+                self.page = Page::Main;
+                Task::none()
+            }
+            Message::LoadCharacterButtonPressed => {
+                self.page = Page::LoadCharacter;
+                Task::none()
+            }
+            Message::NewCharacterButtonPressed(msg) => {
+                self.page = Page::NewCharacter(NewCharacterPage::new(self.selected_race.clone()));
+                match &mut self.page {
+                    Page::NewCharacter(new_character_page) => {
+                        let command = new_character_page.update(msg);
+                        match command {
+                            new_character_page::Command::None => Task::none(),
+                            new_character_page::Command::RaceSelected(race_name) => {
+                                self.selected_race = Some(race_name);
+                                Task::none()
+                            }
+                        }
+                    }
+                    _ => unreachable!(),
+                }
+            }
+        }
     }
 
     pub fn view(&self) -> Element<Message> {

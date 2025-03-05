@@ -1,7 +1,9 @@
 use iced::{
-    widget::{button, column, container, pane_grid, pick_list, PaneGrid, Text},
+    widget::{button, column, container, pane_grid, pick_list, scrollable, PaneGrid, Text},
     Element, Length,
 };
+
+use super::races::RaceName;
 
 #[derive(Debug, Clone, Default)]
 pub enum Message {
@@ -13,7 +15,7 @@ pub enum Message {
     ClassButtonPressed,
 
     /// Race has been selected.
-    RaceSelected(String),
+    RaceSelected(RaceName),
 }
 
 /// Represents the menu and info panes of this page.
@@ -27,6 +29,7 @@ enum Pane {
 #[derive(Debug, Clone)]
 pub enum Command {
     None,
+    RaceSelected(RaceName),
 }
 
 /// Menu options for the `New Character` page.
@@ -53,18 +56,22 @@ pub struct NewCharacterPage {
 
     /// Currently selected menu option.
     menu_option: MenuOpts,
+
+    /// The race that was selected.
+    selected_race: Option<RaceName>,
 }
 
 impl NewCharacterPage {
     const SPLIT_RATIO: f32 = 0.2;
 
-    pub fn new() -> Self {
+    pub fn new(selected_race: Option<RaceName>) -> Self {
         let (mut panes, pane) = pane_grid::State::new(Pane::Menu);
         let split = panes.split(pane_grid::Axis::Vertical, pane, Pane::Info);
         panes.resize(split.expect("Invalid split").1, Self::SPLIT_RATIO);
         Self {
             panes,
             menu_option: MenuOpts::Race,
+            selected_race,
         }
     }
 
@@ -78,7 +85,7 @@ impl NewCharacterPage {
                 self.menu_option = MenuOpts::Class;
                 Command::None
             }
-            Message::RaceSelected(_) => todo!(),
+            Message::RaceSelected(race) => Command::RaceSelected(race),
         }
     }
 
@@ -131,7 +138,17 @@ impl NewCharacterPage {
 
     /// Creates a dropdown list of races.
     fn races_list(&self) -> Element<Message> {
-        container(Text::new("Hello")).into()
+        let races = pick_list(
+            &RaceName::ALL[..],
+            self.selected_race.clone(),
+            Message::RaceSelected,
+        )
+        .placeholder("Select your race:");
+
+        container(scrollable(column![races]))
+            .padding(5)
+            .center_x(Length::Fill)
+            .into()
     }
 }
 
