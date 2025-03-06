@@ -5,7 +5,7 @@ use iced::{
 
 use crate::frontend::race::Race;
 
-use super::race::RaceName;
+use super::race::{RaceName, Subrace};
 
 #[derive(Debug, Clone, Default)]
 pub enum Message {
@@ -18,6 +18,9 @@ pub enum Message {
 
     /// Race has been selected.
     RaceSelected(RaceName),
+
+    /// Race has been selected.
+    SubraceSelected(Subrace),
 }
 
 /// Represents the menu and info panes of this page.
@@ -32,6 +35,7 @@ enum Pane {
 pub enum Command {
     None,
     RaceSelected(RaceName),
+    SubraceSelected(Subrace),
 }
 
 /// Menu options for the `New Character` page.
@@ -47,6 +51,7 @@ impl From<Message> for MenuOpts {
             Message::RaceButtonPressed => Self::Race,
             Message::ClassButtonPressed => Self::Class,
             Message::RaceSelected(_) => unreachable!(),
+            Message::SubraceSelected(_) => unreachable!(),
         }
     }
 }
@@ -61,12 +66,15 @@ pub struct NewCharacterPage {
 
     /// The race that was selected.
     selected_race: Option<RaceName>,
+
+    /// The subrace that was selected (if one exists).
+    selected_subrace: Option<Subrace>,
 }
 
 impl NewCharacterPage {
     const SPLIT_RATIO: f32 = 0.2;
 
-    pub fn new(selected_race: Option<RaceName>) -> Self {
+    pub fn new(selected_race: Option<RaceName>, selected_subrace: Option<Subrace>) -> Self {
         let (mut panes, pane) = pane_grid::State::new(Pane::Menu);
         let split = panes.split(pane_grid::Axis::Vertical, pane, Pane::Info);
         panes.resize(split.expect("Invalid split").1, Self::SPLIT_RATIO);
@@ -74,6 +82,7 @@ impl NewCharacterPage {
             panes,
             menu_option: MenuOpts::Race,
             selected_race,
+            selected_subrace,
         }
     }
 
@@ -90,6 +99,10 @@ impl NewCharacterPage {
             Message::RaceSelected(race) => {
                 self.selected_race = Some(race.clone());
                 Command::RaceSelected(race)
+            }
+            Message::SubraceSelected(subrace) => {
+                self.selected_subrace = Some(subrace.clone());
+                Command::SubraceSelected(subrace)
             }
         }
     }
@@ -160,7 +173,11 @@ impl NewCharacterPage {
     fn race_info(&self) -> Element<Message> {
         if let Some(race) = &self.selected_race {
             let race: Race = race.into();
-            container(race.view()).into()
+            container(race.view(
+                &|subrace| Message::SubraceSelected(subrace),
+                self.selected_subrace.as_ref(),
+            ))
+            .into()
         } else {
             container(column![]).into()
         }

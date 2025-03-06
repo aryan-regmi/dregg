@@ -6,7 +6,7 @@ use iced::{
 
 use crate::frontend::{
     new_character_page::{self, NewCharacterPage},
-    race::RaceName,
+    race::{RaceName, Subrace},
 };
 
 #[derive(Debug, Clone)]
@@ -84,8 +84,12 @@ pub struct App {
     /// The current page being displayed.
     page: Page,
 
+    // TODO: Put each group of bindings/props in a separate struct
     /// The selected race for the character.
     selected_race: Option<RaceName>,
+
+    /// The selected subrace, if one exists.
+    selected_subrace: Option<Subrace>,
 }
 
 impl App {
@@ -94,6 +98,7 @@ impl App {
             theme: Theme::default(),
             page: Page::default(),
             selected_race: None,
+            selected_subrace: None,
         }
     }
 
@@ -112,7 +117,10 @@ impl App {
                 Task::none()
             }
             Message::NewCharacterButtonPressed(msg) => {
-                self.page = Page::NewCharacter(NewCharacterPage::new(self.selected_race.clone()));
+                self.page = Page::NewCharacter(NewCharacterPage::new(
+                    self.selected_race.clone(),
+                    self.selected_subrace.clone(),
+                ));
                 match &mut self.page {
                     Page::NewCharacter(new_character_page) => {
                         let command = new_character_page.update(msg);
@@ -120,6 +128,10 @@ impl App {
                             new_character_page::Command::None => Task::none(),
                             new_character_page::Command::RaceSelected(race_name) => {
                                 self.selected_race = Some(race_name);
+                                Task::none()
+                            }
+                            new_character_page::Command::SubraceSelected(subrace) => {
+                                self.selected_subrace = Some(subrace);
                                 Task::none()
                             }
                         }

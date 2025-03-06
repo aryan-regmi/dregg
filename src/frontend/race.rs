@@ -5,7 +5,7 @@
 use std::{collections::HashMap, fmt::Display};
 
 use iced::{
-    widget::{column, container, horizontal_rule, row, scrollable, Text},
+    widget::{column, container, horizontal_rule, radio, row, scrollable, Text},
     Element, Length, Padding,
 };
 
@@ -49,7 +49,11 @@ pub struct Race {
 }
 
 impl Race {
-    pub fn view<'a, Msg: 'a>(self) -> Element<'a, Msg> {
+    pub fn view<'a, Msg: 'a + Clone>(
+        self,
+        on_subrace_selected: &'a dyn Fn(Subrace) -> Msg,
+        selected_subrace: Option<&Subrace>,
+    ) -> Element<'a, Msg> {
         let line = container(horizontal_rule(1.0)).padding(styles::HORIZONTAL_LINE_PADDING);
 
         let title = container(
@@ -172,17 +176,30 @@ impl Race {
             container(row![])
         };
 
+        // FIXME: Update with actual subraces code:
+        // https://github.com/aryan-regmi/dregg/blob/main/src/frontend/new_char_page.rs#L405
         let subraces = if self.subraces.len() > 0 {
-            // FIXME: Update with actual subraces code:
-            // https://github.com/aryan-regmi/dregg/blob/main/src/frontend/new_char_page.rs#L405
+            let mut content = column![];
 
-            let mut content = column![Text::new("Subraces: ")
-                .font(styles::bold_font())
-                .size(styles::SECTION_FONT_SIZE)];
+            let subrace_list = {
+                let mut subrace_content = column![Text::new("Select a new subrace: ")
+                    .font(styles::bold_font())
+                    .size(styles::SECTION_FONT_SIZE)];
 
-            for subrace in self.subraces {
-                content = content.push(subrace.view());
-            }
+                // Create radio option for each subrace
+                for (i, subrace) in self.subraces.iter().enumerate() {
+                    let subrace_toggle =
+                        container(radio(&subrace.name, subrace, selected_subrace, |v| {
+                            on_subrace_selected(v.clone())
+                            // Message::SubraceSelected(v.clone())
+                        }))
+                        .padding(styles::indented_padding());
+                    subrace_content = subrace_content.push(subrace_toggle)
+                }
+
+                subrace_content
+            };
+            content = content.push(subrace_list);
 
             container(content).padding(styles::BASE_PADDING)
         } else {
@@ -432,7 +449,7 @@ impl Display for Speed {
 }
 
 /// Represents a language a character knows.
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Language {
     pub name: String,
     pub levels: Vec<LanguageLevel>,
@@ -453,7 +470,7 @@ impl Display for Language {
 }
 
 /// Represents the various levels of proficiency in a language.
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum LanguageLevel {
     Speak,
     Read,
@@ -473,7 +490,7 @@ impl LanguageLevel {
 }
 
 /// Represents various choices a character can make.
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Choices {
     /// A list of choices out of which only one can be selected.
     One(Vec<String>),
@@ -498,7 +515,7 @@ impl Choices {
 }
 
 /// Represents a subrace of a race.
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Subrace {
     /// The name of the race.
     pub name: String,
@@ -627,7 +644,7 @@ impl Subrace {
 }
 
 /// Represents a trait provided by a race.
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct RacialTrait {
     /// The name of the trait.
     pub name: String,
@@ -657,7 +674,7 @@ impl RacialTrait {
 }
 
 /// Types of actions.
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Action {
     Action,
     BonusAction,
@@ -665,7 +682,7 @@ pub enum Action {
 }
 
 /// Represents a summary/description.
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Summary {
     pub main: String,
     pub subsections: HashMap<String, String>,
