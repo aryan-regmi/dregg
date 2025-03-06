@@ -106,8 +106,43 @@ impl Race {
             container(content).padding(styles::BASE_PADDING)
         };
 
+        let proficiencies = {
+            let mut content = column![Text::new("Proficiencies: ")
+                .font(styles::bold_font())
+                .size(styles::SECTION_FONT_SIZE)];
+
+            for proficiency_list in &self.proficiencies {
+                content = content.push(
+                    container(Text::new(
+                        proficiency_list.text("You gain proficiency with"),
+                    ))
+                    .padding(styles::indented_padding()),
+                );
+            }
+
+            container(content).padding(styles::BASE_PADDING)
+        };
+
+        let racial_traits = {
+            let mut content = column![];
+
+            for racial_trait in self.traits {
+                content = content.push(racial_trait.view())
+            }
+
+            container(content).padding(styles::BASE_PADDING)
+        };
+
         container(scrollable(column![
-            title, summary, line, asi, age, size, speed
+            title,
+            summary,
+            line,
+            asi,
+            age,
+            size,
+            speed,
+            proficiencies,
+            racial_traits
         ]))
         .padding(Padding {
             bottom: 10.0,
@@ -364,6 +399,21 @@ pub enum Choices {
     All(Vec<String>),
 }
 
+impl Choices {
+    pub fn text(&self, header: &str) -> String {
+        match self {
+            Choices::One(items) => format!(
+                "{} one of the following of your choice: {}.",
+                header,
+                items.join(", ")
+            ),
+            Choices::All(items) => {
+                format!("{} all of the following: {}.", header, items.join(", "))
+            }
+        }
+    }
+}
+
 /// Represents a subrace of a race.
 #[derive(Debug)]
 pub struct Subrace {
@@ -397,6 +447,23 @@ pub struct RacialTrait {
 
     /// The type of action of the trait.
     pub action_type: Option<Action>,
+}
+
+impl RacialTrait {
+    pub fn view<'a, Msg: 'a>(self) -> Element<'a, Msg> {
+        let mut content = row![].padding(Padding {
+            right: 0.0,
+            left: 0.0,
+            ..styles::BASE_PADDING
+        });
+        let name = Text::new(format!("{}: ", self.name))
+            .font(styles::bold_font())
+            .size(styles::SECTION_FONT_SIZE);
+        let summary = container(Text::new(self.summary)).padding(styles::row_adjusted_padding());
+        content = content.push(name);
+        content = content.push(summary);
+        content.into()
+    }
 }
 
 /// Types of actions.
