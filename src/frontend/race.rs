@@ -1,5 +1,7 @@
 #![allow(unused)]
 
+// TODO: Make all `view` functions take in padding info instead of hardcoding!
+
 use std::{collections::HashMap, fmt::Display};
 
 use iced::{
@@ -58,9 +60,13 @@ impl Race {
         )
         .padding(styles::TITLE_OUTER_PAD);
 
-        let summary = self.summary.view();
+        let summary = self.summary.view(
+            styles::BASE_PADDING,
+            styles::SUMMARY_PADDING,
+            styles::SUMMARY_SUBSECTION_PADDING,
+        );
 
-        let asi = {
+        let asi = if self.asi.len() > 0 {
             let mut content = row![Text::new("Ability Score Increase: ")
                 .font(styles::bold_font())
                 .size(styles::SECTION_FONT_SIZE)];
@@ -73,6 +79,8 @@ impl Race {
             }
 
             container(content).padding(styles::BASE_PADDING)
+        } else {
+            container(row![])
         };
 
         let age = {
@@ -89,9 +97,9 @@ impl Race {
             .padding(styles::BASE_PADDING)
         };
 
-        let size = self.size.view(&self.name_plural);
+        let size = self.size.view(&self.name_plural, styles::BASE_PADDING);
 
-        let speed = {
+        let speed = if self.speed.len() > 0 {
             let mut content = row![Text::new("Speed: ")
                 .font(styles::bold_font())
                 .size(styles::SECTION_FONT_SIZE)];
@@ -104,9 +112,11 @@ impl Race {
             }
 
             container(content).padding(styles::BASE_PADDING)
+        } else {
+            container(row![])
         };
 
-        let proficiencies = {
+        let proficiencies = if self.proficiencies.len() > 0 {
             let mut content = column![Text::new("Proficiencies: ")
                 .font(styles::bold_font())
                 .size(styles::SECTION_FONT_SIZE)];
@@ -121,17 +131,21 @@ impl Race {
             }
 
             container(content).padding(styles::BASE_PADDING)
+        } else {
+            container(column![])
         };
 
-        let racial_traits = {
+        let racial_traits = if self.traits.len() > 0 {
             let mut content = column![];
             for racial_trait in self.traits {
                 content = content.push(racial_trait.view())
             }
             container(content).padding(styles::BASE_PADDING)
+        } else {
+            container(column![])
         };
 
-        let languages = {
+        let languages = if self.languages.len() > 0 {
             let mut languages_txt = String::with_capacity(30);
             let num_languages = self.languages.len();
             for (i, language) in self.languages.iter().enumerate() {
@@ -154,6 +168,24 @@ impl Race {
                     .padding(styles::row_adjusted_padding())
             ])
             .padding(styles::BASE_PADDING)
+        } else {
+            container(row![])
+        };
+
+        let subraces = if self.subraces.len() > 0 {
+            // FIXME: Update with actual subraces code
+
+            let mut content = column![Text::new("Subraces: ")
+                .font(styles::bold_font())
+                .size(styles::SECTION_FONT_SIZE)];
+
+            for subrace in self.subraces {
+                content = content.push(subrace.view());
+            }
+
+            container(content).padding(styles::BASE_PADDING)
+        } else {
+            container(column![])
         };
 
         container(scrollable(column![
@@ -167,6 +199,7 @@ impl Race {
             proficiencies,
             racial_traits,
             languages,
+            subraces
         ]))
         .padding(Padding {
             bottom: 10.0,
@@ -296,7 +329,7 @@ pub struct Size {
 }
 
 impl Size {
-    pub fn view<'a, Msg: 'a>(self, name_plural: &str) -> Element<'a, Msg> {
+    pub fn view<'a, Msg: 'a>(self, name_plural: &str, base_padding: Padding) -> Element<'a, Msg> {
         let mut content = row![Text::new("Size: ")
             .font(styles::bold_font())
             .size(styles::SECTION_FONT_SIZE)];
@@ -343,7 +376,7 @@ impl Size {
                 content.push(container(Text::new(txt)).padding(styles::row_adjusted_padding()));
         };
 
-        container(content).padding(styles::BASE_PADDING).into()
+        container(content).padding(base_padding).into()
     }
 }
 
@@ -485,6 +518,113 @@ pub struct Subrace {
     pub traits: Vec<RacialTrait>,
 }
 
+impl Subrace {
+    pub fn view<'a, Msg: 'a>(self) -> Element<'a, Msg> {
+        let line = container(horizontal_rule(1.0));
+
+        let title = container(
+            container(Text::new(self.name).size(styles::TITLE_FONT_SIZE))
+                .center_x(Length::Fill)
+                .padding(styles::TITLE_INNER_PAD)
+                .style(styles::title),
+        )
+        .padding(styles::SUBRACE_TITLE_PADDING);
+
+        let summary = self.summary.view(
+            Padding::default(),
+            Padding {
+                bottom: 20.0,
+                ..Default::default()
+            },
+            Padding::default(),
+        );
+
+        let asi = if self.asi.len() > 0 {
+            let mut content = row![Text::new("Ability Score Increase: ")
+                .font(styles::bold_font())
+                .size(styles::SECTION_FONT_SIZE)];
+
+            for asi in &self.asi {
+                content = content.push(
+                    container(Text::new(format!("{}", asi)))
+                        .padding(styles::row_adjusted_padding()),
+                )
+            }
+
+            container(content).padding(styles::SUBRACE_PADDING)
+        } else {
+            container(row![])
+        };
+
+        let proficiencies = if self.proficiencies.len() > 0 {
+            let mut content = column![Text::new("Proficiencies: ")
+                .font(styles::bold_font())
+                .size(styles::SECTION_FONT_SIZE)];
+
+            for proficiency_list in &self.proficiencies {
+                content = content.push(
+                    container(Text::new(
+                        proficiency_list.text("You gain proficiency with"),
+                    ))
+                    .padding(styles::indented_padding()),
+                );
+            }
+
+            container(content).padding(styles::SUBRACE_PADDING)
+        } else {
+            container(column![])
+        };
+
+        let racial_traits = if self.traits.len() > 0 {
+            let mut content = column![];
+            for racial_trait in self.traits {
+                content = content.push(racial_trait.view())
+            }
+            container(content).padding(styles::SUBRACE_PADDING)
+        } else {
+            container(column![])
+        };
+
+        let languages = if self.languages.len() > 0 {
+            let mut languages_txt = String::with_capacity(30);
+            let num_languages = self.languages.len();
+            for (i, language) in self.languages.iter().enumerate() {
+                if i == num_languages - 1 {
+                    languages_txt.push_str("and ");
+                    languages_txt.push_str(&format!("{}.", language));
+                } else {
+                    if num_languages > 2 {
+                        languages_txt.push_str(", ");
+                    }
+                    languages_txt.push_str(&format!("{} ", language));
+                }
+            }
+
+            container(row![
+                Text::new("Languages: ")
+                    .font(styles::bold_font())
+                    .size(styles::SECTION_FONT_SIZE),
+                container(Text::new(format!("You know {}", languages_txt)))
+                    .padding(styles::row_adjusted_padding())
+            ])
+            .padding(styles::SUBRACE_PADDING)
+        } else {
+            container(row![])
+        };
+
+        container(column![
+            title,
+            summary,
+            line,
+            asi,
+            proficiencies,
+            racial_traits,
+            languages,
+        ])
+        .into()
+    }
+}
+
 /// Represents a trait provided by a race.
 #[derive(Debug)]
 pub struct RacialTrait {
@@ -531,18 +671,23 @@ pub struct Summary {
 }
 
 impl Summary {
-    pub fn view<'a, Msg: 'a>(self) -> Element<'a, Msg> {
+    pub fn view<'a, Msg: 'a>(
+        self,
+        base_padding: Padding,
+        summary_padding: Padding,
+        summary_subsection_padding: Padding,
+    ) -> Element<'a, Msg> {
         let mut content = column![];
 
-        let main = container(Text::new(self.main.clone())).padding(styles::SUMMARY_PADDING);
+        let main = container(Text::new(self.main.clone())).padding(summary_padding);
         content = content.push(main);
 
         for (section, text) in self.subsections {
-            let title_header = container(Text::new(section).font(styles::bold_font()))
-                .padding(styles::BASE_PADDING);
+            let title_header =
+                container(Text::new(section).font(styles::bold_font())).padding(base_padding);
             content = content.push(title_header);
 
-            let text = container(Text::new(text)).padding(styles::SUMMARY_SUBSECTION_PADDING);
+            let text = container(Text::new(text)).padding(summary_subsection_padding);
             content = content.push(text);
         }
 
@@ -631,6 +776,18 @@ mod styles {
         right: 20.0,
         left: 20.0,
         ..BASE_PADDING
+    };
+
+    pub const SUBRACE_PADDING: Padding = Padding {
+        right: 0.0,
+        left: 0.0,
+        ..BASE_PADDING
+    };
+    pub const SUBRACE_TITLE_PADDING: Padding = Padding {
+        top: TITLE_OUTER_PAD,
+        right: 0.0,
+        bottom: TITLE_OUTER_PAD,
+        left: 0.0,
     };
 
     pub fn row_adjusted_padding() -> Padding {
