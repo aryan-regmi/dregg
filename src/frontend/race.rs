@@ -125,12 +125,35 @@ impl Race {
 
         let racial_traits = {
             let mut content = column![];
-
             for racial_trait in self.traits {
                 content = content.push(racial_trait.view())
             }
-
             container(content).padding(styles::BASE_PADDING)
+        };
+
+        let languages = {
+            let mut languages_txt = String::with_capacity(30);
+            let num_languages = self.languages.len();
+            for (i, language) in self.languages.iter().enumerate() {
+                if i == num_languages - 1 {
+                    languages_txt.push_str("and ");
+                    languages_txt.push_str(&format!("{}.", language));
+                } else {
+                    if num_languages > 2 {
+                        languages_txt.push_str(", ");
+                    }
+                    languages_txt.push_str(&format!("{} ", language));
+                }
+            }
+
+            container(row![
+                Text::new("Languages: ")
+                    .font(styles::bold_font())
+                    .size(styles::SECTION_FONT_SIZE),
+                container(Text::new(format!("You know {}", languages_txt)))
+                    .padding(styles::row_adjusted_padding())
+            ])
+            .padding(styles::BASE_PADDING)
         };
 
         container(scrollable(column![
@@ -142,7 +165,8 @@ impl Race {
             size,
             speed,
             proficiencies,
-            racial_traits
+            racial_traits,
+            languages,
         ]))
         .padding(Padding {
             bottom: 10.0,
@@ -380,6 +404,20 @@ pub struct Language {
     pub levels: Vec<LanguageLevel>,
 }
 
+impl Display for Language {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_fmt(format_args!(
+            "{} ({})",
+            self.name,
+            self.levels
+                .iter()
+                .map(|lvl| lvl.text())
+                .collect::<Vec<_>>()
+                .join(", ")
+        ))
+    }
+}
+
 /// Represents the various levels of proficiency in a language.
 #[derive(Debug)]
 pub enum LanguageLevel {
@@ -387,6 +425,17 @@ pub enum LanguageLevel {
     Read,
     Write,
     Understand,
+}
+
+impl LanguageLevel {
+    pub fn text(&self) -> String {
+        match self {
+            LanguageLevel::Speak => "Speak".into(),
+            LanguageLevel::Read => "Read".into(),
+            LanguageLevel::Write => "Write".into(),
+            LanguageLevel::Understand => "Understand".into(),
+        }
+    }
 }
 
 /// Represents various choices a character can make.

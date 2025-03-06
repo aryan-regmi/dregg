@@ -1,6 +1,6 @@
 use iced::{
     widget::{button, column, container, pane_grid, pick_list, scrollable, PaneGrid, Text},
-    Element, Length, Padding,
+    Element, Length,
 };
 
 use crate::frontend::race::Race;
