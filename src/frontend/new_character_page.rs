@@ -161,6 +161,8 @@ impl NewCharacterPage {
             self.selected_race.as_ref(),
             Message::RaceSelected,
         )
+        .style(styles::dropdown)
+        .menu_style(styles::dropdown_item)
         .placeholder("Select your race:");
 
         container(scrollable(column![races]))
@@ -186,10 +188,11 @@ impl NewCharacterPage {
 
 mod styles {
     use iced::{
+        overlay,
         theme::palette,
         widget::{
             button::{self, Status},
-            container,
+            container, pick_list,
         },
         Background, Border, Color, Theme,
     };
@@ -206,6 +209,48 @@ mod styles {
                 ..Border::default()
             },
             ..Default::default()
+        }
+    }
+
+    pub fn dropdown(theme: &Theme, status: pick_list::Status) -> pick_list::Style {
+        let palette = theme.extended_palette();
+
+        match status {
+            pick_list::Status::Active | pick_list::Status::Opened => pick_list::Style {
+                border: Border {
+                    radius: 3.0.into(),
+                    ..Default::default()
+                },
+                text_color: palette.background.base.text,
+                placeholder_color: palette.background.weak.text,
+                handle_color: palette.primary.base.color,
+                background: Background::Color(palette.background.weak.color),
+            },
+            pick_list::Status::Hovered => pick_list::Style {
+                border: Border {
+                    radius: 3.0.into(),
+                    ..Default::default()
+                },
+                text_color: palette.background.base.text,
+                placeholder_color: palette.background.weak.text,
+                handle_color: palette.primary.base.color,
+                background: Background::Color(palette.primary.weak.color),
+            },
+        }
+    }
+
+    pub fn dropdown_item(theme: &Theme) -> overlay::menu::Style {
+        let palette = theme.extended_palette();
+
+        overlay::menu::Style {
+            background: Background::Color(palette.background.weak.color),
+            border: Border {
+                radius: 1.5.into(),
+                ..Default::default()
+            },
+            text_color: palette.background.base.text,
+            selected_text_color: palette.background.strong.text,
+            selected_background: Background::Color(palette.primary.weak.color),
         }
     }
 

@@ -176,8 +176,6 @@ impl Race {
             container(row![])
         };
 
-        // FIXME: Update with actual subraces code:
-        // https://github.com/aryan-regmi/dregg/blob/main/src/frontend/new_char_page.rs#L405
         let subraces = if self.subraces.len() > 0 {
             let mut content = column![];
 
@@ -191,16 +189,20 @@ impl Race {
                     let subrace_toggle =
                         container(radio(&subrace.name, subrace, selected_subrace, |v| {
                             on_subrace_selected(v.clone())
-                            // Message::SubraceSelected(v.clone())
                         }))
-                        .padding(styles::indented_padding());
+                        .padding(styles::radio_padding());
                     subrace_content = subrace_content.push(subrace_toggle)
+                }
+
+                // Display subrace info
+                if let Some(selected_subrace) = selected_subrace {
+                    subrace_content = subrace_content.push(selected_subrace.clone().view());
                 }
 
                 subrace_content
             };
-            content = content.push(subrace_list);
 
+            content = content.push(subrace_list);
             container(content).padding(styles::BASE_PADDING)
         } else {
             container(column![])
@@ -685,7 +687,8 @@ pub enum Action {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Summary {
     pub main: String,
-    pub subsections: HashMap<String, String>,
+    pub subsections: HashMap<String, String>, // TODO: Change to Vec<(String, String)> to preserve
+                                              // order
 }
 
 impl Summary {
@@ -789,6 +792,15 @@ mod styles {
         }
     }
     pub const COLUMN_SPACING: f32 = BASE_PADDING.bottom;
+
+    pub fn radio_padding() -> Padding {
+        Padding {
+            left: BASE_PADDING.left,
+            top: BASE_PADDING.top,
+            bottom: BASE_PADDING.bottom,
+            ..Default::default()
+        }
+    }
 
     pub const HORIZONTAL_LINE_PADDING: Padding = Padding {
         right: 20.0,
