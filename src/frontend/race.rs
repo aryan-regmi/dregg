@@ -173,7 +173,8 @@ impl Race {
         };
 
         let subraces = if self.subraces.len() > 0 {
-            // FIXME: Update with actual subraces code
+            // FIXME: Update with actual subraces code:
+            // https://github.com/aryan-regmi/dregg/blob/main/src/frontend/new_char_page.rs#L405
 
             let mut content = column![Text::new("Subraces: ")
                 .font(styles::bold_font())
