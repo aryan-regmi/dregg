@@ -1,7 +1,7 @@
 use iced::{
     alignment::Horizontal,
     widget::{button, column, container},
-    Element, Length, Task, Theme,
+    Border, Color, Element, Length, Task, Theme,
 };
 
 use crate::frontend::{
@@ -30,6 +30,14 @@ impl Page {
             .padding(20)
             .align_x(Horizontal::Center)
             .width(Length::Fill)
+            .style(|_| container::Style {
+                border: Border {
+                    color: Color::from_rgb8(0, 0, 0),
+                    width: 2.0,
+                    ..Border::default()
+                },
+                ..Default::default()
+            })
             .into();
 
         match self {
@@ -52,7 +60,7 @@ impl Page {
                 page.view().map(Message::NewCharacterButtonPressed),
                 main_menu_btn
             ])
-            .padding(1)
+            .padding(0.5)
             .into(),
         }
     }

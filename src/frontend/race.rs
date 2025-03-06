@@ -51,7 +51,7 @@ impl Race {
         let line = container(horizontal_rule(1.0)).padding(styles::HORIZONTAL_LINE_PADDING);
 
         let title = container(
-            container(Text::new(self.name).size(styles::TITLE_FONT))
+            container(Text::new(self.name).size(styles::TITLE_FONT_SIZE))
                 .center_x(Length::Fill)
                 .padding(styles::TITLE_INNER_PAD)
                 .style(styles::title),
@@ -63,7 +63,7 @@ impl Race {
         let asi = {
             let mut content = row![Text::new("Ability Score Increase: ")
                 .font(styles::bold_font())
-                .size(styles::SECTION_FONT)];
+                .size(styles::SECTION_FONT_SIZE)];
 
             for asi in &self.asi {
                 content = content.push(
@@ -83,13 +83,15 @@ impl Race {
             container(row![
                 Text::new("Age: ")
                     .font(styles::bold_font())
-                    .size(styles::SECTION_FONT),
+                    .size(styles::SECTION_FONT_SIZE),
                 container(Text::new(age_txt)).padding(styles::row_adjusted_padding()),
             ])
             .padding(styles::BASE_PADDING)
         };
 
-        container(scrollable(column![title, summary, line, asi, age])).into()
+        let size = self.size.view(&self.name_plural);
+
+        container(scrollable(column![title, summary, line, asi, age, size])).into()
     }
 }
 
@@ -145,6 +147,60 @@ pub struct Range<T> {
     pub end: T,
 }
 
+impl<T: PartialEq> Range<T> {
+    /// Returns `true` if the start and end values of the range are the same.
+    pub fn is_singular(&self) -> bool {
+        self.start == self.end
+    }
+}
+
+impl Range<Height> {
+    /// Converts a height range into a printable string.
+    pub fn text(&self) -> String {
+        // No range
+        if self.is_singular() {
+            let inches_txt = if self.start.feet_only() {
+                String::from("")
+            } else {
+                format!(" and {} inches", self.start.inches)
+            };
+
+            format!("{} feet{}", self.start.feet, inches_txt)
+        }
+        // Range
+        else {
+            let start_inches_txt = if self.start.feet_only() {
+                String::from("")
+            } else {
+                format!(" and {} inches", self.start.inches)
+            };
+            let end_inches_txt = if self.end.feet_only() {
+                String::from("")
+            } else {
+                format!(" and {} inches", self.end.inches)
+            };
+
+            format!(
+                "{} feet{} to {} feet{}",
+                self.start.feet, start_inches_txt, self.end.feet, end_inches_txt
+            )
+        }
+    }
+}
+
+impl Range<f32> {
+    // "{} stand at around {} and about {}. Your size is {}.",
+    //
+    /// Converts a height range into a printable string.
+    pub fn text(&self) -> String {
+        if self.is_singular() {
+            format!("{} pounds", self.start)
+        } else {
+            format!("{} to {} pounds", self.start, self.end)
+        }
+    }
+}
+
 /// Represents the size info for a character.
 #[derive(Debug)]
 pub struct Size {
@@ -158,6 +214,60 @@ pub struct Size {
     pub weight: Option<Range<f32>>,
 }
 
+impl Size {
+    pub fn view<'a, Msg: 'a>(self, name_plural: &str) -> Element<'a, Msg> {
+        let mut content = row![Text::new("Size: ")
+            .font(styles::bold_font())
+            .size(styles::SECTION_FONT_SIZE)];
+
+        let category = match self.category {
+            SizeCategory::Tiny => "Tiny",
+            SizeCategory::Small => "Small",
+            SizeCategory::Medium => "Medium",
+            SizeCategory::Large => "Large",
+            SizeCategory::Gargantuan => "Gargantuan",
+        };
+
+        let size_view = {
+            let has_height = self.height.is_some();
+            let has_weight = self.weight.is_some();
+
+            // TODO: Separate height and weight text by rows?
+
+            let txt = if has_height && has_weight {
+                format!(
+                    "{} stand at around {} tall and weigh about {}. Your size is {}.",
+                    name_plural,
+                    self.height.unwrap().text(),
+                    self.weight.unwrap().text(),
+                    category
+                )
+            } else if has_height && !has_weight {
+                format!(
+                    "{} stand at around {} tall. Your size is {}.",
+                    name_plural,
+                    self.height.unwrap().text(),
+                    category
+                )
+            } else if !has_height && has_weight {
+                format!(
+                    "{} weight about {}. Your size is {}.",
+                    name_plural,
+                    self.weight.unwrap().text(),
+                    category
+                )
+            } else {
+                format!("Your size is {}.", category)
+            };
+
+            content =
+                content.push(container(Text::new(txt)).padding(styles::row_adjusted_padding()));
+        };
+
+        container(content).padding(styles::BASE_PADDING).into()
+    }
+}
+
 /// Represents the size category of a character.
 #[derive(Debug, Clone, PartialEq)]
 pub enum SizeCategory {
@@ -169,10 +279,17 @@ pub enum SizeCategory {
 }
 
 /// Represents the height of a character in feet and inches.
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct Height {
     pub feet: f32,
     pub inches: f32,
+}
+
+impl Height {
+    /// Returns `true` if `inches` is 0.
+    pub fn feet_only(&self) -> bool {
+        self.inches == 0.0
+    }
 }
 
 /// Represents a speed of a character.
@@ -324,7 +441,7 @@ impl Into<Race> for &RaceName {
 mod styles {
     use iced::{font, widget::container, Background, Border, Font, Padding, Shadow, Theme};
 
-    pub const SECTION_FONT: f32 = 18.0;
+    pub const SECTION_FONT_SIZE: f32 = 18.0;
     pub const BASE_PADDING: Padding = Padding {
         top: 5.0,
         right: TITLE_OUTER_PAD,
@@ -332,7 +449,7 @@ mod styles {
         left: TITLE_OUTER_PAD,
     };
 
-    pub const TITLE_FONT: f32 = 32.0;
+    pub const TITLE_FONT_SIZE: f32 = 32.0;
     pub const TITLE_INNER_PAD: f32 = 10.0;
     pub const TITLE_OUTER_PAD: f32 = 30.0;
 
