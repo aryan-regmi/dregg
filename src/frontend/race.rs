@@ -91,7 +91,29 @@ impl Race {
 
         let size = self.size.view(&self.name_plural);
 
-        container(scrollable(column![title, summary, line, asi, age, size])).into()
+        let speed = {
+            let mut content = row![Text::new("Speed: ")
+                .font(styles::bold_font())
+                .size(styles::SECTION_FONT_SIZE)];
+
+            for speed in &self.speed {
+                content = content.push(
+                    container(Text::new(format!("{}", speed)))
+                        .padding(styles::row_adjusted_padding()),
+                );
+            }
+
+            container(content).padding(styles::BASE_PADDING)
+        };
+
+        container(scrollable(column![
+            title, summary, line, asi, age, size, speed
+        ]))
+        .padding(Padding {
+            bottom: 10.0,
+            ..Default::default()
+        })
+        .into()
     }
 }
 
@@ -232,8 +254,6 @@ impl Size {
             let has_height = self.height.is_some();
             let has_weight = self.weight.is_some();
 
-            // TODO: Separate height and weight text by rows?
-
             let txt = if has_height && has_weight {
                 format!(
                     "{} stand at around {} tall and weigh about {}. Your size is {}.",
@@ -299,6 +319,23 @@ pub enum Speed {
     Flying(u16),
     Swimming(u16),
     Climbing(u16),
+}
+
+impl Display for Speed {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Speed::Walking(amount) => {
+                f.write_fmt(format_args!("Walking speed of {} feet.", amount))
+            }
+            Speed::Flying(amount) => f.write_fmt(format_args!("Flying speed of {} feet.", amount)),
+            Speed::Swimming(amount) => {
+                f.write_fmt(format_args!("Swimming speed of {} feet.", amount))
+            }
+            Speed::Climbing(amount) => {
+                f.write_fmt(format_args!("Climbing speed of {} feet.", amount))
+            }
+        }
+    }
 }
 
 /// Represents a language a character knows.

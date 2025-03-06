@@ -58,7 +58,7 @@ impl Page {
 
             Page::NewCharacter(page) => container(column![
                 page.view().map(Message::NewCharacterButtonPressed),
-                main_menu_btn
+                main_menu_btn,
             ])
             .padding(0.5)
             .into(),
