@@ -3,6 +3,8 @@ use iced::{
     Element, Length,
 };
 
+use crate::frontend::race::Race;
+
 use super::race::RaceName;
 
 #[derive(Debug, Clone, Default)]
@@ -85,7 +87,10 @@ impl NewCharacterPage {
                 self.menu_option = MenuOpts::Class;
                 Command::None
             }
-            Message::RaceSelected(race) => Command::RaceSelected(race),
+            Message::RaceSelected(race) => {
+                self.selected_race = Some(race.clone());
+                Command::RaceSelected(race)
+            }
         }
     }
 
@@ -131,7 +136,7 @@ impl NewCharacterPage {
     /// Displays the info pane.
     fn view_info_pane(&self) -> Element<Message> {
         match self.menu_option {
-            MenuOpts::Race => column![self.races_list()].into(),
+            MenuOpts::Race => column![self.races_list(), self.race_info()].into(),
             MenuOpts::Class => column![].into(), // TODO: Implement!
         }
     }
@@ -140,7 +145,7 @@ impl NewCharacterPage {
     fn races_list(&self) -> Element<Message> {
         let races = pick_list(
             &RaceName::ALL[..],
-            self.selected_race.clone(),
+            self.selected_race.as_ref(),
             Message::RaceSelected,
         )
         .placeholder("Select your race:");
@@ -149,6 +154,16 @@ impl NewCharacterPage {
             .padding(5)
             .center_x(Length::Fill)
             .into()
+    }
+
+    /// Displays the race info.
+    fn race_info(&self) -> Element<Message> {
+        if let Some(race) = &self.selected_race {
+            let race: Race = race.into();
+            container(race.view()).into()
+        } else {
+            container(column![]).into()
+        }
     }
 }
 

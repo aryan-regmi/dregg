@@ -2,6 +2,11 @@
 
 use std::{collections::HashMap, fmt::Display};
 
+use iced::{
+    widget::{column, container, scrollable, Text},
+    Element, Length,
+};
+
 use super::races;
 
 /// Represents a race a character can be.
@@ -39,6 +44,19 @@ pub struct Race {
 
     /// A list of traits provided by the race.
     pub traits: Vec<RacialTrait>,
+}
+
+impl Race {
+    pub fn view<'a, Msg: 'a>(self) -> Element<'a, Msg> {
+        let title = container(
+            container(Text::new(self.name).size(32))
+                .center_x(Length::Fill)
+                .style(styles::title),
+        )
+        .padding(20);
+
+        container(scrollable(column![title,])).into()
+    }
 }
 
 /// Represents an attribute of a character.
@@ -245,6 +263,23 @@ impl Into<Race> for &RaceName {
         match self {
             RaceName::Dwarf => races::dwarf::dwarf(),
             RaceName::_Count => unreachable!("`_Count` is not a valid race"),
+        }
+    }
+}
+
+mod styles {
+    use iced::{widget::container, Background, Border, Theme};
+
+    pub fn title(theme: &Theme) -> container::Style {
+        let palette = theme.extended_palette();
+        container::Style {
+            background: Some(Background::Color(palette.primary.base.color)),
+            border: Border {
+                color: palette.primary.weak.color,
+                width: 1.0,
+                radius: 3.into(),
+            },
+            ..Default::default()
         }
     }
 }
