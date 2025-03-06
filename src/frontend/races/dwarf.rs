@@ -128,7 +128,7 @@ fn mountain_dwarf() -> Subrace {
     };
 
     Subrace {
-        name: "Mountian Dwarf".into(),
+        name: "Mountain Dwarf".into(),
         summary,
         asi: vec![Attribute::Strength(2)],
         languages: vec![],
