@@ -3,8 +3,8 @@
 use std::{collections::HashMap, fmt::Display};
 
 use iced::{
-    widget::{column, container, scrollable, Text},
-    Element, Length,
+    widget::{column, container, horizontal_rule, row, scrollable, Text},
+    Element, Length, Padding,
 };
 
 use super::races;
@@ -48,14 +48,48 @@ pub struct Race {
 
 impl Race {
     pub fn view<'a, Msg: 'a>(self) -> Element<'a, Msg> {
+        let line = container(horizontal_rule(1.0)).padding(styles::HORIZONTAL_LINE_PADDING);
+
         let title = container(
-            container(Text::new(self.name).size(32))
+            container(Text::new(self.name).size(styles::TITLE_FONT))
                 .center_x(Length::Fill)
+                .padding(styles::TITLE_INNER_PAD)
                 .style(styles::title),
         )
-        .padding(20);
+        .padding(styles::TITLE_OUTER_PAD);
 
-        container(scrollable(column![title,])).into()
+        let summary = self.summary.view();
+
+        let asi = {
+            let mut content = row![Text::new("Ability Score Increase: ")
+                .font(styles::bold_font())
+                .size(styles::SECTION_FONT)];
+
+            for asi in &self.asi {
+                content = content.push(
+                    container(Text::new(format!("{}", asi)))
+                        .padding(styles::row_adjusted_padding()),
+                )
+            }
+
+            container(content).padding(styles::BASE_PADDING)
+        };
+
+        let age = {
+            let age_txt = format!(
+                "{} are considered adults at {} years old. On average, they live to {} years.",
+                self.name_plural, self.age.adult, self.age.lifespan,
+            );
+            container(row![
+                Text::new("Age: ")
+                    .font(styles::bold_font())
+                    .size(styles::SECTION_FONT),
+                container(Text::new(age_txt)).padding(styles::row_adjusted_padding()),
+            ])
+            .padding(styles::BASE_PADDING)
+        };
+
+        container(scrollable(column![title, summary, line, asi, age])).into()
     }
 }
 
@@ -74,22 +108,22 @@ impl Display for Attribute {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Attribute::Strength(amount) => {
-                f.write_fmt(format_args!("Strength score increases by {amount}"))
+                f.write_fmt(format_args!("Strength score increases by {amount}. "))
             }
             Attribute::Dexterity(amount) => {
-                f.write_fmt(format_args!("Dexterity score increases by {amount}"))
+                f.write_fmt(format_args!("Dexterity score increases by {amount}. "))
             }
             Attribute::Constitution(amount) => {
-                f.write_fmt(format_args!("Constitution score increases by {amount}"))
+                f.write_fmt(format_args!("Constitution score increases by {amount}. "))
             }
             Attribute::Intelligence(amount) => {
-                f.write_fmt(format_args!("Intelligence score increases by {amount}"))
+                f.write_fmt(format_args!("Intelligence score increases by {amount}. "))
             }
             Attribute::Wisdom(amount) => {
-                f.write_fmt(format_args!("Wisdom score increases by {amount}"))
+                f.write_fmt(format_args!("Wisdom score increases by {amount}. "))
             }
             Attribute::Charisma(amount) => {
-                f.write_fmt(format_args!("Charisma score increases by {amount}"))
+                f.write_fmt(format_args!("Charisma score increases by {amount}. "))
             }
         }
     }
@@ -226,6 +260,26 @@ pub struct Summary {
     pub subsections: HashMap<String, String>,
 }
 
+impl Summary {
+    pub fn view<'a, Msg: 'a>(self) -> Element<'a, Msg> {
+        let mut content = column![];
+
+        let main = container(Text::new(self.main.clone())).padding(styles::SUMMARY_PADDING);
+        content = content.push(main);
+
+        for (section, text) in self.subsections {
+            let title_header = container(Text::new(section).font(styles::bold_font()))
+                .padding(styles::BASE_PADDING);
+            content = content.push(title_header);
+
+            let text = container(Text::new(text)).padding(styles::SUMMARY_SUBSECTION_PADDING);
+            content = content.push(text);
+        }
+
+        container(content).into()
+    }
+}
+
 // TODO: Update with all races
 //
 /// All of the possible races.
@@ -268,14 +322,67 @@ impl Into<Race> for &RaceName {
 }
 
 mod styles {
-    use iced::{widget::container, Background, Border, Theme};
+    use iced::{font, widget::container, Background, Border, Font, Padding, Shadow, Theme};
+
+    pub const SECTION_FONT: f32 = 18.0;
+    pub const BASE_PADDING: Padding = Padding {
+        top: 5.0,
+        right: TITLE_OUTER_PAD,
+        bottom: 5.0,
+        left: TITLE_OUTER_PAD,
+    };
+
+    pub const TITLE_FONT: f32 = 32.0;
+    pub const TITLE_INNER_PAD: f32 = 10.0;
+    pub const TITLE_OUTER_PAD: f32 = 30.0;
+
+    pub const SUMMARY_HEADING_FONT: f32 = 24.0;
+    pub const SUMMARY_PADDING: Padding = Padding {
+        top: 0.0,
+        right: TITLE_OUTER_PAD,
+        bottom: 10.0,
+        left: TITLE_OUTER_PAD,
+    };
+    pub const SUMMARY_SUBSECTION_PADDING: Padding = Padding {
+        bottom: 10.0,
+        ..SUMMARY_PADDING
+    };
+
+    const INDENT_FACTOR: f32 = 1.5;
+    pub fn indented_padding() -> Padding {
+        Padding {
+            left: BASE_PADDING.left * INDENT_FACTOR,
+            ..Default::default()
+        }
+    }
+    pub const COLUMN_SPACING: f32 = BASE_PADDING.bottom;
+
+    pub const HORIZONTAL_LINE_PADDING: Padding = Padding {
+        right: 20.0,
+        left: 20.0,
+        ..BASE_PADDING
+    };
+
+    pub fn row_adjusted_padding() -> Padding {
+        Padding {
+            top: 2.0,
+            ..Default::default()
+        }
+    }
+
+    pub fn bold_font() -> Font {
+        Font {
+            weight: font::Weight::Bold,
+            ..Default::default()
+        }
+    }
 
     pub fn title(theme: &Theme) -> container::Style {
         let palette = theme.extended_palette();
         container::Style {
-            background: Some(Background::Color(palette.primary.base.color)),
+            background: Some(Background::Color(palette.background.weak.color)),
             border: Border {
-                color: palette.primary.weak.color,
+                color: palette.background.strong.color,
                 width: 1.0,
                 radius: 3.into(),
             },
