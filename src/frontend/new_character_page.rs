@@ -150,7 +150,7 @@ impl NewCharacterPage {
     fn view_info_pane(&self) -> Element<Message> {
         match self.menu_option {
             MenuOpts::Race => column![self.races_list(), self.race_info()].into(),
-            MenuOpts::Class => column![].into(), // TODO: Implement!
+            MenuOpts::Class => column![self.classes_list(), self.class_info()].into(),
         }
     }
 
@@ -183,6 +183,29 @@ impl NewCharacterPage {
         } else {
             container(column![]).into()
         }
+    }
+
+    /// Creates a dropdown list of classes.
+    fn classes_list(&self) -> Element<Message> {
+        container(scrollable(column![])).into()
+    }
+
+    /// Displays the class info.
+    fn class_info(&self) -> Element<Message> {
+        // NOTE: Replace with this!
+        //
+        // if let Some(class) = &self.selected_class {
+        //     let class: Class = class.into();
+        //     container(class.view(
+        //         &|subclass| Message::SubclassSelected(subclass),
+        //         self.selected_subclass.as_ref(),
+        //     ))
+        //     .into()
+        // } else {
+        //     container(column![]).into()
+        // }
+
+        container(column![]).into()
     }
 }
 

@@ -1,9 +1,10 @@
 use crate::frontend::{
-    race::{
-        Age, Attribute, Choices, Height, Language, LanguageLevel, Race, RacialTrait, Range, Size,
-        SizeCategory, Speed, Subrace, Summary,
-    },
+    race::{Race, RacialTrait, Subrace},
     races::common::darkvision,
+    utils::{
+        Age, Attribute, Choices, Height, Language, LanguageLevel, Range, Size, SizeCategory, Speed,
+        Summary,
+    },
 };
 
 pub fn dwarf() -> Race {
