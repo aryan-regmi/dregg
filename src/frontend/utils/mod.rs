@@ -1,9 +1,11 @@
 use std::fmt::Display;
 
 use iced::{
-    widget::{column, container, row, Text},
+    widget::{column, container, Text},
     Element, Padding,
 };
+
+use super::race::Height;
 
 /// Represents an attribute of a character.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -39,15 +41,6 @@ impl Display for Attribute {
             }
         }
     }
-}
-
-#[derive(Debug)]
-pub struct Age {
-    /// The age at which a character is considered an adult.
-    pub adult: u16,
-
-    /// The average lifespan of a character.
-    pub lifespan: u16,
 }
 
 /// Represents a range of possible values.
@@ -111,72 +104,6 @@ impl Range<f32> {
     }
 }
 
-/// Represents the size info for a character.
-#[derive(Debug)]
-pub struct Size {
-    /// The size category.
-    pub category: SizeCategory,
-
-    /// The height in feet and inches.
-    pub height: Option<Range<Height>>,
-
-    /// The weight in pounds (lb).
-    pub weight: Option<Range<f32>>,
-}
-
-impl Size {
-    pub fn view<'a, Msg: 'a>(self, name_plural: &str, base_padding: Padding) -> Element<'a, Msg> {
-        let mut content = row![Text::new("Size: ")
-            .font(styles::bold_font())
-            .size(styles::SECTION_FONT_SIZE)];
-
-        let category = match self.category {
-            SizeCategory::Tiny => "Tiny",
-            SizeCategory::Small => "Small",
-            SizeCategory::Medium => "Medium",
-            SizeCategory::Large => "Large",
-            SizeCategory::Gargantuan => "Gargantuan",
-        };
-
-        // View for the size info
-        {
-            let has_height = self.height.is_some();
-            let has_weight = self.weight.is_some();
-
-            let txt = if has_height && has_weight {
-                format!(
-                    "{} stand at around {} tall and weigh about {}. Your size is {}.",
-                    name_plural,
-                    self.height.unwrap().text(),
-                    self.weight.unwrap().text(),
-                    category
-                )
-            } else if has_height && !has_weight {
-                format!(
-                    "{} stand at around {} tall. Your size is {}.",
-                    name_plural,
-                    self.height.unwrap().text(),
-                    category
-                )
-            } else if !has_height && has_weight {
-                format!(
-                    "{} weight about {}. Your size is {}.",
-                    name_plural,
-                    self.weight.unwrap().text(),
-                    category
-                )
-            } else {
-                format!("Your size is {}.", category)
-            };
-
-            content =
-                content.push(container(Text::new(txt)).padding(styles::row_adjusted_padding()));
-        };
-
-        container(content).padding(base_padding).into()
-    }
-}
-
 /// Represents the size category of a character.
 #[derive(Debug, Clone, PartialEq)]
 pub enum SizeCategory {
@@ -185,20 +112,6 @@ pub enum SizeCategory {
     Medium,
     Large,
     Gargantuan,
-}
-
-/// Represents the height of a character in feet and inches.
-#[derive(Debug, PartialEq)]
-pub struct Height {
-    pub feet: f32,
-    pub inches: f32,
-}
-
-impl Height {
-    /// Returns `true` if `inches` is 0.
-    pub fn feet_only(&self) -> bool {
-        self.inches == 0.0
-    }
 }
 
 /// Represents a speed of a character.
