@@ -75,6 +75,15 @@ impl Page {
     }
 }
 
+#[derive(Default, Debug)]
+struct RaceProps {
+    /// The selected race for the character.
+    selected_race: Option<RaceName>,
+
+    /// The selected subrace, if one exists.
+    selected_subrace: Option<Subrace>,
+}
+
 #[allow(unused)]
 #[derive(Default, Debug)]
 pub struct App {
@@ -84,12 +93,7 @@ pub struct App {
     /// The current page being displayed.
     page: Page,
 
-    // TODO: Put each group of bindings/props in a separate struct
-    /// The selected race for the character.
-    selected_race: Option<RaceName>,
-
-    /// The selected subrace, if one exists.
-    selected_subrace: Option<Subrace>,
+    race_props: RaceProps,
 }
 
 impl App {
@@ -97,8 +101,10 @@ impl App {
         Self {
             theme: Theme::default(),
             page: Page::default(),
-            selected_race: None,
-            selected_subrace: None,
+            race_props: RaceProps {
+                selected_race: None,
+                selected_subrace: None,
+            },
         }
     }
 
@@ -118,8 +124,8 @@ impl App {
             }
             Message::NewCharacterButtonPressed(msg) => {
                 self.page = Page::NewCharacter(NewCharacterPage::new(
-                    self.selected_race.clone(),
-                    self.selected_subrace.clone(),
+                    self.race_props.selected_race.clone(),
+                    self.race_props.selected_subrace.clone(),
                 ));
                 match &mut self.page {
                     Page::NewCharacter(new_character_page) => {
@@ -127,11 +133,11 @@ impl App {
                         match command {
                             new_character_page::Command::None => Task::none(),
                             new_character_page::Command::RaceSelected(race_name) => {
-                                self.selected_race = Some(race_name);
+                                self.race_props.selected_race = Some(race_name);
                                 Task::none()
                             }
                             new_character_page::Command::SubraceSelected(subrace) => {
-                                self.selected_subrace = Some(subrace);
+                                self.race_props.selected_subrace = Some(subrace);
                                 Task::none()
                             }
                         }

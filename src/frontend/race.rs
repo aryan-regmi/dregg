@@ -687,8 +687,7 @@ pub enum Action {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Summary {
     pub main: String,
-    pub subsections: HashMap<String, String>, // TODO: Change to Vec<(String, String)> to preserve
-                                              // order
+    pub subsections: Vec<(String, String)>,
 }
 
 impl Summary {
