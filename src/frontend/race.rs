@@ -39,7 +39,7 @@ pub struct Race {
     pub languages: Vec<Language>,
 
     /// The proficiencies the race provides.
-    pub proficiencies: Vec<Choices>,
+    pub proficiencies: Vec<Choices<String>>, // TODO: Replace `String` w/ `Proficiency` struct
 
     /// Subraces that a character may choose.
     pub subraces: Vec<Subrace>,
@@ -316,7 +316,7 @@ pub struct Subrace {
     pub languages: Vec<Language>,
 
     /// The proficiencies the race provides.
-    pub proficiencies: Vec<Choices>,
+    pub proficiencies: Vec<Choices<String>>,
 
     /// A list of traits provided by the subrace.
     pub traits: Vec<RacialTrait>,

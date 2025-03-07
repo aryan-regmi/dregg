@@ -183,15 +183,15 @@ impl LanguageLevel {
 
 /// Represents various choices a character can make.
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum Choices {
+pub enum Choices<T> {
     /// A list of choices out of which only one can be selected.
-    One(Vec<String>),
+    One(Vec<T>),
 
     /// A list of choices from which all are selected.
-    All(Vec<String>),
+    All(Vec<T>),
 }
 
-impl Choices {
+impl Choices<String> {
     pub fn text(&self, header: &str) -> String {
         match self {
             Choices::One(items) => format!(

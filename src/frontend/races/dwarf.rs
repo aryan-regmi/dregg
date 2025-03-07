@@ -89,7 +89,7 @@ fn languages() -> Vec<Language> {
     ]
 }
 
-fn proficiencies() -> Vec<Choices> {
+fn proficiencies() -> Vec<Choices<String>> {
     vec![Choices::One(vec![
         "Smith's tools".into(),
         "Brewer's supplies".into(),
