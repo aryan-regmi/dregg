@@ -1,18 +1,3 @@
-use super::Range;
-
-/// Represents the size info for a character.
-#[derive(Debug)]
-pub struct Size {
-    /// The size category.
-    pub category: SizeCategory,
-
-    /// The height in feet and inches.
-    pub height: Option<Range<Height>>,
-
-    /// The weight in pounds (lb).
-    pub weight: Option<Range<Weight>>,
-}
-
 /// Represents a height in feet and inches.
 #[derive(Debug)]
 pub struct Height {
@@ -24,10 +9,9 @@ pub struct Height {
 #[derive(Debug)]
 pub struct Weight(f32);
 
-
-/// Represents the size category of a character.
+/// Represents the size of a character.
 #[derive(Debug, Clone, PartialEq)]
-pub enum SizeCategory {
+pub enum Size {
     Tiny,
     Small,
     Medium,

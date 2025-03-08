@@ -1,5 +1,3 @@
-// TODO: Update with actual inner types
-//
 /// Represents a proficiency.
 #[derive(Debug)]
 pub struct Proficiency {
@@ -13,6 +11,8 @@ pub struct Proficiency {
     pub context: Option<String>,
 }
 
+// TODO: Update with actual inner types
+//
 /// Represents a type of proficiency.
 #[derive(Debug)]
 pub enum ProficiencyType {

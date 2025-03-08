@@ -16,8 +16,6 @@ pub struct Trait {
     pub tags: Vec<String>,
 }
 
-// TODO: Update with actual inner types
-//
 /// Represents trait effects can have.
 #[derive(Debug)]
 pub enum TraitEffect {
@@ -55,7 +53,7 @@ pub enum Advantage {
     Disadvantage,
 }
 
-// TODO: Fill will rest!
+// TODO: Fill all rest!
 //
 /// Represents the various types of damage.
 #[derive(Debug)]
