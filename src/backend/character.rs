@@ -15,7 +15,7 @@ pub struct Character {
     pub race: Race,
 
     /// The character's class.
-    pub class: Class,
+    pub classes: Vec<Class>,
 
     /// The character's background.
     pub background: Background,

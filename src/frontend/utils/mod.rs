@@ -5,8 +5,6 @@ use iced::{
     Element, Padding,
 };
 
-use super::race::Height;
-
 /// Represents an attribute of a character.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Attribute {
@@ -54,53 +52,6 @@ impl<T: PartialEq> Range<T> {
     /// Returns `true` if the start and end values of the range are the same.
     pub fn is_singular(&self) -> bool {
         self.start == self.end
-    }
-}
-
-impl Range<Height> {
-    /// Converts a height range into a printable string.
-    pub fn text(&self) -> String {
-        // No range
-        if self.is_singular() {
-            let inches_txt = if self.start.feet_only() {
-                String::from("")
-            } else {
-                format!(" and {} inches", self.start.inches)
-            };
-
-            format!("{} feet{}", self.start.feet, inches_txt)
-        }
-        // Range
-        else {
-            let start_inches_txt = if self.start.feet_only() {
-                String::from("")
-            } else {
-                format!(" and {} inches", self.start.inches)
-            };
-            let end_inches_txt = if self.end.feet_only() {
-                String::from("")
-            } else {
-                format!(" and {} inches", self.end.inches)
-            };
-
-            format!(
-                "{} feet{} to {} feet{}",
-                self.start.feet, start_inches_txt, self.end.feet, end_inches_txt
-            )
-        }
-    }
-}
-
-impl Range<f32> {
-    // "{} stand at around {} and about {}. Your size is {}.",
-    //
-    /// Converts a height range into a printable string.
-    pub fn text(&self) -> String {
-        if self.is_singular() {
-            format!("{} pounds", self.start)
-        } else {
-            format!("{} to {} pounds", self.start, self.end)
-        }
     }
 }
 
