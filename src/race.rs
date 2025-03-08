@@ -1,8 +1,6 @@
 use std::fmt::Debug;
 
-use super::{
-    Attribute, Choice, Height, Language, Proficiency, Range, Speed, Summary, Trait, Weight,
-};
+use crate::common::{size::Size, Attribute, Language, Speed, Summary, Trait};
 
 /// Represents a race.
 #[derive(Debug)]
@@ -42,27 +40,4 @@ pub struct Age {
 
     /// The average lifespan of this race.
     pub lifespan: Option<u16>,
-}
-
-/// Represents the size info for a character.
-#[derive(Debug)]
-pub struct Size {
-    /// The size category.
-    pub category: SizeCategory,
-
-    /// The height in feet and inches.
-    pub height: Option<Range<Height>>,
-
-    /// The weight in pounds (lb).
-    pub weight: Option<Range<Weight>>,
-}
-
-/// Represents the size category of a character.
-#[derive(Debug, Clone, PartialEq)]
-pub enum SizeCategory {
-    Tiny,
-    Small,
-    Medium,
-    Large,
-    Gargantuan,
 }

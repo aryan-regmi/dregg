@@ -1,6 +1,6 @@
-use super::{
-    background::Background, class::Class, equipment::Equipment, race::Race, AbilityScores,
-};
+use crate::{common::AbilityScores, equipment::Equipment};
+
+use super::{background::Background, class::Class, race::Race};
 
 /// Represents a character.
 #[derive(Debug)]
