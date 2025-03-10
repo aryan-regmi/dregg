@@ -2,13 +2,21 @@
 
 use iced::{Element, Task, Theme};
 
-use crate::{character::Character, page::Page, views::Component};
+use crate::{character::Character, views::Component};
 
 #[derive(Debug, Clone)]
 pub enum Message {
     MainMenuButtonPressed,
     LoadCharacterButtonPressed,
     NewCharacterButtonPressed,
+}
+
+#[derive(Default, Debug)]
+pub enum Page {
+    #[default]
+    Main,
+    LoadCharacter,
+    NewCharacter,
 }
 
 #[derive(Default, Debug)]
