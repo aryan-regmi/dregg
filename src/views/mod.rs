@@ -1,5 +1,7 @@
 use iced::Element;
 
+pub mod race_view;
+
 /// A type that can be displayed.
 pub trait Component {
     type Message;
