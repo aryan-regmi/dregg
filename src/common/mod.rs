@@ -1,5 +1,6 @@
 #![allow(dead_code)]
 
+pub mod age;
 pub mod attributes;
 pub mod language;
 pub mod proficiency;
@@ -9,6 +10,7 @@ pub mod speed;
 pub mod spell;
 pub mod traits;
 
+pub use age::*;
 pub use attributes::*;
 pub use language::*;
 pub use proficiency::*;

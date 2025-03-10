@@ -40,7 +40,7 @@ pub enum TraitEffect {
     Proficiencies(Choice<Proficiency>),
 
     /// A trait that gives access to a spell.
-    Spell(Choice<Spell>),
+    Spell(Spell),
 }
 
 /// Represents the types of visions.

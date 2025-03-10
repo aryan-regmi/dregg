@@ -1,5 +1,7 @@
 #![allow(dead_code)]
 
+use crate::common::Age;
+
 // TODO: Add rest
 //
 /// Represents a character's background information (such as name, sex, age, background, etc.).
@@ -25,10 +27,6 @@ pub enum Sex {
     Female,
     Other,
 }
-
-/// Represents an age (in years).
-#[derive(Debug)]
-pub struct Age(usize);
 
 /// Represents a background.
 #[derive(Debug)]

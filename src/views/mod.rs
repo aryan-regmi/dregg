@@ -1,7 +1,9 @@
 use iced::Element;
 
+pub mod new_character;
 pub mod page_view;
-pub mod race_view;
+
+pub use new_character::*;
 
 /// A type that can be displayed.
 pub trait Component {
