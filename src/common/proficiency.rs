@@ -11,21 +11,31 @@ pub struct Proficiency {
     pub context: Option<String>,
 }
 
+/// Represents a level of proficiency.
+#[derive(Debug, Default)]
+pub enum ProficiencyLevel {
+    #[default]
+    Proficient,
+    Expertise,
+}
+
 // TODO: Update with actual inner types
 //
 /// Represents a type of proficiency.
 #[derive(Debug)]
 pub enum ProficiencyType {
-    Armor,
+    Armor(ArmorType),
     Weapons,
     Tools,
     SavingThrows,
     Skills,
 }
 
-/// Represents a level of proficiency.
+/// Represents an types of armors.
 #[derive(Debug)]
-pub enum ProficiencyLevel {
-    Proficient,
-    Expertise,
+pub enum ArmorType {
+    Light,
+    Medium,
+    Heavy,
+    Shield,
 }

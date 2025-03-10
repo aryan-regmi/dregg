@@ -53,13 +53,22 @@ pub enum Advantage {
     Disadvantage,
 }
 
-// TODO: Fill all rest!
-//
 /// Represents the various types of damage.
 #[derive(Debug)]
 pub enum DamageType {
+    Acid,
+    Bludgeoning,
+    Cold,
+    Fire,
+    Force,
+    Lightning,
+    Necrotic,
     Piercing,
     Poison,
+    Psychic,
+    Radiant,
+    Slashing,
+    Thunder,
 }
 
 /// Represents the either a resistance or vulnerability to a damage type.
