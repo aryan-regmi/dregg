@@ -1,3 +1,5 @@
+use super::{Attribute, Skills};
+
 /// Represents a proficiency.
 #[derive(Debug)]
 pub struct Proficiency {
@@ -27,15 +29,22 @@ pub enum ProficiencyType {
     Armor(ArmorType),
     Weapons,
     Tools,
-    SavingThrows,
-    Skills,
+    SavingThrows(Attribute),
+    Skills(Skills),
 }
 
 /// Represents an types of armors.
 #[derive(Debug)]
 pub enum ArmorType {
+    /// Light armor.
     Light,
+
+    /// Medium armor.
     Medium,
+
+    /// Heavy armor.
     Heavy,
+
+    /// Shields.
     Shield,
 }

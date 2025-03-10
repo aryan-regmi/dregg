@@ -1,18 +1,18 @@
 #![allow(dead_code)]
 
-pub mod ability_scores;
-pub mod attribute;
+pub mod attributes;
 pub mod language;
 pub mod proficiency;
 pub mod size;
+pub mod skills;
 pub mod speed;
 pub mod traits;
 
-pub use ability_scores::*;
-pub use attribute::*;
+pub use attributes::*;
 pub use language::*;
 pub use proficiency::*;
 pub use size::*;
+pub use skills::*;
 pub use speed::*;
 pub use traits::*;
 
