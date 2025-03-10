@@ -1,4 +1,4 @@
-use super::{Attribute, Choice, Proficiency};
+use super::{Attribute, Choice, Proficiency, Spell};
 
 /// Represents a trait.
 #[derive(Debug)]
@@ -12,11 +12,14 @@ pub struct Trait {
     /// The effects the trait provides.
     pub effects: Vec<TraitEffect>,
 
+    /// The required level to gain access to the trait.
+    pub required_level: Option<u8>,
+
     /// Tags the trait belongs under.
     pub tags: Vec<String>,
 }
 
-/// Represents trait effects can have.
+/// Represents effects traits can have.
 #[derive(Debug)]
 pub enum TraitEffect {
     // NOTE: https://www.reddit.com/r/dndnext/comments/ourpif/dnd5e_light_and_vision_quick_reference_chart/?rdt=62795
@@ -35,6 +38,9 @@ pub enum TraitEffect {
 
     /// A trait that effects the proficiencies of the character.
     Proficiencies(Choice<Proficiency>),
+
+    /// A trait that gives access to a spell.
+    Spell(Choice<Spell>),
 }
 
 /// Represents the types of visions.

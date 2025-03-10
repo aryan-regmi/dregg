@@ -6,6 +6,7 @@ pub mod proficiency;
 pub mod size;
 pub mod skills;
 pub mod speed;
+pub mod spell;
 pub mod traits;
 
 pub use attributes::*;
@@ -14,6 +15,7 @@ pub use proficiency::*;
 pub use size::*;
 pub use skills::*;
 pub use speed::*;
+pub use spell::*;
 pub use traits::*;
 
 pub trait RangeTrait<T> {
@@ -66,4 +68,24 @@ pub enum Choice<T> {
 
     /// A single choice.
     Single(T),
+}
+
+/// Represents a die.
+#[derive(Debug)]
+pub enum Die {
+    D4,
+    D6,
+    D8,
+    D10,
+    D12,
+    D20,
+    D100,
+}
+
+/// Represents a type of action.
+#[derive(Debug)]
+pub enum Action {
+    Action,
+    BonusAction,
+    Reaction,
 }
