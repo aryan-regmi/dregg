@@ -5,6 +5,8 @@ use iced::{
     Element, Task, Theme,
 };
 
+use crate::character::Character;
+
 #[derive(Debug, Clone)]
 pub enum Message {
     MainMenuButtonPressed,
@@ -13,7 +15,7 @@ pub enum Message {
 }
 
 #[derive(Default, Debug)]
-enum Page {
+pub enum Page {
     #[default]
     Main,
     LoadCharacter,
@@ -33,14 +35,14 @@ pub struct App {
 
     /// The current page being displayed.
     page: Page,
+
+    /// The state of the app.
+    state: Character,
 }
 
 impl App {
     pub fn new() -> Self {
-        Self {
-            theme: Theme::default(),
-            page: Page::default(),
-        }
+        Self::default()
     }
 
     pub fn title(&self) -> String {
