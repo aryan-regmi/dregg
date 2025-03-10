@@ -1,37 +1,14 @@
 #![allow(dead_code)]
 
-use iced::{
-    widget::{column, container},
-    Element, Task, Theme,
-};
+use iced::{Element, Task, Theme};
 
-use crate::{character::Character, views::Component};
+use crate::{character::Character, page::Page, views::Component};
 
 #[derive(Debug, Clone)]
 pub enum Message {
     MainMenuButtonPressed,
     LoadCharacterButtonPressed,
     NewCharacterButtonPressed,
-}
-
-#[derive(Default, Debug)]
-pub enum Page {
-    #[default]
-    Main,
-    LoadCharacter,
-    NewCharacter,
-}
-
-impl Component for Page {
-    type Message = Message;
-    type Context = ();
-    type Command = ();
-
-    fn view(&self, _ctx: Self::Context) -> Element<Self::Message> {
-        container(column![]).into()
-    }
-
-    fn update(&mut self, _message: Self::Message) -> Self::Command {}
 }
 
 #[derive(Default, Debug)]

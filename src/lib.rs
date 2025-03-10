@@ -4,6 +4,7 @@ pub mod character;
 pub mod class;
 pub mod common;
 pub mod equipment;
+pub mod page;
 pub mod race;
 pub mod views;
 
