@@ -30,7 +30,7 @@ pub enum TraitEffect {
     /// A trait that effects the saving throws of the character.
     SavingThrows {
         advantage: Advantage,
-        attribute: Attribute,
+        kind: SavingThrowsType,
     },
 
     /// A trait that effects the resistances and vulnerabilities of the character.
@@ -44,6 +44,9 @@ pub enum TraitEffect {
 
     /// A trait that provides some type of action.
     Action { kind: Action, effects: Vec<Self> },
+
+    /// A trait that provides increased hit points.
+    HpIncrease(HpIncrease),
 }
 
 /// Represents the types of visions.
@@ -53,6 +56,13 @@ pub enum Vision {
     Darkvision(u16),
     Truesight(u16),
     DevilsSight(u16),
+}
+
+/// Represents a type of saving throw.
+#[derive(Debug, Clone)]
+pub enum SavingThrowsType {
+    Attribute(Attribute),
+    Damage(DamageType),
 }
 
 /// Represents advantage or disadvantage.
@@ -85,4 +95,14 @@ pub enum DamageType {
 pub enum Resistance {
     Resistance(DamageType),
     Vulnerability(DamageType),
+}
+
+/// Represents an increase in hit points.
+#[derive(Debug, Clone)]
+pub enum HpIncrease {
+    /// Increase the max hit points.
+    Max(u16),
+
+    /// Increase the max hit points every level.
+    PerLevel(u16),
 }

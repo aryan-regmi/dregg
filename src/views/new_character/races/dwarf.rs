@@ -1,8 +1,10 @@
 use crate::{
-    common::{Age, Choice, Height, Range, RangeTrait, Size, Speed, Weight, ASI},
-    race::Race,
+    common::{
+        Advantage, Age, ArmorType, ArtisansTools, Choice, DamageType, Height, HpIncrease, Language, LanguageLevel, Proficiency, ProficiencyLevel, ProficiencyType, Range, RangeTrait, SavingThrowsType, Size, Skills, Speed, ToolType, Trait, TraitEffect, WeaponType, Weight, ASI
+    },
     views::{
-        race_component::{AgeInfo, RaceComponent, SizeInfo},
+        race_component::{AgeInfo, RaceComponent, SizeInfo, SubraceComponent},
+        traits::darkvision,
         Summary,
     },
 };
@@ -12,29 +14,39 @@ pub fn dwarf() -> RaceComponent {
         name: "Dwarf".into(),
         name_plural: "Dwarves".into(),
         summary: summary(),
-        asi: Some(Choice::Single(ASI::Constitution(2))),
+        asi: Some(vec![ASI::Constitution(2)]),
         age: AgeInfo {
             adult: Age(50),
             lifespan: Age(300),
         },
-        size: SizeInfo {
-            category: Size::Medium,
-            height: Some(Range {
-                start: Height {
-                    feet: 4.0,
-                    inches: 0.0,
-                },
-                end: Height {
-                    feet: 5.0,
-                    inches: 0.0,
-                },
-            }),
-            weight: Some(Range::singular(Weight(150.0))),
-        },
+        size: size(),
         speed: vec![Speed::Walking(25)],
-        traits: vec![],
-        languages: Some(vec![]),
-        subrace_options: Some(vec![]),
+        traits: vec![
+            darkvision(60),
+            dwarven_resilience(),
+            dwarven_combat_training(),
+            tool_proficiency(),
+            stonecunning(),
+        ],
+        languages: Some(languages()),
+        subrace_options: Some(vec![hill_dwarf(), mountain_dwarf()]),
+    }
+}
+
+fn size() -> SizeInfo {
+    SizeInfo {
+        category: Size::Medium,
+        height: Some(Range {
+            start: Height {
+                feet: 4.0,
+                inches: 0.0,
+            },
+            end: Height {
+                feet: 5.0,
+                inches: 0.0,
+            },
+        }),
+        weight: Some(Range::singular(Weight(150.0))),
     }
 }
 
@@ -63,5 +75,168 @@ fn summary() -> Summary {
                 "A dwarf’s name is granted by a clan elder, in accordance with tradition. Every proper dwarven name has been used and reused down through the generations. A dwarf’s name belongs to the clan, not to the individual. A dwarf who misuses or brings shame to a clan name is stripped of the name and forbidden by law to use any dwarven name in its place.\nMale Names: Adrik, Alberich, Baern, Barendd, Brottor, Bruenor, Dain, Darrak, Delg, Eberk, Einkil, Fargrim, Flint, Gardain, Harbek, Kildrak, Morgran, Orsik, Oskar, Rangrim, Rurik, Taklinn, Thoradin, Thorin, Tordek, Traubon, Travok, Ulfgar, Veit, Vondal\nFemale Names: Amber, Artin, Audhild, Bardryn, Dagnal, Diesa, Eldeth, Falkrunn, Finellen, Gunnloda, Gurdis, Helja, Hlin, Kathra, Kristryd, Ilde, Liftrasa, Mardred, Riswynn, Sannl, Torbera, Torgga, Vistra\nClan Names: Balderk, Battlehammer, Brawnanvil, Dankil, Fireforge, Frostbeard, Gorunn, Holderhek, Ironfist, Loderr, Lutgehr, Rumnaheim, Strakeln, Torunn, Ungart".into()
             ),
         ],
+    }
+}
+
+fn dwarven_resilience() -> Trait {
+    Trait {
+        name: "Dwarven Resilience".into(),
+        summary: "You have advantage on saving throws against poison, and you have resistance against poison damage.".into(),
+        effects: vec![
+            TraitEffect::SavingThrows {
+                advantage:Advantage::Advantage,
+                kind: SavingThrowsType::Damage(DamageType::Poison) 
+            }
+        ],
+        required_level: None,
+        tags: vec!["resistance", "advantage", "poison"].iter().map(|s| String::from(*s)).collect(),
+    }
+}
+
+fn dwarven_combat_training() -> Trait {
+    Trait {
+        name: "Dwarven Combat Training".into(),
+        summary: "You have proficiency with the battleaxe, handaxe, light hammer, and warhammer."
+            .into(),
+        effects: vec![TraitEffect::Proficiencies(Choice::AllOf(vec![
+            Proficiency {
+                level: ProficiencyLevel::Proficient,
+                kind: ProficiencyType::Weapons(WeaponType::Battleaxe),
+                context: None,
+            },
+            Proficiency {
+                level: ProficiencyLevel::Proficient,
+                kind: ProficiencyType::Weapons(WeaponType::LightHammer),
+                context: None,
+            },
+            Proficiency {
+                level: ProficiencyLevel::Proficient,
+                kind: ProficiencyType::Weapons(WeaponType::Warhammer),
+                context: None,
+            },
+        ]))],
+        required_level: None,
+        tags: vec!["proficiency", "weapons"]
+            .iter()
+            .map(|s| String::from(*s))
+            .collect(),
+    }
+}
+
+fn tool_proficiency() -> Trait {
+    Trait {
+        name: "Tool Proficiency".into(),
+        summary: "You gain proficiency with the artisan’s tools of your choice: smith’s tools, brewer’s supplies, or mason’s tools.".into(),
+        effects: vec![
+            TraitEffect::Proficiencies(Choice::OneOf(vec![
+                    Proficiency { 
+                        level: ProficiencyLevel::Proficient,
+                        kind: ProficiencyType::Tools(ToolType::ArtisansTools(ArtisansTools::SmithsTools)),
+                        context: None 
+                    },
+                    Proficiency { 
+                        level: ProficiencyLevel::Proficient,
+                        kind: ProficiencyType::Tools(ToolType::ArtisansTools(ArtisansTools::BrewersSupplies)),
+                        context: None 
+                    },
+                    Proficiency { 
+                        level: ProficiencyLevel::Proficient,
+                        kind: ProficiencyType::Tools(ToolType::ArtisansTools(ArtisansTools::MasonsTools)),
+                        context: None 
+                    },
+            ]))
+        ],
+        required_level: None,
+        tags: vec!["proficiency", "tools"].iter().map(|s| String::from(*s)).collect(),
+    }
+}
+
+fn stonecunning() -> Trait {
+    Trait {
+        name: "Tool Proficiency".into(),
+        summary: "You gain proficiency with the artisan’s tools of your choice: smith’s tools, brewer’s supplies, or mason’s tools.".into(),
+        effects: vec![
+            TraitEffect::Proficiencies(Choice::Single(Proficiency { 
+                level: ProficiencyLevel::Expertise,
+                kind: ProficiencyType::Skills(Skills::History),
+                context: Some("Related to the origin of stonework".into()) 
+            }))
+        ],
+        required_level: None,
+        tags: vec!["proficiency", "history", "intelligence", "history"].iter().map(|s| String::from(*s)).collect(),
+    }
+}
+
+fn languages() -> Vec<Language> {
+    vec![
+        Language {
+            name: "Common".into(),
+            levels: vec![
+                LanguageLevel::Speak,
+                LanguageLevel::Read,
+                LanguageLevel::Write,
+            ],
+        },
+        Language {
+            name: "Dwarvish".into(),
+            levels: vec![
+                LanguageLevel::Speak,
+                LanguageLevel::Read,
+                LanguageLevel::Write,
+            ],
+        },
+    ]
+}
+
+fn hill_dwarf() -> SubraceComponent {
+    let summary = Summary { 
+        main: "As a hill dwarf, you have keen senses, deep intuition, and remarkable resilience. The gold dwarves of Faerûn in their mighty southern kingdom are hill dwarves, as are the exiled Neidar and the debased Klar of Krynn in the Dragonlance setting.".into(),
+        subsections: vec![] 
+    };
+    
+    SubraceComponent {
+        name: "Hill Dwarf".into(),
+        summary,
+        asi: Some(vec![ASI::Wisdom(1)]),
+        languages: None,
+        traits: vec![Trait { 
+            name: "Dwarven Toughness".into(),
+            summary: "Your hit point maximum increases by 1, and it increases by 1 every time you gain a level.".into(),
+            effects: vec![TraitEffect::HpIncrease(HpIncrease::Max(1)), TraitEffect::HpIncrease(HpIncrease::PerLevel(1))],
+            required_level: None,
+            tags: vec!["hp", "hit points"].iter().map(|s| String::from(*s)).collect(),
+        }],
+    }
+}
+
+fn mountain_dwarf() -> SubraceComponent {
+    let summary = Summary { 
+        main: "As a mountain dwarf, you’re strong and hardy, accustomed to a difficult life in rugged terrain. You’re probably on the tall side (for a dwarf), and tend toward lighter coloration. The shield dwarves of northern Faerûn, as well as the ruling Hylar clan and the noble Daewar clan of Dragonlance, are mountain dwarves.s a hill dwarf, you have keen senses, deep intuition, and remarkable resilience. The gold dwarves of Faerûn in their mighty southern kingdom are hill dwarves, as are the exiled Neidar and the debased Klar of Krynn in the Dragonlance setting.".into(),
+        subsections: vec![] 
+    };
+    
+    SubraceComponent {
+        name: "Mountain Dwarf".into(),
+        summary,
+        asi: Some(vec![ASI::Strength(2)]),
+        languages: None,
+        traits: vec![Trait { 
+            name: "Dwarven Armor Training".into(),
+            summary: "You have proficiency with light and medium armor.".into(),
+            effects: vec![TraitEffect::Proficiencies(Choice::AllOf(vec![
+                    Proficiency { 
+                        level: ProficiencyLevel::Proficient,
+                        kind: ProficiencyType::Armor(ArmorType::Light),
+                        context: None,
+                    },
+                    Proficiency { 
+                        level: ProficiencyLevel::Proficient,
+                        kind: ProficiencyType::Armor(ArmorType::Medium),
+                        context: None,
+                    },
+            ]))],
+            required_level: None,
+            tags: vec!["hp", "hit points"].iter().map(|s| String::from(*s)).collect(),
+        }],
     }
 }

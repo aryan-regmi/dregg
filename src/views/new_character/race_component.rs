@@ -1,8 +1,7 @@
 #![allow(dead_code)]
 
 use crate::{
-    common::{Age, Choice, Height, Language, Range, Size, Speed, Trait, Weight, ASI},
-    race::Subrace,
+    common::{Age, Height, Language, Range, Size, Speed, Trait, Weight, ASI},
     views::common::Summary,
 };
 
@@ -18,7 +17,7 @@ pub struct RaceComponent {
     pub summary: Summary,
 
     /// The ability score increases provided by the race.
-    pub asi: Option<Choice<ASI>>,
+    pub asi: Option<Vec<ASI>>,
 
     /// The age info of the race.
     pub age: AgeInfo,
@@ -36,7 +35,7 @@ pub struct RaceComponent {
     pub languages: Option<Vec<Language>>,
 
     /// Subraces that a character may choose.
-    pub subrace_options: Option<Vec<Subrace>>,
+    pub subrace_options: Option<Vec<SubraceComponent>>,
 }
 
 /// Represents the defining ages of a race.
@@ -60,4 +59,22 @@ pub struct SizeInfo {
 
     /// The weight in pounds (lb).
     pub weight: Option<Range<Weight>>,
+}
+
+#[derive(Debug)]
+pub struct SubraceComponent {
+    /// The name of the subrace.
+    pub name: String,
+
+    /// The description of the race.
+    pub summary: Summary,
+
+    /// The ability score increases provided by the subrace.
+    pub asi: Option<Vec<ASI>>,
+
+    /// The languages provided by the subrace.
+    pub languages: Option<Vec<Language>>,
+
+    /// The traits provided by the subrace.
+    pub traits: Vec<Trait>,
 }
