@@ -3,7 +3,7 @@ use std::fmt::Debug;
 use crate::common::{size::Size, Language, Speed, Trait, ASI};
 
 /// Represents a race.
-#[derive(Debug)]
+#[derive(Debug, Clone, Default)]
 pub struct Race {
     /// The name of the race.
     pub name: String,
@@ -27,7 +27,7 @@ pub struct Race {
     pub subrace: Option<Subrace>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Subrace {
     /// The name of the subrace.
     pub name: String,

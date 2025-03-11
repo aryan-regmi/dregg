@@ -1,5 +1,5 @@
 /// Represents a speed of a character.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Speed {
     Walking(u16),
     Flying(u16),

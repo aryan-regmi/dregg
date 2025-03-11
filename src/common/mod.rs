@@ -1,6 +1,5 @@
 #![allow(dead_code)]
 
-pub mod age;
 pub mod attributes;
 pub mod language;
 pub mod proficiency;
@@ -10,7 +9,6 @@ pub mod speed;
 pub mod spell;
 pub mod traits;
 
-pub use age::*;
 pub use attributes::*;
 pub use language::*;
 pub use proficiency::*;
@@ -23,14 +21,17 @@ pub use traits::*;
 pub trait RangeTrait<T> {
     fn start(&self) -> T;
     fn end(&self) -> T;
+    fn singular(value: T) -> Self;
 }
 
 /// Represents a range of possible values.
 #[derive(Debug)]
 pub struct Range<T> {
-    start: T,
-    end: T,
+    pub start: T,
+    pub end: T,
 }
+
+impl<T> Range<T> {}
 
 impl<T: Clone> RangeTrait<T> for Range<T> {
     fn start(&self) -> T {
@@ -40,13 +41,20 @@ impl<T: Clone> RangeTrait<T> for Range<T> {
     fn end(&self) -> T {
         self.end.clone()
     }
+
+    fn singular(value: T) -> Self {
+        Self {
+            start: value.clone(),
+            end: value,
+        }
+    }
 }
 
 /// Represents a range of values under the `start` value and over the `end` value.
 #[derive(Debug)]
 pub struct UnderOver<T> {
-    under: T,
-    over: T,
+    pub under: T,
+    pub over: T,
 }
 
 impl<T: Clone> RangeTrait<T> for UnderOver<T> {
@@ -56,6 +64,13 @@ impl<T: Clone> RangeTrait<T> for UnderOver<T> {
 
     fn end(&self) -> T {
         self.over.clone()
+    }
+
+    fn singular(value: T) -> Self {
+        Self {
+            under: value.clone(),
+            over: value,
+        }
     }
 }
 
@@ -73,7 +88,7 @@ pub enum Choice<T> {
 }
 
 /// Represents a die.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Die {
     D4,
     D6,
@@ -85,9 +100,13 @@ pub enum Die {
 }
 
 /// Represents a type of action.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Action {
     Action,
     BonusAction,
     Reaction,
 }
+
+/// Represents an age (in years).
+#[derive(Debug, Default)]
+pub struct Age(pub usize);

@@ -1,8 +1,10 @@
 use iced::Element;
 
+pub mod common;
 pub mod new_character;
 pub mod page_view;
 
+pub use common::*;
 pub use new_character::*;
 
 /// A type that can be displayed.

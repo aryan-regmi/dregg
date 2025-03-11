@@ -5,7 +5,7 @@ use crate::common::Age;
 // TODO: Add rest
 //
 /// Represents a character's background information (such as name, sex, age, background, etc.).
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct BackgroundInfo {
     /// The character's name.
     pub name: String,
@@ -21,15 +21,16 @@ pub struct BackgroundInfo {
 }
 
 /// Represents a sex.
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub enum Sex {
+    #[default]
     Male,
     Female,
     Other,
 }
 
 /// Represents a background.
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct Background {
     // TODO: Implement!
 }

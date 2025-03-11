@@ -5,7 +5,7 @@ use std::fmt::Debug;
 use crate::common::{ArmorType, Weight};
 
 /// Represents a character's equipment.
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct Equipment {
     /// The amount of money a character has.
     pub money: Vec<Money>,

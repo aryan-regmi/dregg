@@ -1,5 +1,5 @@
 /// Represents the various available skills.
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub enum Skills {
     Acrobatics,
     AnimalHandling,
