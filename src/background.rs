@@ -1,5 +1,3 @@
-#![allow(dead_code)]
-
 use crate::common::Age;
 
 // TODO: Add rest

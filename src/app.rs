@@ -1,10 +1,8 @@
-#![allow(dead_code)]
-
 use iced::{Element, Task, Theme};
 
 use crate::{
     character::Character,
-    views::{new_character_component, Component, NewCharacterComponent, RaceComponent},
+    views::{new_character_component, Component, NewCharacterComponent},
 };
 
 #[derive(Debug, Clone)]
@@ -25,7 +23,7 @@ pub enum Page {
 #[derive(Default, Debug)]
 pub struct App {
     /// The theme of the app.
-    theme: Theme, // TODO: Implement a theme picker in the `Main` page!
+    _theme: Theme, // TODO: Implement a theme picker in the `Main` page!
 
     /// The current page being displayed.
     page: Page,
@@ -78,8 +76,7 @@ impl Component for App {
                         Task::none()
                     }
                     new_character_component::Command::RaceSelected(race) => {
-                        let race_component: RaceComponent = race.into();
-                        self.state.race = race_component.into();
+                        self.state.race = race;
                         self.page =
                             Page::NewCharacter(NewCharacterComponent::new(&self.state.race));
                         Task::none()
