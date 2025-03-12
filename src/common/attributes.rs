@@ -1,5 +1,5 @@
 /// Represents an attribute.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Attribute {
     Strength,
     Dexterity,
@@ -10,7 +10,7 @@ pub enum Attribute {
 }
 
 /// Represents an ability score increase.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum ASI {
     Any(u8),
     Strength(u8),

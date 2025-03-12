@@ -1,7 +1,7 @@
 use super::{Attribute, Skills};
 
 /// Represents a proficiency.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Proficiency {
     /// The proficiency level (Proficient or Expertise).
     pub level: ProficiencyLevel,
@@ -14,7 +14,7 @@ pub struct Proficiency {
 }
 
 /// Represents a level of proficiency.
-#[derive(Debug, Default, Clone)]
+#[derive(Debug, Default, Clone, PartialEq)]
 pub enum ProficiencyLevel {
     #[default]
     Proficient,
@@ -22,7 +22,7 @@ pub enum ProficiencyLevel {
 }
 
 /// Represents a type of proficiency.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum ProficiencyType {
     Armor(ArmorType),
     Weapons(WeaponType),
@@ -32,7 +32,7 @@ pub enum ProficiencyType {
 }
 
 /// Represents types of armors.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum ArmorType {
     /// Light armor.
     Light,
@@ -48,7 +48,7 @@ pub enum ArmorType {
 }
 
 /// Represents types of weapons.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum WeaponType {
     SimpleMelee,
     SimpleRanged,
@@ -94,7 +94,7 @@ pub enum WeaponType {
 }
 
 /// Represents types of tools.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum ToolType {
     ArtisansTools(ArtisansTools),
     DisguiseKit,
@@ -108,7 +108,7 @@ pub enum ToolType {
 }
 
 /// Represents artisan tools.
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum ArtisansTools {
     AlchemistsSupplies,
     BrewersSupplies,
@@ -130,7 +130,7 @@ pub enum ArtisansTools {
 }
 
 /// Represents gaming sets.
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum GamingSet {
     DiceSet,
     DragonchessSet,
@@ -139,7 +139,7 @@ pub enum GamingSet {
 }
 
 /// Represents musical instruments.
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum MusicalInstrument {
     Bagpipes,
     Drum,

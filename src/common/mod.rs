@@ -25,7 +25,7 @@ pub trait RangeTrait<T> {
 }
 
 /// Represents a range of possible values.
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Range<T> {
     pub start: T,
     pub end: T,
@@ -88,7 +88,7 @@ pub enum Choice<T> {
 }
 
 /// Represents a die.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Die {
     D4,
     D6,
@@ -100,7 +100,7 @@ pub enum Die {
 }
 
 /// Represents a type of action.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Action {
     Action,
     BonusAction,
@@ -108,5 +108,5 @@ pub enum Action {
 }
 
 /// Represents an age (in years).
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone, PartialEq)]
 pub struct Age(pub usize);

@@ -1,12 +1,12 @@
 /// Represents a height in feet and inches.
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Height {
     pub feet: f32,
     pub inches: f32,
 }
 
 /// Represents a height in pounds.
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Weight(pub f32);
 
 /// Represents the size of a character.

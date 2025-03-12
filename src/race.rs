@@ -1,9 +1,9 @@
-use std::fmt::Debug;
+use std::fmt::{Debug, Display};
 
 use crate::common::{size::Size, Language, Speed, Trait, ASI};
 
 /// Represents a race.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, PartialEq)]
 pub struct Race {
     /// The name of the race.
     pub name: String,
@@ -27,7 +27,13 @@ pub struct Race {
     pub subrace: Option<Subrace>,
 }
 
-#[derive(Debug, Clone)]
+impl Display for Race {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(&self.name)
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
 pub struct Subrace {
     /// The name of the subrace.
     pub name: String,

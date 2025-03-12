@@ -1,14 +1,16 @@
 #![allow(dead_code)]
 
 use iced::{
-    widget::{button, column, container, pane_grid, PaneGrid, Text},
+    widget::{button, column, container, pane_grid, pick_list, scrollable, PaneGrid, Text},
     Element, Length,
 };
 
 use crate::{
     race::Race,
-    views::{common, Component},
+    views::{common, races, Component},
 };
+
+use super::Races;
 
 #[derive(Clone, Debug, Default)]
 pub enum Message {
@@ -18,6 +20,9 @@ pub enum Message {
 
     /// Button pressed to choose a class.
     ClassButtonPressed,
+
+    /// Race is selected.
+    RaceSelected(Races),
 }
 
 impl Into<MenuOpt> for Message {
@@ -25,6 +30,7 @@ impl Into<MenuOpt> for Message {
         match self {
             Message::RaceButtonPressed => MenuOpt::Race,
             Message::ClassButtonPressed => MenuOpt::Class,
+            Message::RaceSelected(_) => unreachable!("Not a menu option"),
         }
     }
 }
@@ -32,6 +38,7 @@ impl Into<MenuOpt> for Message {
 #[derive(Debug)]
 pub enum Command {
     None,
+    RaceSelected(Races),
 }
 
 /// Represents the menu and content panes of this page.
@@ -62,6 +69,9 @@ pub struct NewCharacterComponent {
 
     /// Currently selected menu option.
     selected_menu_opt: MenuOpt,
+
+    /// Currently selected race info.
+    selected_race: Option<Races>,
 }
 
 impl NewCharacterComponent {
@@ -76,10 +86,18 @@ impl NewCharacterComponent {
             .expect("Failed to split pane");
         grid.resize(split, 0.2);
 
+        // Determine the selcted race
+        let selected_race: Option<Races> = if !race_state.name.is_empty() {
+            Some(race_state.into())
+        } else {
+            None
+        };
+
         Self {
             panes: grid,
             race_state: race_state.clone(),
             selected_menu_opt: Default::default(),
+            selected_race,
         }
     }
 }
@@ -99,7 +117,7 @@ impl Component for NewCharacterComponent {
                 ],
 
                 // The content pane
-                Pane::Content => column![],
+                Pane::Content => column![self.content_pane_view()],
             })
             .style(styles::pane_grid)
         });
@@ -115,6 +133,12 @@ impl Component for NewCharacterComponent {
             Message::ClassButtonPressed => {
                 self.selected_menu_opt = MenuOpt::Class;
                 Command::None
+            }
+            Message::RaceSelected(race) => {
+                self.selected_race = Some(race);
+                // let race: RaceComponent = race.into();
+                // self.race_state = race.into();
+                Command::RaceSelected(race)
             }
         }
     }
@@ -139,6 +163,32 @@ impl NewCharacterComponent {
         .padding(5)
         .center_x(Length::Fill)
         .into()
+    }
+
+    /// Displays the contents each option/
+    fn content_pane_view(&self) -> Element<Message> {
+        match self.selected_menu_opt {
+            MenuOpt::Race => column![self.races_list(), self.race_info()].into(),
+            MenuOpt::Class => column![].into(),
+        }
+    }
+
+    /// Create a dropdown list of all the races.
+    fn races_list(&self) -> Element<Message> {
+        let races = pick_list(
+            &races::Races::ALL[..],
+            self.selected_race.as_ref(),
+            Message::RaceSelected,
+        );
+        container(scrollable(column![races]))
+            .padding(5)
+            .center(Length::Fill)
+            .into()
+    }
+
+    /// Displays the info of the selected race.
+    fn race_info(&self) -> Element<Message> {
+        container(column![]).into()
     }
 }
 

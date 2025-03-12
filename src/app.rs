@@ -4,7 +4,7 @@ use iced::{Element, Task, Theme};
 
 use crate::{
     character::Character,
-    views::{new_character_component, Component, NewCharacterComponent},
+    views::{new_character_component, Component, NewCharacterComponent, RaceComponent},
 };
 
 #[derive(Debug, Clone)]
@@ -75,6 +75,13 @@ impl Component for App {
                 match command {
                     new_character_component::Command::None => {
                         self.page = Page::NewCharacter(page);
+                        Task::none()
+                    }
+                    new_character_component::Command::RaceSelected(race) => {
+                        let race_component: RaceComponent = race.into();
+                        self.state.race = race_component.into();
+                        self.page =
+                            Page::NewCharacter(NewCharacterComponent::new(&self.state.race));
                         Task::none()
                     }
                 }

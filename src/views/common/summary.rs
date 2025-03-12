@@ -1,5 +1,5 @@
 /// Represents a summary/description.
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Summary {
     /// The main summary.
     pub main: String,

@@ -1,11 +1,14 @@
 #![allow(dead_code)]
 
+use std::fmt::Display;
+
 use crate::{
     common::{Age, Height, Language, Range, Size, Speed, Trait, Weight, ASI},
+    race::Race,
     views::common::Summary,
 };
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct RaceComponent {
     /// The name of the race.
     pub name: String,
@@ -38,8 +41,28 @@ pub struct RaceComponent {
     pub subrace_options: Option<Vec<SubraceComponent>>,
 }
 
+impl Display for RaceComponent {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(&self.name)
+    }
+}
+
+impl From<RaceComponent> for Race {
+    fn from(value: RaceComponent) -> Self {
+        Self {
+            name: value.name,
+            asi: value.asi,
+            size: value.size.category,
+            speed: value.speed,
+            languages: value.languages,
+            traits: value.traits,
+            subrace: None,
+        }
+    }
+}
+
 /// Represents the defining ages of a race.
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct AgeInfo {
     /// The age at which a character is considered an adult.
     pub adult: Age,
@@ -49,7 +72,7 @@ pub struct AgeInfo {
 }
 
 /// Represents the size info for a race.
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct SizeInfo {
     /// The size category.
     pub category: Size,
@@ -61,7 +84,7 @@ pub struct SizeInfo {
     pub weight: Option<Range<Weight>>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct SubraceComponent {
     /// The name of the subrace.
     pub name: String,
