@@ -2,9 +2,23 @@ use std::fmt::Display;
 
 use crate::{
     common::{Age, Height, Language, Range, Size, Speed, Trait, Weight, ASI},
-    race::Race,
-    views::common::Summary,
+    race::{Race, Subrace},
+    views::{common::Summary, Component},
 };
+
+use super::dwarf;
+
+#[derive(Clone, Debug)]
+pub enum Message {
+    NoSubraceSelected,
+    SubraceSelected,
+}
+
+#[derive(Debug)]
+pub enum Command {
+    None,
+    SubraceSelected(Subrace),
+}
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct RaceComponent {
@@ -39,6 +53,22 @@ pub struct RaceComponent {
     pub subrace_options: Option<Vec<SubraceComponent>>,
 }
 
+impl Component for RaceComponent {
+    type Message = Message;
+
+    type Context = ();
+
+    type Command = Command;
+
+    fn view(&self, _ctx: Self::Context) -> iced::Element<Self::Message> {
+        todo!()
+    }
+
+    fn update(&mut self, _message: Self::Message) -> Self::Command {
+        todo!()
+    }
+}
+
 impl Display for RaceComponent {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.write_str(&self.name)
@@ -55,6 +85,16 @@ impl From<RaceComponent> for Race {
             languages: value.languages,
             traits: value.traits,
             subrace: None,
+        }
+    }
+}
+
+impl From<Race> for RaceComponent {
+    fn from(value: Race) -> Self {
+        // NOTE: Keep in sync with each added race!
+        match value.name.as_str() {
+            "Dwarf" => dwarf::dwarf(),
+            _ => unreachable!("Invalid race type"),
         }
     }
 }

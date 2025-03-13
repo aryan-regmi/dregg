@@ -8,6 +8,8 @@ use crate::{
     views::{common, races, Component},
 };
 
+use super::{race_component, RaceComponent};
+
 #[derive(Clone, Debug, Default)]
 pub enum Message {
     /// Button pressed to choose a race.
@@ -18,7 +20,7 @@ pub enum Message {
     ClassButtonPressed,
 
     /// Race is selected.
-    RaceSelected(Race),
+    RaceSelected((Race, race_component::Message)),
 }
 
 impl Into<MenuOpt> for Message {
@@ -65,8 +67,6 @@ pub struct NewCharacterComponent {
 
     /// Currently selected menu option.
     selected_menu_opt: MenuOpt,
-    // /// Currently selected race info.
-    // selected_race: Option<Race>,
 }
 
 impl NewCharacterComponent {
@@ -81,18 +81,10 @@ impl NewCharacterComponent {
             .expect("Failed to split pane");
         grid.resize(split, 0.2);
 
-        // Determine the selcted race
-        // let selected_race: Option<Races> = if !race_state.name.is_empty() {
-        //     Some(race_state.into())
-        // } else {
-        //     None
-        // };
-
         Self {
             panes: grid,
             race_state: race_state.clone(),
             selected_menu_opt: Default::default(),
-            // selected_race,
         }
     }
 }
@@ -129,10 +121,15 @@ impl Component for NewCharacterComponent {
                 self.selected_menu_opt = MenuOpt::Class;
                 Command::None
             }
-            Message::RaceSelected(race) => {
-                // self.selected_race = Some(race);
-                // let race: RaceComponent = race.into();
-                // self.race_state = race.into();
+            Message::RaceSelected((race, msg)) => {
+                let mut race_component: RaceComponent = race.clone().into();
+                let cmd = race_component.update(msg);
+                match cmd {
+                    race_component::Command::SubraceSelected(subrace) => {
+                        self.race_state.subrace = Some(subrace);
+                    }
+                    race_component::Command::None => {}
+                }
                 Command::RaceSelected(race)
             }
         }
@@ -170,11 +167,9 @@ impl NewCharacterComponent {
 
     /// Create a dropdown list of all the races.
     fn races_list(&self) -> Element<Message> {
-        let races = pick_list(
-            races::all_races(),
-            Some(self.race_state.clone()),
-            Message::RaceSelected,
-        );
+        let races = pick_list(races::all_races(), Some(self.race_state.clone()), |v| {
+            Message::RaceSelected((v, race_component::Message::NoSubraceSelected))
+        });
         container(scrollable(column![races]))
             .padding(5)
             .center(Length::Fill)
