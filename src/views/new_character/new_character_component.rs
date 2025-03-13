@@ -67,6 +67,9 @@ pub struct NewCharacterComponent {
 
     /// Currently selected menu option.
     selected_menu_opt: MenuOpt,
+
+    /// The race component used for views.
+    race_component: RaceComponent,
 }
 
 impl NewCharacterComponent {
@@ -85,6 +88,7 @@ impl NewCharacterComponent {
             panes: grid,
             race_state: race_state.clone(),
             selected_menu_opt: Default::default(),
+            race_component: race_state.clone().into(),
         }
     }
 }
@@ -106,7 +110,7 @@ impl Component for NewCharacterComponent {
                 // The content pane
                 Pane::Content => column![self.content_pane_view()],
             })
-            .style(styles::pane_grid)
+            .style(component_styles::pane_grid)
         });
         pane_grid.into()
     }
@@ -160,7 +164,14 @@ impl NewCharacterComponent {
     /// Displays the contents each option/
     fn content_pane_view(&self) -> Element<Message> {
         match self.selected_menu_opt {
-            MenuOpt::Race => column![self.races_list(), self.race_info()].into(),
+            MenuOpt::Race => column![
+                self.races_list(),
+                container(column![self
+                    .race_component
+                    .view(())
+                    .map(|_| Message::default())])
+            ]
+            .into(),
             MenuOpt::Class => column![].into(),
         }
     }
@@ -169,21 +180,20 @@ impl NewCharacterComponent {
     fn races_list(&self) -> Element<Message> {
         let races = pick_list(races::all_races(), Some(self.race_state.clone()), |v| {
             Message::RaceSelected((v, race_component::Message::NoSubraceSelected))
-        });
+        })
+        .style(component_styles::dropdown);
         container(scrollable(column![races]))
             .padding(5)
             .center(Length::Fill)
             .into()
     }
-
-    /// Displays the info of the selected race.
-    fn race_info(&self) -> Element<Message> {
-        container(column![]).into()
-    }
 }
 
-mod styles {
-    use iced::{widget::container, Background, Border, Color, Theme};
+mod component_styles {
+    use iced::{
+        widget::{container, pick_list},
+        Background, Border, Color, Theme,
+    };
 
     /// Style for the pane grid.
     pub fn pane_grid(theme: &Theme) -> container::Style {
@@ -197,6 +207,33 @@ mod styles {
                 ..Border::default()
             },
             ..Default::default()
+        }
+    }
+
+    pub fn dropdown(theme: &Theme, status: pick_list::Status) -> pick_list::Style {
+        let palette = theme.extended_palette();
+
+        match status {
+            pick_list::Status::Active | pick_list::Status::Opened => pick_list::Style {
+                border: Border {
+                    radius: 3.0.into(),
+                    ..Default::default()
+                },
+                text_color: palette.background.base.text,
+                placeholder_color: palette.background.weak.text,
+                handle_color: palette.primary.base.color,
+                background: Background::Color(palette.background.weak.color),
+            },
+            pick_list::Status::Hovered => pick_list::Style {
+                border: Border {
+                    radius: 3.0.into(),
+                    ..Default::default()
+                },
+                text_color: palette.background.base.text,
+                placeholder_color: palette.background.weak.text,
+                handle_color: palette.primary.base.color,
+                background: Background::Color(palette.primary.weak.color),
+            },
         }
     }
 }

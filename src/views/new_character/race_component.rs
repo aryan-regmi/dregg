@@ -3,10 +3,13 @@ use std::fmt::Display;
 use crate::{
     common::{Age, Height, Language, Range, Size, Speed, Trait, Weight, ASI},
     race::{Race, Subrace},
-    views::{common::Summary, Component},
+    views::{common::Summary, new_character::races::dwarf, styles, Component},
 };
 
-use super::dwarf;
+use iced::{
+    widget::{column, container, horizontal_rule, Text},
+    Length, Padding,
+};
 
 #[derive(Clone, Debug)]
 pub enum Message {
@@ -53,6 +56,33 @@ pub struct RaceComponent {
     pub subrace_options: Option<Vec<SubraceComponent>>,
 }
 
+impl Default for RaceComponent {
+    fn default() -> Self {
+        Self {
+            name: Default::default(),
+            name_plural: Default::default(),
+            summary: Summary {
+                main: "".into(),
+                subsections: vec![],
+            },
+            asi: Default::default(),
+            age: AgeInfo {
+                adult: Age(0),
+                lifespan: Age(0),
+            },
+            size: SizeInfo {
+                category: Size::default(),
+                height: None,
+                weight: None,
+            },
+            speed: Default::default(),
+            traits: Default::default(),
+            languages: Default::default(),
+            subrace_options: Default::default(),
+        }
+    }
+}
+
 impl Component for RaceComponent {
     type Message = Message;
 
@@ -61,11 +91,31 @@ impl Component for RaceComponent {
     type Command = Command;
 
     fn view(&self, _ctx: Self::Context) -> iced::Element<Self::Message> {
-        todo!()
+        if self.name != "" {
+            let line = container(horizontal_rule(1.0)).padding(Padding {
+                right: 20.0,
+                left: 20.0,
+                ..Default::default()
+            });
+
+            let title =
+                container(Text::new(&self.name).size(styles::new_character_page::TITLE_FONT_SIZE))
+                    .center_x(Length::Fill)
+                    .padding(10)
+                    .style(component_styles::title);
+
+            let summary = self.summary.view(()).map(|_| Message::NoSubraceSelected);
+
+            column![line, title, summary]
+                .padding(styles::new_character_page::BASE_PADDING)
+                .into()
+        } else {
+            column![].into()
+        }
     }
 
     fn update(&mut self, _message: Self::Message) -> Self::Command {
-        todo!()
+        Command::None
     }
 }
 
@@ -94,6 +144,7 @@ impl From<Race> for RaceComponent {
         // NOTE: Keep in sync with each added race!
         match value.name.as_str() {
             "Dwarf" => dwarf::dwarf(),
+            "" => Self::default(),
             _ => unreachable!("Invalid race type"),
         }
     }
@@ -138,4 +189,21 @@ pub struct SubraceComponent {
 
     /// The traits provided by the subrace.
     pub traits: Vec<Trait>,
+}
+
+mod component_styles {
+    use iced::{widget::container, Background, Border, Theme};
+
+    pub fn title(theme: &Theme) -> container::Style {
+        let palette = theme.extended_palette();
+        container::Style {
+            background: Some(Background::Color(palette.background.weak.color)),
+            border: Border {
+                color: palette.background.strong.color,
+                width: 1.0,
+                radius: 3.into(),
+            },
+            ..Default::default()
+        }
+    }
 }
