@@ -7,7 +7,7 @@ use crate::{
 };
 
 use iced::{
-    widget::{column, container, horizontal_rule, Text},
+    widget::{column, container, horizontal_rule, row, Text},
     Length, Padding,
 };
 
@@ -108,7 +108,23 @@ impl Component for RaceComponent {
 
             let summary = self.summary.view(()).map(|_| Message::NoSubraceSelected);
 
-            column![line, title, summary]
+            let asi = {
+                if let Some(asi_list) = &self.asi {
+                    let mut content = row![Text::new("Ability Score Increase: ")
+                        .font(styles::bold_font())
+                        .size(18.0)];
+
+                    for asi in asi_list {
+                        // TODO: Add dropdown of atrributes if ASI is `Any`
+                    }
+
+                    content
+                } else {
+                    row![]
+                }
+            };
+
+            column![line, title, summary, asi]
                 .padding(styles::new_character_page::BASE_PADDING)
                 .into()
         } else {
