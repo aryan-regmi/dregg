@@ -93,16 +93,22 @@ impl Component for RaceComponent {
     fn view(&self, _ctx: Self::Context) -> iced::Element<Self::Message> {
         if self.name != "" {
             let line = container(horizontal_rule(1.0)).padding(Padding {
-                right: 20.0,
-                left: 20.0,
+                right: 10.0,
+                left: 10.0,
                 ..Default::default()
             });
 
-            let title =
+            let title = container(
                 container(Text::new(&self.name).size(styles::new_character_page::TITLE_FONT_SIZE))
                     .center_x(Length::Fill)
                     .padding(10)
-                    .style(component_styles::title);
+                    .style(component_styles::title),
+            )
+            .padding(Padding {
+                top: 10.0,
+                bottom: 10.0,
+                ..Default::default()
+            });
 
             let summary = self.summary.view(()).map(|_| Message::NoSubraceSelected);
 
