@@ -182,9 +182,9 @@ impl NewCharacterComponent {
             Message::RaceSelected((v, race_component::Message::NoSubraceSelected))
         })
         .style(component_styles::dropdown);
-        container(scrollable(column![races]))
+        container(scrollable(races))
             .padding(5)
-            .center(Length::Fill)
+            .center_x(Length::Fill)
             .into()
     }
 }

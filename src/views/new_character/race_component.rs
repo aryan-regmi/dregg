@@ -120,8 +120,11 @@ impl Component for RaceComponent {
         }
     }
 
-    fn update(&mut self, _message: Self::Message) -> Self::Command {
-        Command::None
+    fn update(&mut self, message: Self::Message) -> Self::Command {
+        match message {
+            Message::NoSubraceSelected => Command::None,
+            Message::SubraceSelected => Command::SubraceSelected(todo!()),
+        }
     }
 }
 
