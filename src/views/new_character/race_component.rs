@@ -92,11 +92,7 @@ impl Component for RaceComponent {
 
     fn view(&self, _ctx: Self::Context) -> iced::Element<Self::Message> {
         if self.name != "" {
-            let line = container(horizontal_rule(1.0)).padding(Padding {
-                right: 10.0,
-                left: 10.0,
-                ..Default::default()
-            });
+            let line = horizontal_rule(1.0);
 
             let title = container(
                 container(Text::new(&self.name).size(styles::new_character_page::TITLE_FONT_SIZE))

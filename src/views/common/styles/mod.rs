@@ -1,4 +1,13 @@
+use iced::{font, Font};
+
 pub mod button;
+
+pub fn bold_font() -> Font {
+    Font {
+        weight: font::Weight::Bold,
+        ..Default::default()
+    }
+}
 
 pub mod new_character_page {
     use iced::Padding;

@@ -164,13 +164,13 @@ impl NewCharacterComponent {
     /// Displays the contents each option/
     fn content_pane_view(&self) -> Element<Message> {
         match self.selected_menu_opt {
-            MenuOpt::Race => column![
+            MenuOpt::Race => scrollable(column![
                 self.races_list(),
                 container(column![self
                     .race_component
                     .view(())
                     .map(|_| Message::default())])
-            ]
+            ])
             .into(),
             MenuOpt::Class => column![].into(),
         }
