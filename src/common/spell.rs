@@ -1,7 +1,7 @@
 use super::{Action, Advantage, Attribute, DamageType, Die};
 
 /// Represents a spell.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Spell {
     /// The minimum spell slot level required to cast the spell.
     pub level: u8,
@@ -29,7 +29,7 @@ pub struct Spell {
 }
 
 /// Represents spell components.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Components {
     Verbal,
     Somatic,
@@ -37,7 +37,7 @@ pub enum Components {
 }
 
 /// Represents spell duration.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Duration {
     Instantaneous,
     Round(u8),
@@ -48,21 +48,21 @@ pub enum Duration {
 }
 
 /// Represents spell effects when upcast.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Upcast {
     min_slot_lvl: u8,
     effects: Vec<SpellEffect>,
 }
 
 /// Represents effects a spell gains at higher character levels.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct HigherLevelEffect {
     required_level: u8,
     effects: Vec<SpellEffect>,
 }
 
 /// Represents effects spells can have.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum SpellEffect {
     ExtraDamage(Damage),
     TemporaryHP(u16),
@@ -77,21 +77,21 @@ pub enum SpellEffect {
 }
 
 /// Represents some damage.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Damage {
     damage_type: Vec<DamageType>,
     damage_amount: Vec<DamageAmount>,
 }
 
 /// Represents a damage amount.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum DamageAmount {
     Flat(u8),
     Roll { dice: Vec<Die>, num_dice: usize },
 }
 
 /// Represents an attack roll.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum AttackRoll {
     Melee,
     Range,

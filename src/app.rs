@@ -13,26 +13,26 @@ pub enum Message {
 }
 
 #[derive(Default, Debug)]
-pub enum Page {
+pub enum Page<'a> {
     #[default]
     Main,
     LoadCharacter,
-    NewCharacter(NewCharacterComponent),
+    NewCharacter(NewCharacterComponent<'a>),
 }
 
 #[derive(Default, Debug)]
-pub struct App {
+pub struct App<'a> {
     /// The theme of the app.
     _theme: Theme, // TODO: Implement a theme picker in the `Main` page!
 
     /// The current page being displayed.
-    page: Page,
+    page: Page<'a>,
 
     /// The state of the app.
     state: Character,
 }
 
-impl App {
+impl<'a> App<'a> {
     pub fn new() -> Self {
         Self::default()
     }
@@ -46,7 +46,7 @@ impl App {
     }
 }
 
-impl Component for App {
+impl<'a> Component for App<'a> {
     type Message = Message;
     type Context = ();
     type Command = Task<Message>;

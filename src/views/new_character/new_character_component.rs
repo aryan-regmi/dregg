@@ -8,7 +8,10 @@ use crate::{
     views::{common, races, Component},
 };
 
-use super::{race_component, RaceComponent};
+use super::{
+    race_component::{self, SubraceComponent},
+    RaceComponent,
+};
 
 #[derive(Clone, Debug, Default)]
 pub enum Message {
@@ -58,7 +61,7 @@ enum MenuOpt {
 
 /// The `New Character` page.
 #[derive(Debug)]
-pub struct NewCharacterComponent {
+pub struct NewCharacterComponent<'a> {
     /// Represents the two panes (menu pane and info pane).
     panes: pane_grid::State<Pane>,
 
@@ -69,10 +72,10 @@ pub struct NewCharacterComponent {
     selected_menu_opt: MenuOpt,
 
     /// The race component used for views.
-    race_component: RaceComponent,
+    race_component: RaceComponent<'a>,
 }
 
-impl NewCharacterComponent {
+impl<'a> NewCharacterComponent<'a> {
     /// Creates the `New Character` page.
     pub fn new(race_state: &Race) -> Self {
         // Create new pane grid with the menu as its first pane
@@ -93,7 +96,7 @@ impl NewCharacterComponent {
     }
 }
 
-impl Component for NewCharacterComponent {
+impl<'a> Component for NewCharacterComponent<'a> {
     type Message = Message;
     type Context = ();
     type Command = Command;
@@ -140,9 +143,9 @@ impl Component for NewCharacterComponent {
     }
 }
 
-impl NewCharacterComponent {
+impl<'a> NewCharacterComponent<'a> {
     /// Creates a button for the menu option.
-    fn menu_option<'a>(&'a self, name: &'a str, on_press: Message) -> Element<Message> {
+    fn menu_option<'b>(&'b self, name: &'b str, on_press: Message) -> Element<Message> {
         let style = if self.selected_menu_opt == on_press.clone().into() {
             common::styles::button::success
         } else {
@@ -171,7 +174,7 @@ impl NewCharacterComponent {
                 self.races_list(),
                 container(column![self
                     .race_component
-                    .view(self.race_state.subrace.clone())
+                    .view(self.race_state.subrace.as_ref())
                     .map(|_| Message::default())])
             ])
             .into(),

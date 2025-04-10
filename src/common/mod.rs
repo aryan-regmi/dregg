@@ -99,7 +99,7 @@ pub enum Choice<T> {
 }
 
 /// Represents a die.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Die {
     D4,
     D6,
@@ -111,7 +111,7 @@ pub enum Die {
 }
 
 /// Represents a type of action.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Action {
     Action,
     BonusAction,

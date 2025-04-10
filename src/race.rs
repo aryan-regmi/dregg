@@ -33,7 +33,7 @@ impl Display for Race {
     }
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Subrace {
     /// The name of the subrace.
     pub name: String,

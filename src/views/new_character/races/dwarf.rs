@@ -1,3 +1,5 @@
+use std::marker::PhantomData;
+
 use crate::{
     common::{
         Advantage, Age, ArmorType, ArtisansTools, Choice, DamageType, Height, HpIncrease, Language, LanguageLevel, Proficiency, ProficiencyLevel, ProficiencyType, Range, RangeTrait, SavingThrowsType, Size, Skills, Speed, ToolType, Trait, TraitEffect, WeaponType, Weight, ASI
@@ -9,7 +11,7 @@ use crate::{
     },
 };
 
-pub fn dwarf() -> RaceComponent {
+pub fn dwarf<'a>() -> RaceComponent<'a> {
     RaceComponent {
         name: "Dwarf".into(),
         name_plural: "Dwarves".into(),
@@ -31,6 +33,7 @@ pub fn dwarf() -> RaceComponent {
         ],
         languages: Some(languages()),
         subrace_options: Some(vec![hill_dwarf(), mountain_dwarf()]),
+        _marker: &PhantomData,
     }
 }
 
@@ -201,7 +204,7 @@ fn languages() -> Vec<Language> {
     ]
 }
 
-fn hill_dwarf() -> SubraceComponent {
+pub fn hill_dwarf() -> SubraceComponent {
     let summary = Summary { 
         main: "As a hill dwarf, you have keen senses, deep intuition, and remarkable resilience. The gold dwarves of Faerûn in their mighty southern kingdom are hill dwarves, as are the exiled Neidar and the debased Klar of Krynn in the Dragonlance setting.".into(),
         subsections: vec![] 
@@ -222,7 +225,7 @@ fn hill_dwarf() -> SubraceComponent {
     }
 }
 
-fn mountain_dwarf() -> SubraceComponent {
+pub fn mountain_dwarf() -> SubraceComponent {
     let summary = Summary { 
         main: "As a mountain dwarf, you’re strong and hardy, accustomed to a difficult life in rugged terrain. You’re probably on the tall side (for a dwarf), and tend toward lighter coloration. The shield dwarves of northern Faerûn, as well as the ruling Hylar clan and the noble Daewar clan of Dragonlance, are mountain dwarves.s a hill dwarf, you have keen senses, deep intuition, and remarkable resilience. The gold dwarves of Faerûn in their mighty southern kingdom are hill dwarves, as are the exiled Neidar and the debased Klar of Krynn in the Dragonlance setting.".into(),
         subsections: vec![] 

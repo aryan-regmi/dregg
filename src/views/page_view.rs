@@ -9,7 +9,7 @@ use crate::{
     views::{new_character_component, Component},
 };
 
-impl Component for Page {
+impl<'a> Component for Page<'a> {
     type Message = Message;
     type Context = ();
     type Command = ();
@@ -45,7 +45,7 @@ impl Component for Page {
     fn update(&mut self, _message: Self::Message) -> Self::Command {}
 }
 
-impl Page {
+impl<'a> Page<'a> {
     /// Creates a button in the main page.
     fn main_opts_button(name: &str, on_press: Message) -> Element<Message> {
         container(

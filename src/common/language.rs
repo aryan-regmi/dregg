@@ -1,12 +1,12 @@
 /// Represents a language a character knows.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Language {
     pub name: String,
     pub levels: Vec<LanguageLevel>,
 }
 
 /// Represents the various levels of proficiency in a language.
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum LanguageLevel {
     Speak,
     Read,
