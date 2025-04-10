@@ -165,6 +165,9 @@ impl NewCharacterComponent {
     fn content_pane_view(&self) -> Element<Message> {
         match self.selected_menu_opt {
             MenuOpt::Race => scrollable(column![
+                container(Text::new("Select a race:"))
+                    .padding(5)
+                    .center_x(Length::Fill),
                 self.races_list(),
                 container(column![self
                     .race_component
