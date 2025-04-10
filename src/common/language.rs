@@ -13,3 +13,14 @@ pub enum LanguageLevel {
     Write,
     Understand,
 }
+
+impl std::fmt::Display for LanguageLevel {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            LanguageLevel::Speak => f.write_str("Speak"),
+            LanguageLevel::Read => f.write_str("Read"),
+            LanguageLevel::Write => f.write_str("Write"),
+            LanguageLevel::Understand => f.write_str("Understand"),
+        }
+    }
+}

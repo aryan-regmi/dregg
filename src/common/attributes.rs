@@ -21,6 +21,20 @@ pub enum ASI {
     Charisma(u8),
 }
 
+impl ASI {
+    pub fn text(&self) -> String {
+        match self {
+            ASI::Any(amt) => format!("increase any ability score by {amt}. "),
+            ASI::Strength(amt) => format!("Strength score increases by {amt}. "),
+            ASI::Dexterity(amt) => format!("Dexterity score increases by {amt}. "),
+            ASI::Constitution(amt) => format!("Constitution score increases by {amt}. "),
+            ASI::Intelligence(amt) => format!("Intelligence score increases by {amt}. "),
+            ASI::Wisdom(amt) => format!("Wisdom score increases by {amt}. "),
+            ASI::Charisma(amt) => format!("Charisma score increases by {amt}. "),
+        }
+    }
+}
+
 /// Represents ability scores.
 #[derive(Debug)]
 pub struct AbilityScores {

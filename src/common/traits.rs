@@ -47,6 +47,9 @@ pub enum TraitEffect {
 
     /// A trait that provides increased hit points.
     HpIncrease(HpIncrease),
+
+    /// A trait that causes no speed reduction.
+    NoSpeedReduction,
 }
 
 /// Represents the types of visions.

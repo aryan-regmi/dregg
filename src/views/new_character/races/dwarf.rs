@@ -23,6 +23,7 @@ pub fn dwarf() -> RaceComponent {
         speed: vec![Speed::Walking(25)],
         traits: vec![
             darkvision(60),
+            dwarven_speed(),
             dwarven_resilience(),
             dwarven_combat_training(),
             tool_proficiency(),
@@ -75,6 +76,18 @@ fn summary() -> Summary {
                 "A dwarf’s name is granted by a clan elder, in accordance with tradition. Every proper dwarven name has been used and reused down through the generations. A dwarf’s name belongs to the clan, not to the individual. A dwarf who misuses or brings shame to a clan name is stripped of the name and forbidden by law to use any dwarven name in its place.\n\nMale Names: Adrik, Alberich, Baern, Barendd, Brottor, Bruenor, Dain, Darrak, Delg, Eberk, Einkil, Fargrim, Flint, Gardain, Harbek, Kildrak, Morgran, Orsik, Oskar, Rangrim, Rurik, Taklinn, Thoradin, Thorin, Tordek, Traubon, Travok, Ulfgar, Veit, Vondal\n\nFemale Names: Amber, Artin, Audhild, Bardryn, Dagnal, Diesa, Eldeth, Falkrunn, Finellen, Gunnloda, Gurdis, Helja, Hlin, Kathra, Kristryd, Ilde, Liftrasa, Mardred, Riswynn, Sannl, Torbera, Torgga, Vistra\n\nClan Names: Balderk, Battlehammer, Brawnanvil, Dankil, Fireforge, Frostbeard, Gorunn, Holderhek, Ironfist, Loderr, Lutgehr, Rumnaheim, Strakeln, Torunn, Ungart".into()
             ),
         ],
+    }
+}
+
+fn dwarven_speed() -> Trait {
+    Trait {
+        name: "Dwarven Speed".into(),
+        summary: "Your speed is not reduced by wearing heavy armor.".into(),
+        effects: vec![
+            TraitEffect::NoSpeedReduction
+        ],
+        required_level: None,
+        tags: vec!["speed", "dwarf", "heavy armor"].iter().map(|s| String::from(*s)).collect(),
     }
 }
 
@@ -153,8 +166,8 @@ fn tool_proficiency() -> Trait {
 
 fn stonecunning() -> Trait {
     Trait {
-        name: "Tool Proficiency".into(),
-        summary: "You gain proficiency with the artisan’s tools of your choice: smith’s tools, brewer’s supplies, or mason’s tools.".into(),
+        name: "Stonecunning".into(),
+        summary: "Whenever you make an Intelligence (History) check related to the origin of stonework, you are considered proficient in the History skill and add double your proficiency bonus to the check, instead of your normal proficiency bonus".into(),
         effects: vec![
             TraitEffect::Proficiencies(Choice::Single(Proficiency { 
                 level: ProficiencyLevel::Expertise,

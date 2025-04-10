@@ -20,6 +20,7 @@ pub trait RangeTrait<T> {
     fn start(&self) -> T;
     fn end(&self) -> T;
     fn singular(value: T) -> Self;
+    fn is_singular(&self) -> bool;
 }
 
 /// Represents a range of possible values.
@@ -29,9 +30,10 @@ pub struct Range<T> {
     pub end: T,
 }
 
-impl<T> Range<T> {}
-
-impl<T: Clone> RangeTrait<T> for Range<T> {
+impl<T> RangeTrait<T> for Range<T>
+where
+    T: Clone + PartialEq,
+{
     fn start(&self) -> T {
         self.start.clone()
     }
@@ -46,6 +48,10 @@ impl<T: Clone> RangeTrait<T> for Range<T> {
             end: value,
         }
     }
+
+    fn is_singular(&self) -> bool {
+        self.start == self.end
+    }
 }
 
 /// Represents a range of values under the `start` value and over the `end` value.
@@ -55,7 +61,10 @@ pub struct UnderOver<T> {
     pub over: T,
 }
 
-impl<T: Clone> RangeTrait<T> for UnderOver<T> {
+impl<T> RangeTrait<T> for UnderOver<T>
+where
+    T: Clone + PartialEq,
+{
     fn start(&self) -> T {
         self.under.clone()
     }
@@ -69,6 +78,10 @@ impl<T: Clone> RangeTrait<T> for UnderOver<T> {
             under: value.clone(),
             over: value,
         }
+    }
+
+    fn is_singular(&self) -> bool {
+        self.under == self.over
     }
 }
 
@@ -108,3 +121,9 @@ pub enum Action {
 /// Represents an age (in years).
 #[derive(Debug, Default, Clone, PartialEq)]
 pub struct Age(pub usize);
+
+impl std::fmt::Display for Age {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_fmt(format_args!("{}", self.0))
+    }
+}

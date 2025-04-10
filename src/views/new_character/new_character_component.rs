@@ -161,14 +161,14 @@ impl NewCharacterComponent {
         .into()
     }
 
-    /// Displays the contents each option/
+    /// Displays the contents each option.
     fn content_pane_view(&self) -> Element<Message> {
         match self.selected_menu_opt {
             MenuOpt::Race => scrollable(column![
                 self.races_list(),
                 container(column![self
                     .race_component
-                    .view(())
+                    .view(self.race_state.subrace.clone())
                     .map(|_| Message::default())])
             ])
             .into(),
@@ -181,6 +181,7 @@ impl NewCharacterComponent {
         let races = pick_list(races::all_races(), Some(self.race_state.clone()), |v| {
             Message::RaceSelected((v, race_component::Message::NoSubraceSelected))
         })
+        .placeholder("Select a race...")
         .style(component_styles::dropdown);
         container(scrollable(races))
             .padding(5)
@@ -210,30 +211,17 @@ mod component_styles {
         }
     }
 
-    pub fn dropdown(theme: &Theme, status: pick_list::Status) -> pick_list::Style {
+    pub fn dropdown(theme: &Theme, _status: pick_list::Status) -> pick_list::Style {
         let palette = theme.extended_palette();
-
-        match status {
-            pick_list::Status::Active | pick_list::Status::Opened => pick_list::Style {
-                border: Border {
-                    radius: 3.0.into(),
-                    ..Default::default()
-                },
-                text_color: palette.background.base.text,
-                placeholder_color: palette.background.weak.text,
-                handle_color: palette.primary.base.color,
-                background: Background::Color(palette.background.weak.color),
+        pick_list::Style {
+            border: Border {
+                radius: 3.into(),
+                ..Default::default()
             },
-            pick_list::Status::Hovered => pick_list::Style {
-                border: Border {
-                    radius: 3.0.into(),
-                    ..Default::default()
-                },
-                text_color: palette.background.base.text,
-                placeholder_color: palette.background.weak.text,
-                handle_color: palette.primary.base.color,
-                background: Background::Color(palette.primary.weak.color),
-            },
+            text_color: palette.background.base.text,
+            placeholder_color: palette.background.weak.text,
+            handle_color: palette.primary.base.color,
+            background: Background::Color(palette.background.weak.color),
         }
     }
 }
