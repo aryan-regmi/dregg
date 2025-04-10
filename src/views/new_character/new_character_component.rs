@@ -98,10 +98,10 @@ impl<'a> NewCharacterComponent<'a> {
 
 impl<'a> Component for NewCharacterComponent<'a> {
     type Message = Message;
-    type Context = ();
+    type Context = Option<SubraceComponent>;
     type Command = Command;
 
-    fn view(&self, _ctx: Self::Context) -> iced::Element<Self::Message> {
+    fn view(&self, ctx: Self::Context) -> iced::Element<Self::Message> {
         let pane_grid = PaneGrid::new(&self.panes, |_pane, pane_state, _is_maximized| {
             pane_grid::Content::new(match pane_state {
                 // The navigation menu pane
@@ -111,7 +111,7 @@ impl<'a> Component for NewCharacterComponent<'a> {
                 ],
 
                 // The content pane
-                Pane::Content => column![self.content_pane_view()],
+                Pane::Content => column![self.content_pane_view(&ctx)],
             })
             .style(component_styles::pane_grid)
         });
@@ -165,7 +165,7 @@ impl<'a> NewCharacterComponent<'a> {
     }
 
     /// Displays the contents each option.
-    fn content_pane_view(&self) -> Element<Message> {
+    fn content_pane_view(&self, ctx: &Option<SubraceComponent>) -> Element<Message> {
         match self.selected_menu_opt {
             MenuOpt::Race => scrollable(column![
                 container(Text::new("Select a race:"))
@@ -174,10 +174,11 @@ impl<'a> NewCharacterComponent<'a> {
                 self.races_list(),
                 container(column![self
                     .race_component
-                    .view(self.race_state.subrace.as_ref())
+                    .view(ctx.clone())
                     .map(|_| Message::default())])
             ])
             .into(),
+
             MenuOpt::Class => column![].into(),
         }
     }

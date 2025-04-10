@@ -2,7 +2,9 @@ use iced::{Element, Task, Theme};
 
 use crate::{
     character::Character,
-    views::{new_character_component, Component, NewCharacterComponent},
+    views::{
+        new_character_component, race_component::SubraceComponent, Component, NewCharacterComponent,
+    },
 };
 
 #[derive(Debug, Clone)]
@@ -42,13 +44,19 @@ impl<'a> App<'a> {
     }
 
     pub fn view_fixed(&self) -> Element<Message> {
-        self.view(())
+        let subrace_component = self
+            .state
+            .race
+            .subrace
+            .clone()
+            .map(|v| SubraceComponent::from_subrace(&v));
+        self.view(subrace_component)
     }
 }
 
 impl<'a> Component for App<'a> {
     type Message = Message;
-    type Context = ();
+    type Context = Option<SubraceComponent>;
     type Command = Task<Message>;
 
     fn view(&self, ctx: Self::Context) -> Element<Self::Message> {
@@ -76,7 +84,7 @@ impl<'a> Component for App<'a> {
                         Task::none()
                     }
                     new_character_component::Command::RaceSelected(race) => {
-                        self.state.race = race;
+                        self.state.race = race.clone();
                         self.page =
                             Page::NewCharacter(NewCharacterComponent::new(&self.state.race));
                         Task::none()

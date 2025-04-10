@@ -9,12 +9,14 @@ use crate::{
     views::{new_character_component, Component},
 };
 
+use super::race_component::SubraceComponent;
+
 impl<'a> Component for Page<'a> {
     type Message = Message;
-    type Context = ();
+    type Context = Option<SubraceComponent>;
     type Command = ();
 
-    fn view(&self, _ctx: Self::Context) -> Element<Self::Message> {
+    fn view(&self, ctx: Self::Context) -> Element<Self::Message> {
         let main_menu_btn = container(button("Main Menu").on_press(Message::MainMenuButtonPressed))
             .padding(20)
             .align_x(Horizontal::Center)
@@ -33,7 +35,7 @@ impl<'a> Component for Page<'a> {
             Page::Main => self.main_page(),
             Page::LoadCharacter => main_menu_btn,
             Page::NewCharacter(page) => container(column![
-                page.view(()).map(Message::NewCharacterButtonPressed),
+                page.view(ctx).map(Message::NewCharacterButtonPressed),
                 main_menu_btn,
             ])
             .padding(0.5)

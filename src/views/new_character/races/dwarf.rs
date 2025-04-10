@@ -33,6 +33,7 @@ pub fn dwarf<'a>() -> RaceComponent<'a> {
         ],
         languages: Some(languages()),
         subrace_options: Some(vec![hill_dwarf(), mountain_dwarf()]),
+        selected_subrace: None,
         _marker: &PhantomData,
     }
 }
