@@ -1,96 +1,67 @@
-use iced::{Element, Task, Theme};
+use iced::{Element, Task};
 
-use crate::{
-    character::Character,
-    views::{
-        new_character_component, race_component::SubraceComponent, Component, NewCharacterComponent,
-    },
-};
+use crate::views::{screen::Screen, Component};
 
-#[derive(Debug, Clone)]
-pub enum Message {
-    MainMenuButtonPressed,
-    LoadCharacterButtonPressed,
-    NewCharacterButtonPressed(new_character_component::Message),
-}
-
-#[derive(Default, Debug)]
-pub enum Page<'a> {
-    #[default]
-    Main,
-    LoadCharacter,
-    NewCharacter(NewCharacterComponent<'a>),
-}
-
-#[derive(Default, Debug)]
-pub struct App<'a> {
-    /// The theme of the app.
-    _theme: Theme, // TODO: Implement a theme picker in the `Main` page!
-
+#[derive(Debug, Default)]
+pub struct App {
     /// The current page being displayed.
-    page: Page<'a>,
+    pub page: Screen,
 
     /// The state of the app.
-    state: Character,
+    pub state: State,
 }
 
-impl<'a> App<'a> {
+impl App {
+    pub const TITLE: &str = "Dregg";
+
     pub fn new() -> Self {
         Self::default()
     }
 
-    pub fn title(&self) -> String {
-        String::from("Dregg")
-    }
-
     pub fn view_fixed(&self) -> Element<Message> {
-        let subrace_component = self
-            .state
-            .race
-            .subrace
-            .clone()
-            .map(|v| SubraceComponent::from_subrace(&v));
-        self.view(subrace_component)
+        self.view(())
     }
 }
 
-impl<'a> Component for App<'a> {
+impl Component for App {
     type Message = Message;
-    type Context = Option<SubraceComponent>;
-    type Command = Task<Message>;
 
-    fn view(&self, ctx: Self::Context) -> Element<Self::Message> {
+    type Context = ();
+
+    type Command = Task<Self::Message>;
+
+    fn view(&self, ctx: Self::Context) -> iced::Element<Self::Message> {
         self.page.view(ctx)
     }
 
     fn update(&mut self, message: Self::Message) -> Self::Command {
         match message {
             Message::MainMenuButtonPressed => {
-                self.page = Page::Main;
+                self.page = Screen::Main;
                 let _cmd = self.page.update(message);
                 Task::none()
             }
             Message::LoadCharacterButtonPressed => {
-                self.page = Page::LoadCharacter;
+                self.page = Screen::LoadCharacter;
                 let _cmd = self.page.update(message);
                 Task::none()
             }
-            Message::NewCharacterButtonPressed(msg) => {
-                let mut page = NewCharacterComponent::new(&self.state.race);
-                let command = page.update(msg);
-                match command {
-                    new_character_component::Command::None => {
-                        self.page = Page::NewCharacter(page);
-                        Task::none()
-                    }
-                    new_character_component::Command::RaceSelected(race) => {
-                        self.state.race = race.clone();
-                        self.page =
-                            Page::NewCharacter(NewCharacterComponent::new(&self.state.race));
-                        Task::none()
-                    }
-                }
+            Message::NewCharacterButtonPressed => {
+                self.page = Screen::NewCharacter;
+                let _cmd = self.page.update(message);
+                Task::none()
             }
         }
     }
+}
+
+#[derive(Debug, Default)]
+pub struct State {}
+
+/// The messages sent by the `App` component.
+#[derive(Debug, Clone)]
+pub enum Message {
+    MainMenuButtonPressed,
+    LoadCharacterButtonPressed,
+    NewCharacterButtonPressed,
 }
