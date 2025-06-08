@@ -44,7 +44,7 @@ impl Page {
     }
 }
 
-impl Component<Message, Command> for Page {
+impl<'a> Component<'a, Message, Command> for Page {
     fn update(&mut self, message: Message) -> Command {
         match message {
             Message::MainMenuButtonPressed => Command::ChangePage(Pages::Main),

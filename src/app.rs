@@ -2,7 +2,7 @@ use iced::{Element, Task};
 
 use crate::{
     component::Component,
-    page::{self, Page, Pages},
+    page::{self, Page},
     pages::new_character_page,
     race::Race,
 };
@@ -22,7 +22,7 @@ impl App {
     }
 }
 
-impl Component<Message, Task<Message>> for App {
+impl<'a> Component<'a, Message, Task<Message>> for App {
     fn update(&mut self, message: Message) -> Task<Message> {
         let command = self.current_page.update(message);
         match command {

@@ -69,7 +69,7 @@ impl NewCharacterPage {
     }
 }
 
-impl<'a> Component<Message, Command> for NewCharacterPage {
+impl<'a> Component<'a, Message, Command> for NewCharacterPage {
     fn update(&mut self, message: Message) -> Command {
         match message {
             Message::RaceButtonPressed => {
