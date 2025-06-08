@@ -3,8 +3,6 @@ use iced::{
     Padding,
 };
 
-use crate::component::Component;
-
 /// Represents a summary/description.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Summary {
@@ -15,10 +13,8 @@ pub struct Summary {
     pub summary_subsection_padding: Padding,
 }
 
-impl<'a, Message: 'a> Component<'a, Message, ()> for Summary {
-    fn update(&mut self, _message: Message) {}
-
-    fn view(&'a self) -> iced::Element<Message> {
+impl Summary {
+    pub fn view<'a, Message: 'a>(&'a self) -> iced::Element<Message> {
         let mut content = column![];
 
         let main = container(Text::new(self.main.clone())).padding(self.summary_padding);
@@ -37,7 +33,7 @@ impl<'a, Message: 'a> Component<'a, Message, ()> for Summary {
     }
 }
 
-mod styles {
+pub mod styles {
     use iced::{font, widget::container, Background, Border, Font, Padding, Theme};
 
     pub const SECTION_FONT_SIZE: f32 = 18.0;

@@ -3,7 +3,7 @@ use iced::{
     Element, Length,
 };
 
-use crate::{component::Component, race::Race, races};
+use crate::{race::Race, races};
 
 /// Represents the `New Character` page.
 #[derive(Debug)]
@@ -37,40 +37,7 @@ impl NewCharacterPage {
         }
     }
 
-    /// Creates a menu button with the given label.
-    fn create_menu_button<'a>(&'a self, label: &'a str, on_press: Message) -> Element<Message> {
-        let style = if self.current_menu == on_press.clone().into() {
-            styles::selected_menu_button
-        } else {
-            styles::menu_button
-        };
-
-        container(container(
-            button(Text::new(label).width(Length::Fill).center())
-                .style(style)
-                .on_press(on_press)
-                .padding(10)
-                .width(Length::Fill),
-        ))
-        .into()
-    }
-
-    /// Creates a dropdown list of all availabe races.
-    fn create_race_dropdown<'a>(&'a self, races: Vec<Race>) -> Element<Message> {
-        let dropdown = pick_list(races, self.selected_race.as_ref(), Message::RaceSelected)
-            .style(styles::dropdown)
-            .menu_style(styles::dropdown_item)
-            .placeholder("Select your race:");
-
-        container(scrollable(column![dropdown]))
-            .padding(5)
-            .center_x(Length::Fill)
-            .into()
-    }
-}
-
-impl<'a> Component<'a, Message, Command> for NewCharacterPage {
-    fn update(&mut self, message: Message) -> Command {
+    pub fn update(&mut self, message: Message) -> Command {
         match message {
             Message::RaceButtonPressed => {
                 self.current_menu = MenuOpts::Race;
@@ -87,7 +54,7 @@ impl<'a> Component<'a, Message, Command> for NewCharacterPage {
         }
     }
 
-    fn view(&self) -> iced::Element<Message> {
+    pub fn view(&self) -> iced::Element<Message> {
         let pane_grid = PaneGrid::new(&self.panes, |_pane, pane_state, _is_maximized| {
             pane_grid::Content::new(match pane_state {
                 // The navigation menu pane
@@ -100,12 +67,66 @@ impl<'a> Component<'a, Message, Command> for NewCharacterPage {
 
                 // The content pane
                 Pane::Content => {
-                    column![self.create_race_dropdown(races::races())]
+                    column![self.create_content_pane()]
                 }
             })
             .style(styles::panes)
         });
         pane_grid.into()
+    }
+
+    /// Creates the content pane.
+    fn create_content_pane(&self) -> Element<Message> {
+        match self.current_menu {
+            MenuOpts::Race => column![
+                self.create_race_dropdown(races::races()),
+                self.create_race_info()
+            ]
+            .into(),
+            MenuOpts::Class => column![].into(),
+        }
+    }
+
+    /// Creates a menu button with the given label.
+    fn create_menu_button<'a>(&'a self, label: &'a str, on_press: Message) -> Element<Message> {
+        let style = if self.current_menu == on_press.clone().into() {
+            styles::selected_menu_button
+        } else {
+            styles::menu_button
+        };
+
+        container(container(
+            button(Text::new(label).width(Length::Fill).center())
+                .style(style)
+                .on_press(on_press)
+                .padding(10)
+                .width(Length::Fill),
+        ))
+        .padding(5)
+        .center_x(Length::Fill)
+        .into()
+    }
+
+    /// Creates a dropdown list of all availabe races.
+    fn create_race_dropdown<'a>(&'a self, races: Vec<Race>) -> Element<Message> {
+        let dropdown = pick_list(races, self.selected_race.as_ref(), Message::RaceSelected)
+            .style(styles::dropdown)
+            .menu_style(styles::dropdown_item)
+            .placeholder("Select your race:");
+
+        container(scrollable(column![dropdown]))
+            .padding(5)
+            .center_x(Length::Fill)
+            .into()
+    }
+
+    /// Creates a container to display info for the selected race.
+    fn create_race_info(&self) -> Element<Message> {
+        if let Some(race) = &self.selected_race {
+            container(race.view()).into()
+        } else {
+            column![].into()
+        }
     }
 }
 

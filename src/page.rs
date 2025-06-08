@@ -6,7 +6,6 @@ use iced::{
 
 use crate::{
     app::{Message, NewCharacterPageProps},
-    component::Component,
     pages::new_character_page::{self, NewCharacterPage},
     race::Race,
 };
@@ -34,18 +33,7 @@ impl Page {
         }
     }
 
-    /// Creates a button in the main page.
-    fn main_opts_button(name: &str, on_press: Message) -> Element<Message> {
-        container(
-            container(button(name).padding(10).on_press(on_press.clone())).center_x(Length::Fill),
-        )
-        .center_x(Length::Fill)
-        .into()
-    }
-}
-
-impl<'a> Component<'a, Message, Command> for Page {
-    fn update(&mut self, message: Message) -> Command {
+    pub fn update(&mut self, message: Message) -> Command {
         match message {
             Message::MainMenuButtonPressed => Command::ChangePage(Pages::Main),
 
@@ -70,7 +58,7 @@ impl<'a> Component<'a, Message, Command> for Page {
         }
     }
 
-    fn view(&self) -> Element<Message> {
+    pub fn view(&self) -> Element<Message> {
         let main_menu_btn = container(button("Main Menu").on_press(Message::MainMenuButtonPressed))
             .padding(20)
             .align_x(Horizontal::Center)
@@ -108,6 +96,15 @@ impl<'a> Component<'a, Message, Command> for Page {
 
             Pages::LoadCharacter => container(column![main_menu_btn]).into(),
         }
+    }
+
+    /// Creates a button in the main page.
+    fn main_opts_button(name: &str, on_press: Message) -> Element<Message> {
+        container(
+            container(button(name).padding(10).on_press(on_press.clone())).center_x(Length::Fill),
+        )
+        .center_x(Length::Fill)
+        .into()
     }
 }
 

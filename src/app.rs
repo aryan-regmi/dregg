@@ -1,7 +1,6 @@
 use iced::{Element, Task};
 
 use crate::{
-    component::Component,
     page::{self, Page},
     pages::new_character_page,
     race::Race,
@@ -20,10 +19,9 @@ impl App {
     pub fn title() -> &'static str {
         "Dregg"
     }
-}
 
-impl<'a> Component<'a, Message, Task<Message>> for App {
-    fn update(&mut self, message: Message) -> Task<Message> {
+    /// Updates the application state.
+    pub fn update(&mut self, message: Message) -> Task<Message> {
         let command = self.current_page.update(message);
         match command {
             page::Command::ChangePage(page) => {
@@ -38,11 +36,13 @@ impl<'a> Component<'a, Message, Task<Message>> for App {
         }
     }
 
-    fn view(&self) -> Element<Message> {
+    /// Renders the application.
+    pub fn view(&self) -> Element<Message> {
         self.current_page.view()
     }
 }
 
+/// Props to pass to the `NewCharacterPage`.
 #[derive(Default, Clone)]
 pub struct NewCharacterPageProps {
     pub selected_race: Option<Race>,
