@@ -4,14 +4,18 @@ use iced::{
     Border, Color, Element, Length,
 };
 
-use crate::{app::Message, component::Component};
+use crate::{
+    app::Message,
+    component::Component,
+    pages::new_character_page::{self, NewCharacterPage},
+};
 
 /// Represents the various pages of the application.
 #[derive(Default)]
 pub enum Page {
     #[default]
     Main,
-    NewCharacter,
+    NewCharacter(NewCharacterPage),
     LoadCharacter,
 }
 
@@ -30,7 +34,17 @@ impl Component<Message, Command> for Page {
     fn update(&mut self, message: Message) -> Command {
         match message {
             Message::MainMenuButtonPressed => Command::ChangePage(Page::Main),
-            Message::NewCharacterButtonPressed => Command::ChangePage(Page::NewCharacter),
+
+            Message::NewCharacterButtonPressed(msg) => {
+                let mut new_character_page = NewCharacterPage::new();
+                let command = new_character_page.update(msg);
+                match command {
+                    new_character_page::Command::None => {
+                        Command::ChangePage(Page::NewCharacter(new_character_page))
+                    }
+                }
+            }
+
             Message::LoadCharacterButtonPressed => Command::ChangePage(Page::LoadCharacter),
         }
     }
@@ -52,14 +66,25 @@ impl Component<Message, Command> for Page {
         match self {
             Page::Main => container(
                 column![
-                    Self::main_opts_button("New Character", Message::NewCharacterButtonPressed),
+                    Self::main_opts_button(
+                        "New Character",
+                        Message::NewCharacterButtonPressed(
+                            new_character_page::Message::RaceButtonPressed
+                        )
+                    ),
                     Self::main_opts_button("Load Character", Message::LoadCharacterButtonPressed)
                 ]
                 .spacing(20),
             )
             .center(Length::Fill)
             .into(),
-            Page::NewCharacter => container(column![main_menu_btn]).into(),
+
+            Page::NewCharacter(page) => container(column![
+                page.view().map(Message::NewCharacterButtonPressed),
+                main_menu_btn
+            ])
+            .into(),
+
             Page::LoadCharacter => container(column![main_menu_btn]).into(),
         }
     }

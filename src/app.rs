@@ -1,6 +1,6 @@
 use iced::{Element, Task};
 
-use crate::{component::Component, page::Page};
+use crate::{component::Component, page::Page, pages::new_character_page};
 
 /// The main application.
 #[derive(Default)]
@@ -35,6 +35,6 @@ impl Component<Message, Task<Message>> for App {
 #[derive(Debug, Clone)]
 pub enum Message {
     MainMenuButtonPressed,
-    NewCharacterButtonPressed,
+    NewCharacterButtonPressed(new_character_page::Message),
     LoadCharacterButtonPressed,
 }

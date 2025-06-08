@@ -32,12 +32,8 @@ impl NewCharacterPage {
     }
 
     /// Creates a menu button with the given label.
-    fn create_menu_button<'a>(
-        label: &'a str,
-        on_press: Message,
-        current_menu: &MenuOpts,
-    ) -> Element<'a, Message> {
-        let style = if *current_menu == on_press.clone().into() {
+    fn create_menu_button<'a>(&'a self, label: &'a str, on_press: Message) -> Element<'a, Message> {
+        let style = if self.current_menu == on_press.clone().into() {
             styles::selected_menu_button
         } else {
             styles::menu_button
@@ -75,16 +71,8 @@ impl Component<Message, Command> for NewCharacterPage {
                 // The navigation menu pane
                 Pane::Menu => {
                     column![
-                        Self::create_menu_button(
-                            "Race",
-                            Message::RaceButtonPressed,
-                            &self.current_menu,
-                        ),
-                        Self::create_menu_button(
-                            "Class",
-                            Message::ClassButtonPressed,
-                            &self.current_menu,
-                        ),
+                        self.create_menu_button("Race", Message::RaceButtonPressed),
+                        self.create_menu_button("Class", Message::ClassButtonPressed),
                     ]
                 }
 
@@ -106,15 +94,6 @@ pub enum Message {
     ClassButtonPressed,
 }
 
-impl Into<MenuOpts> for Message {
-    fn into(self) -> MenuOpts {
-        match self {
-            Message::RaceButtonPressed => MenuOpts::Race,
-            Message::ClassButtonPressed => MenuOpts::Class,
-        }
-    }
-}
-
 /// Represents commands this page can send to the application.
 pub enum Command {
     None,
@@ -132,6 +111,15 @@ enum Pane {
 enum MenuOpts {
     Race,
     Class,
+}
+
+impl From<Message> for MenuOpts {
+    fn from(value: Message) -> Self {
+        match value {
+            Message::RaceButtonPressed => Self::Race,
+            Message::ClassButtonPressed => Self::Class,
+        }
+    }
 }
 
 mod styles {
