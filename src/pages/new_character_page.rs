@@ -3,7 +3,7 @@ use iced::{
     Element, Length,
 };
 
-use crate::component::Component;
+use crate::{component::Component, race::Race};
 
 /// Represents the `New Character` page.
 #[derive(Debug)]
@@ -13,10 +13,16 @@ pub struct NewCharacterPage {
 
     /// The currently selected option in the menu pane.
     current_menu: MenuOpts,
+
+    /// A list of all the possible races.
+    race_list: Vec<Race>,
+
+    /// The currently selected race.
+    selected_race: Option<Race>,
 }
 
 impl NewCharacterPage {
-    pub fn new() -> Self {
+    pub fn new(selected_race: Option<Race>) -> Self {
         // Ratio of the menu pane to the content pane.
         const SPLIT_RATIO: f32 = 0.2;
 
@@ -28,11 +34,13 @@ impl NewCharacterPage {
         Self {
             panes: pane_state,
             current_menu: MenuOpts::Race,
+            race_list: vec![],
+            selected_race,
         }
     }
 
     /// Creates a menu button with the given label.
-    fn create_menu_button<'a>(&'a self, label: &'a str, on_press: Message) -> Element<'a, Message> {
+    fn create_menu_button<'a>(&'a self, label: &'a str, on_press: Message) -> Element<Message> {
         let style = if self.current_menu == on_press.clone().into() {
             styles::selected_menu_button
         } else {
@@ -48,6 +56,11 @@ impl NewCharacterPage {
         ))
         .into()
     }
+
+    /// Creates a dropdown list of all availabe races.
+    fn create_race_dropdown<'a>(&'a self) -> Element<Message> {
+        todo!()
+    }
 }
 
 impl Component<Message, Command> for NewCharacterPage {
@@ -57,10 +70,13 @@ impl Component<Message, Command> for NewCharacterPage {
                 self.current_menu = MenuOpts::Race;
                 Command::None
             }
-
             Message::ClassButtonPressed => {
                 self.current_menu = MenuOpts::Class;
                 Command::None
+            }
+            Message::RaceSelected(race) => {
+                self.selected_race = race.clone();
+                Command::RaceSelected(race)
             }
         }
     }
@@ -92,11 +108,13 @@ impl Component<Message, Command> for NewCharacterPage {
 pub enum Message {
     RaceButtonPressed,
     ClassButtonPressed,
+    RaceSelected(Option<Race>),
 }
 
 /// Represents commands this page can send to the application.
 pub enum Command {
     None,
+    RaceSelected(Option<Race>),
 }
 
 /// Represents a `pane` in the page.
@@ -118,6 +136,7 @@ impl From<Message> for MenuOpts {
         match value {
             Message::RaceButtonPressed => Self::Race,
             Message::ClassButtonPressed => Self::Class,
+            Message::RaceSelected(_) => unreachable!(),
         }
     }
 }

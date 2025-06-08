@@ -5,21 +5,35 @@ use iced::{
 };
 
 use crate::{
-    app::Message,
+    app::{Message, NewCharacterPageProps},
     component::Component,
     pages::new_character_page::{self, NewCharacterPage},
+    race::Race,
 };
 
 /// Represents the various pages of the application.
 #[derive(Default)]
-pub enum Page {
+pub enum Pages {
     #[default]
     Main,
     NewCharacter(NewCharacterPage),
     LoadCharacter,
 }
 
+#[derive(Default)]
+pub struct Page {
+    current: Pages,
+    new_character_page_props: NewCharacterPageProps,
+}
+
 impl Page {
+    pub fn new(current: Pages, new_character_page_props: NewCharacterPageProps) -> Self {
+        Self {
+            current,
+            new_character_page_props,
+        }
+    }
+
     /// Creates a button in the main page.
     fn main_opts_button(name: &str, on_press: Message) -> Element<Message> {
         container(
@@ -33,19 +47,23 @@ impl Page {
 impl Component<Message, Command> for Page {
     fn update(&mut self, message: Message) -> Command {
         match message {
-            Message::MainMenuButtonPressed => Command::ChangePage(Page::Main),
+            Message::MainMenuButtonPressed => Command::ChangePage(Pages::Main),
 
             Message::NewCharacterButtonPressed(msg) => {
-                let mut new_character_page = NewCharacterPage::new();
+                let mut new_character_page =
+                    NewCharacterPage::new(self.new_character_page_props.selected_race.clone());
                 let command = new_character_page.update(msg);
                 match command {
                     new_character_page::Command::None => {
-                        Command::ChangePage(Page::NewCharacter(new_character_page))
+                        Command::ChangePage(Pages::NewCharacter(new_character_page))
+                    }
+                    new_character_page::Command::RaceSelected(race) => {
+                        Command::UpdateSelectedRace(race)
                     }
                 }
             }
 
-            Message::LoadCharacterButtonPressed => Command::ChangePage(Page::LoadCharacter),
+            Message::LoadCharacterButtonPressed => Command::ChangePage(Pages::LoadCharacter),
         }
     }
 
@@ -63,8 +81,8 @@ impl Component<Message, Command> for Page {
                 ..Default::default()
             });
 
-        match self {
-            Page::Main => container(
+        match &self.current {
+            Pages::Main => container(
                 column![
                     Self::main_opts_button(
                         "New Character",
@@ -79,18 +97,19 @@ impl Component<Message, Command> for Page {
             .center(Length::Fill)
             .into(),
 
-            Page::NewCharacter(page) => container(column![
+            Pages::NewCharacter(page) => container(column![
                 page.view().map(Message::NewCharacterButtonPressed),
                 main_menu_btn
             ])
             .into(),
 
-            Page::LoadCharacter => container(column![main_menu_btn]).into(),
+            Pages::LoadCharacter => container(column![main_menu_btn]).into(),
         }
     }
 }
 
 /// Represents commands a page can send to the application.
 pub enum Command {
-    ChangePage(Page),
+    ChangePage(Pages),
+    UpdateSelectedRace(Option<Race>),
 }
