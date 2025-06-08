@@ -1,9 +1,9 @@
 use iced::{
-    widget::{button, column, container, pane_grid, PaneGrid, Text},
+    widget::{button, column, container, pane_grid, pick_list, scrollable, PaneGrid, Text},
     Element, Length,
 };
 
-use crate::{component::Component, race::Race};
+use crate::{component::Component, race::Race, races};
 
 /// Represents the `New Character` page.
 #[derive(Debug)]
@@ -13,9 +13,6 @@ pub struct NewCharacterPage {
 
     /// The currently selected option in the menu pane.
     current_menu: MenuOpts,
-
-    /// A list of all the possible races.
-    race_list: Vec<Race>,
 
     /// The currently selected race.
     selected_race: Option<Race>,
@@ -31,10 +28,11 @@ impl NewCharacterPage {
         let split = pane_state.split(pane_grid::Axis::Vertical, pane, Pane::Content);
         pane_state.resize(split.expect("Invalid split").1, SPLIT_RATIO);
 
+        // TODO: Setup race_list!
+
         Self {
             panes: pane_state,
             current_menu: MenuOpts::Race,
-            race_list: vec![],
             selected_race,
         }
     }
@@ -58,12 +56,20 @@ impl NewCharacterPage {
     }
 
     /// Creates a dropdown list of all availabe races.
-    fn create_race_dropdown<'a>(&'a self) -> Element<Message> {
-        todo!()
+    fn create_race_dropdown<'a>(&'a self, races: Vec<Race>) -> Element<Message> {
+        let dropdown = pick_list(races, self.selected_race.as_ref(), Message::RaceSelected)
+            .style(styles::dropdown)
+            .menu_style(styles::dropdown_item)
+            .placeholder("Select your race:");
+
+        container(scrollable(column![dropdown]))
+            .padding(5)
+            .center_x(Length::Fill)
+            .into()
     }
 }
 
-impl Component<Message, Command> for NewCharacterPage {
+impl<'a> Component<Message, Command> for NewCharacterPage {
     fn update(&mut self, message: Message) -> Command {
         match message {
             Message::RaceButtonPressed => {
@@ -75,8 +81,8 @@ impl Component<Message, Command> for NewCharacterPage {
                 Command::None
             }
             Message::RaceSelected(race) => {
-                self.selected_race = race.clone();
-                Command::RaceSelected(race)
+                self.selected_race = Some(race.clone());
+                Command::RaceSelected(Some(race))
             }
         }
     }
@@ -94,7 +100,7 @@ impl Component<Message, Command> for NewCharacterPage {
 
                 // The content pane
                 Pane::Content => {
-                    column![]
+                    column![self.create_race_dropdown(races::races())]
                 }
             })
             .style(styles::panes)
@@ -103,12 +109,20 @@ impl Component<Message, Command> for NewCharacterPage {
     }
 }
 
+impl Clone for NewCharacterPage {
+    fn clone(&self) -> Self {
+        let mut cloned = Self::new(self.selected_race.clone());
+        cloned.current_menu = self.current_menu.clone();
+        cloned
+    }
+}
+
 /// Represents the messages/events handled by the `NewCharacterPage`.
 #[derive(Debug, Clone)]
 pub enum Message {
     RaceButtonPressed,
     ClassButtonPressed,
-    RaceSelected(Option<Race>),
+    RaceSelected(Race),
 }
 
 /// Represents commands this page can send to the application.
@@ -125,7 +139,7 @@ enum Pane {
 }
 
 /// Represents the options in the menu pane.
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 enum MenuOpts {
     Race,
     Class,
@@ -144,7 +158,7 @@ impl From<Message> for MenuOpts {
 mod styles {
     use iced::{
         theme::palette,
-        widget::{button, container},
+        widget::{button, container, overlay, pick_list},
         Background, Border, Color, Theme,
     };
 
@@ -211,6 +225,50 @@ mod styles {
                 .map(|bg| bg.scale_alpha(ALPHA_SCALE_FACTOR)),
             text_color: style.text_color.scale_alpha(ALPHA_SCALE_FACTOR),
             ..style
+        }
+    }
+
+    /// Style for the race dropdown.
+    pub fn dropdown(theme: &Theme, status: pick_list::Status) -> pick_list::Style {
+        let palette = theme.extended_palette();
+
+        match status {
+            pick_list::Status::Active | pick_list::Status::Opened => pick_list::Style {
+                border: Border {
+                    radius: 3.0.into(),
+                    ..Default::default()
+                },
+                text_color: palette.background.base.text,
+                placeholder_color: palette.background.weak.text,
+                handle_color: palette.primary.base.color,
+                background: Background::Color(palette.background.weak.color),
+            },
+            pick_list::Status::Hovered => pick_list::Style {
+                border: Border {
+                    radius: 3.0.into(),
+                    ..Default::default()
+                },
+                text_color: palette.background.base.text,
+                placeholder_color: palette.background.weak.text,
+                handle_color: palette.primary.base.color,
+                background: Background::Color(palette.primary.weak.color),
+            },
+        }
+    }
+
+    /// Style for each item in the race dropdown.
+    pub fn dropdown_item(theme: &Theme) -> overlay::menu::Style {
+        let palette = theme.extended_palette();
+
+        overlay::menu::Style {
+            background: Background::Color(palette.background.weak.color),
+            border: Border {
+                radius: 1.5.into(),
+                ..Default::default()
+            },
+            text_color: palette.background.base.text,
+            selected_text_color: palette.background.strong.text,
+            selected_background: Background::Color(palette.primary.weak.color),
         }
     }
 }

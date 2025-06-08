@@ -12,7 +12,7 @@ use crate::{
 };
 
 /// Represents the various pages of the application.
-#[derive(Default)]
+#[derive(Default, Clone)]
 pub enum Pages {
     #[default]
     Main,
@@ -22,8 +22,8 @@ pub enum Pages {
 
 #[derive(Default)]
 pub struct Page {
-    current: Pages,
-    new_character_page_props: NewCharacterPageProps,
+    pub current: Pages,
+    pub new_character_page_props: NewCharacterPageProps,
 }
 
 impl Page {
@@ -57,7 +57,10 @@ impl Component<Message, Command> for Page {
                     new_character_page::Command::None => {
                         Command::ChangePage(Pages::NewCharacter(new_character_page))
                     }
+
                     new_character_page::Command::RaceSelected(race) => {
+                        self.new_character_page_props.selected_race = race.clone();
+                        self.current = Pages::NewCharacter(new_character_page);
                         Command::UpdateSelectedRace(race)
                     }
                 }

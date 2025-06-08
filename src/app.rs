@@ -1,6 +1,11 @@
 use iced::{Element, Task};
 
-use crate::{component::Component, page::Page, pages::new_character_page, race::Race};
+use crate::{
+    component::Component,
+    page::{self, Page, Pages},
+    pages::new_character_page,
+    race::Race,
+};
 
 /// The main application.
 #[derive(Default)]
@@ -21,11 +26,12 @@ impl Component<Message, Task<Message>> for App {
     fn update(&mut self, message: Message) -> Task<Message> {
         let command = self.current_page.update(message);
         match command {
-            crate::page::Command::ChangePage(page) => {
+            page::Command::ChangePage(page) => {
                 self.current_page = Page::new(page, self.new_character_page_props.clone());
                 Task::none()
             }
-            crate::page::Command::UpdateSelectedRace(race) => {
+
+            page::Command::UpdateSelectedRace(race) => {
                 self.new_character_page_props.selected_race = race;
                 Task::none()
             }
