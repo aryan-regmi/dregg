@@ -65,6 +65,7 @@ impl Component<Message, Command> for Page {
     }
 }
 
+/// Represents commands a page can send to the application.
 pub enum Command {
     ChangePage(Page),
 }
