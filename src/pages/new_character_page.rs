@@ -18,10 +18,10 @@ pub struct NewCharacterPage {
     current_menu: MenuOpts,
 
     /// The currently selected race.
-    selected_race: Option<Race>,
+    pub(crate) selected_race: Option<Race>,
 
     /// The currently selected subrace.
-    selected_subrace: Option<Subrace>,
+    pub(crate) selected_subrace: Option<Subrace>,
 }
 
 impl NewCharacterPage {
@@ -33,8 +33,6 @@ impl NewCharacterPage {
         let (mut pane_state, pane) = pane_grid::State::new(Pane::Menu);
         let split = pane_state.split(pane_grid::Axis::Vertical, pane, Pane::Content);
         pane_state.resize(split.expect("Invalid split").1, SPLIT_RATIO);
-
-        // TODO: Setup race_list!
 
         Self {
             panes: pane_state,
@@ -50,23 +48,23 @@ impl NewCharacterPage {
                 self.current_menu = MenuOpts::Race;
                 Command::None
             }
+
             Message::ClassButtonPressed => {
                 self.current_menu = MenuOpts::Class;
                 Command::None
             }
-            Message::RaceSelected((mut race, msg)) => {
-                let command = race.update(msg);
-                match command {
-                    race::Command::None => {
-                        self.selected_race = Some(race.clone());
-                        Command::RaceSelected(race)
-                    }
-                    race::Command::SubraceSelected(subrace) => {
-                        self.selected_subrace = Some(subrace.clone());
-                        Command::SubraceSelected(subrace)
-                    }
+
+            Message::RaceSelected(msg) => match msg {
+                race::Message::RaceSelected(race) => {
+                    self.selected_race = Some(race.clone());
+                    Command::RaceSelected(race)
                 }
-            }
+
+                race::Message::SubraceSelected(subrace) => {
+                    self.selected_subrace = Some(subrace.clone());
+                    Command::SubraceSelected(subrace)
+                }
+            },
         }
     }
 
@@ -131,7 +129,7 @@ impl NewCharacterPage {
     /// Creates a dropdown list of all availabe races.
     fn create_race_dropdown<'a>(&'a self, races: Vec<Race>) -> Element<Message> {
         let dropdown = pick_list(races, self.selected_race.as_ref(), |race| {
-            Message::RaceSelected((race, race::Message::NoSubraceSelected))
+            Message::RaceSelected(race::Message::RaceSelected(race))
         })
         .style(styles::dropdown)
         .menu_style(styles::dropdown_item)
@@ -146,7 +144,11 @@ impl NewCharacterPage {
     /// Creates a container to display info for the selected race.
     fn create_race_info(&self) -> Element<Message> {
         if let Some(race) = &self.selected_race {
-            container(race.view().map(|_| Message::RaceButtonPressed)).into()
+            container(
+                race.view(self.selected_subrace.as_ref())
+                    .map(|msg| Message::RaceSelected(msg)),
+            )
+            .into()
         } else {
             column![].into()
         }
@@ -166,7 +168,7 @@ impl Clone for NewCharacterPage {
 pub enum Message {
     RaceButtonPressed,
     ClassButtonPressed,
-    RaceSelected((Race, race::Message)),
+    RaceSelected(race::Message),
 }
 
 /// Represents commands this page can send to the application.

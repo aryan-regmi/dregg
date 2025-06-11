@@ -46,7 +46,6 @@ pub fn dwarf() -> Race {
             subraces::hill_dwarf(),
             subraces::mountain_dwarf(),
         ]),
-        selected_subrace: None,
     }
 }
 

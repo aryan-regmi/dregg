@@ -39,9 +39,6 @@ pub struct Race {
 
     /// The various subraces of the race.
     pub subraces: Option<Vec<Subrace>>,
-
-    /// Currently selected subrace.
-    pub selected_subrace: Option<Subrace>,
 }
 
 impl Display for Race {
@@ -51,7 +48,7 @@ impl Display for Race {
 }
 
 impl Race {
-    pub fn view(&self) -> iced::Element<Message> {
+    pub fn view<'a>(&'a self, selected_subrace: Option<&'a Subrace>) -> iced::Element<Message> {
         let line = container(horizontal_rule(1.0)).padding(utils::styles::HORIZONTAL_LINE_PADDING);
 
         let title = container(
@@ -62,7 +59,10 @@ impl Race {
         )
         .padding(utils::styles::TITLE_OUTER_PAD);
 
-        let summary = self.summary.view().map(|_| Message::NoSubraceSelected);
+        let summary = self
+            .summary
+            .view()
+            .map(|_| Message::RaceSelected(self.clone()));
 
         let asi = if let Some(asi_list) = &self.asi {
             let mut content = row![Text::new("Ability Score Increase: ")
@@ -181,7 +181,7 @@ impl Race {
                 }
             }
 
-            container(content) // .padding(styles::new_character_page::SUBSECTION_PADDING)
+            container(content).padding(styles::SUBSECTION_PADDING)
         } else {
             container(row![])
         };
@@ -195,22 +195,16 @@ impl Race {
                     .size(styles::SUBSECTION_TITLE_SIZE)];
 
                 // Create radio options for each subrace
-                for (i, subrace) in subraces.iter().enumerate() {
-                    let toggle = container(radio(
-                        &subrace.name,
-                        subrace,
-                        self.selected_subrace.as_ref(),
-                        |v| {
-                            dbg!("Clicked: ", &v.name);
-                            Message::SubraceSelected(v.clone())
-                        },
-                    ))
+                for subrace in subraces {
+                    let toggle = container(radio(&subrace.name, subrace, selected_subrace, |v| {
+                        Message::SubraceSelected(v.clone())
+                    }))
                     .padding(styles::SUBSECTION_PADDING);
                     inner = inner.push(toggle);
                 }
 
                 // Display subrace info
-                if let Some(selected) = &self.selected_subrace {
+                if let Some(selected) = selected_subrace {
                     inner = inner.push(selected.view())
                 }
 
@@ -218,7 +212,7 @@ impl Race {
             };
             content = content.push(subrace_list);
 
-            container(content) // .padding(styles::SUBSECTION_PADDING)
+            container(content).padding(styles::SUBSECTION_PADDING)
         } else {
             container(column![])
         };
@@ -227,19 +221,6 @@ impl Race {
             title, summary, line, asi, age, size, speed, traits, languages, subraces
         ])
         .into()
-    }
-
-    pub fn update(&mut self, message: Message) -> Command {
-        match message {
-            Message::NoSubraceSelected => {
-                self.selected_subrace = None;
-                Command::None
-            }
-            Message::SubraceSelected(subrace) => {
-                self.selected_subrace = Some(subrace.clone());
-                Command::SubraceSelected(subrace)
-            }
-        }
     }
 }
 
@@ -274,7 +255,10 @@ impl Subrace {
         )
         .padding(utils::styles::TITLE_OUTER_PAD);
 
-        let summary = self.summary.view().map(|_| Message::NoSubraceSelected);
+        let summary = self
+            .summary
+            .view()
+            .map(|_| Message::SubraceSelected(self.clone()));
 
         let asi = if let Some(asi_list) = &self.asi {
             let mut content = row![Text::new("Ability Score Increase: ")
@@ -371,15 +355,11 @@ impl Subrace {
 /// Represents the messages/events handled by a `Race`.
 #[derive(Debug, Clone)]
 pub enum Message {
-    NoSubraceSelected,
+    RaceSelected(Race),
     SubraceSelected(Subrace),
 }
 
 /// Represents commands the race can send to the application.
-pub enum Command {
-    None,
-    SubraceSelected(Subrace),
-}
 
 mod styles {
     #![allow(unused)]

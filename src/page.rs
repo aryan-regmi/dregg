@@ -42,18 +42,23 @@ impl Page {
                     self.new_character_page_props.selected_race.clone(),
                     self.new_character_page_props.selected_subrace.clone(),
                 );
+
                 let command = new_character_page.update(msg);
                 match command {
                     new_character_page::Command::None => {
                         Command::ChangePage(Pages::NewCharacter(new_character_page))
                     }
+
                     new_character_page::Command::RaceSelected(race) => {
                         self.new_character_page_props.selected_race = Some(race.clone());
+                        new_character_page.selected_race = Some(race.clone());
                         self.current = Pages::NewCharacter(new_character_page);
                         Command::UpdateSelectedRace(race)
                     }
+
                     new_character_page::Command::SubraceSelected(subrace) => {
                         self.new_character_page_props.selected_subrace = Some(subrace.clone());
+                        new_character_page.selected_subrace = Some(subrace.clone());
                         self.current = Pages::NewCharacter(new_character_page);
                         Command::UpdateSelectedSubrace(subrace)
                     }
