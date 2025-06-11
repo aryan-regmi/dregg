@@ -1,5 +1,5 @@
 use iced::{
-    widget::{button, column, container, pane_grid, pick_list, scrollable, PaneGrid, Text},
+    widget::{button, column, container, pane_grid, pick_list, row, scrollable, PaneGrid, Text},
     Element, Length,
 };
 
@@ -16,6 +16,9 @@ pub struct NewCharacterPage {
 
     /// The currently selected option in the menu pane.
     current_menu: MenuOpts,
+
+    /// The possible races to choose from.
+    availabe_races: Vec<Race>,
 
     /// The currently selected race.
     pub(crate) selected_race: Option<Race>,
@@ -37,6 +40,7 @@ impl NewCharacterPage {
         Self {
             panes: pane_state,
             current_menu: MenuOpts::Race,
+            availabe_races: races::races(),
             selected_race,
             selected_subrace,
         }
@@ -48,12 +52,10 @@ impl NewCharacterPage {
                 self.current_menu = MenuOpts::Race;
                 Command::None
             }
-
             Message::ClassButtonPressed => {
                 self.current_menu = MenuOpts::Class;
                 Command::None
             }
-
             Message::RaceSelected(msg) => match msg {
                 race::Message::RaceSelected(race) => {
                     self.selected_race = Some(race.clone());
@@ -65,6 +67,11 @@ impl NewCharacterPage {
                     Command::SubraceSelected(subrace)
                 }
             },
+            Message::CustomRaceButtonPressed => {
+                // TODO: Redirect to custom race overlay
+                dbg!("Custom Race");
+                Command::None
+            }
         }
     }
 
@@ -94,7 +101,10 @@ impl NewCharacterPage {
         match self.current_menu {
             MenuOpts::Race => scrollable(
                 column![
-                    self.create_race_dropdown(races::races()),
+                    row![
+                        self.create_race_dropdown(),
+                        self.create_custom_race_button()
+                    ],
                     self.create_race_info()
                 ]
                 .padding(5),
@@ -127,10 +137,12 @@ impl NewCharacterPage {
     }
 
     /// Creates a dropdown list of all availabe races.
-    fn create_race_dropdown<'a>(&'a self, races: Vec<Race>) -> Element<Message> {
-        let dropdown = pick_list(races, self.selected_race.as_ref(), |race| {
-            Message::RaceSelected(race::Message::RaceSelected(race))
-        })
+    fn create_race_dropdown<'a>(&'a self) -> Element<Message> {
+        let dropdown = pick_list(
+            self.availabe_races.clone(),
+            self.selected_race.as_ref(),
+            |race| Message::RaceSelected(race::Message::RaceSelected(race)),
+        )
         .style(styles::dropdown)
         .menu_style(styles::dropdown_item)
         .placeholder("Select your race:");
@@ -153,6 +165,16 @@ impl NewCharacterPage {
             column![].into()
         }
     }
+
+    /// Creates a button to create custom races.
+    fn create_custom_race_button(&self) -> Element<Message> {
+        container(container(
+            button(Text::new("Custom Race").width(Length::Fill).center())
+                .on_press(Message::CustomRaceButtonPressed),
+        ))
+        .padding(5)
+        .into()
+    }
 }
 
 impl Clone for NewCharacterPage {
@@ -169,6 +191,7 @@ pub enum Message {
     RaceButtonPressed,
     ClassButtonPressed,
     RaceSelected(race::Message),
+    CustomRaceButtonPressed,
 }
 
 /// Represents commands this page can send to the application.
@@ -197,7 +220,7 @@ impl From<Message> for MenuOpts {
         match value {
             Message::RaceButtonPressed => Self::Race,
             Message::ClassButtonPressed => Self::Class,
-            Message::RaceSelected(_) => unreachable!(),
+            Message::RaceSelected(_) | Message::CustomRaceButtonPressed => unreachable!(),
         }
     }
 }
