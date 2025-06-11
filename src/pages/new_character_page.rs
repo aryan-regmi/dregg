@@ -4,8 +4,8 @@ use iced::{
 };
 
 use crate::{
+    pages::custom_race_page::{self, CustomRace},
     race::{self, Race, Subrace},
-    races,
 };
 
 /// Represents the `New Character` page.
@@ -18,7 +18,13 @@ pub struct NewCharacterPage {
     current_menu: MenuOpts,
 
     /// The possible races to choose from.
-    availabe_races: Vec<Race>,
+    pub(crate) availabe_races: Vec<Race>,
+
+    /// Determines wheter to display the custom race overlay.
+    pub(crate) create_custom_race: bool,
+
+    /// Used to build a custom race.
+    pub(crate) custom_race: CustomRace,
 
     /// The currently selected race.
     pub(crate) selected_race: Option<Race>,
@@ -28,7 +34,12 @@ pub struct NewCharacterPage {
 }
 
 impl NewCharacterPage {
-    pub fn new(selected_race: Option<Race>, selected_subrace: Option<Subrace>) -> Self {
+    pub fn new(
+        selected_race: Option<Race>,
+        selected_subrace: Option<Subrace>,
+        availabe_races: Vec<Race>,
+        custom_race: CustomRace,
+    ) -> Self {
         // Ratio of the menu pane to the content pane.
         const SPLIT_RATIO: f32 = 0.2;
 
@@ -40,7 +51,9 @@ impl NewCharacterPage {
         Self {
             panes: pane_state,
             current_menu: MenuOpts::Race,
-            availabe_races: races::races(),
+            availabe_races,
+            create_custom_race: false,
+            custom_race,
             selected_race,
             selected_subrace,
         }
@@ -67,10 +80,17 @@ impl NewCharacterPage {
                     Command::SubraceSelected(subrace)
                 }
             },
-            Message::CustomRaceButtonPressed => {
-                // TODO: Redirect to custom race overlay
-                dbg!("Custom Race");
-                Command::None
+            Message::CustomRaceButtonPressed(msg) => {
+                self.create_custom_race = true;
+                match self.custom_race.update(msg) {
+                    custom_race_page::Command::None => Command::None,
+                    custom_race_page::Command::UpdatedCustomRace(race) => {
+                        Command::CustomRaceUpdated(race)
+                    }
+                    custom_race_page::Command::CustomRaceCreated(race) => {
+                        Command::CustomRaceAdded(race)
+                    }
+                }
             }
         }
     }
@@ -99,18 +119,27 @@ impl NewCharacterPage {
     /// Creates the content pane.
     fn create_content_pane(&self) -> Element<Message> {
         match self.current_menu {
-            MenuOpts::Race => scrollable(
-                column![
-                    row![
-                        self.create_race_dropdown(),
-                        self.create_custom_race_button()
-                    ],
-                    self.create_race_info()
-                ]
-                .padding(5),
-            )
-            .spacing(1)
-            .into(),
+            MenuOpts::Race => {
+                if self.create_custom_race {
+                    self.custom_race
+                        .view()
+                        .map(Message::CustomRaceButtonPressed)
+                } else {
+                    scrollable(
+                        column![
+                            row![
+                                self.create_race_dropdown(),
+                                self.create_custom_race_button()
+                            ]
+                            .spacing(0),
+                            self.create_race_info()
+                        ]
+                        .padding(5),
+                    )
+                    .spacing(1)
+                    .into()
+                }
+            }
 
             MenuOpts::Class => column![].into(),
         }
@@ -168,10 +197,12 @@ impl NewCharacterPage {
 
     /// Creates a button to create custom races.
     fn create_custom_race_button(&self) -> Element<Message> {
-        container(container(
-            button(Text::new("Custom Race").width(Length::Fill).center())
-                .on_press(Message::CustomRaceButtonPressed),
-        ))
+        container(
+            container(button(Text::new("Custom Race").center()).on_press(
+                Message::CustomRaceButtonPressed(custom_race_page::Message::None),
+            ))
+            .padding(0),
+        )
         .padding(5)
         .into()
     }
@@ -179,7 +210,12 @@ impl NewCharacterPage {
 
 impl Clone for NewCharacterPage {
     fn clone(&self) -> Self {
-        let mut cloned = Self::new(self.selected_race.clone(), self.selected_subrace.clone());
+        let mut cloned = Self::new(
+            self.selected_race.clone(),
+            self.selected_subrace.clone(),
+            self.availabe_races.clone(),
+            self.custom_race.clone(),
+        );
         cloned.current_menu = self.current_menu.clone();
         cloned
     }
@@ -191,7 +227,7 @@ pub enum Message {
     RaceButtonPressed,
     ClassButtonPressed,
     RaceSelected(race::Message),
-    CustomRaceButtonPressed,
+    CustomRaceButtonPressed(custom_race_page::Message),
 }
 
 /// Represents commands this page can send to the application.
@@ -199,6 +235,8 @@ pub enum Command {
     None,
     RaceSelected(Race),
     SubraceSelected(Subrace),
+    CustomRaceAdded(Race),
+    CustomRaceUpdated(CustomRace),
 }
 
 /// Represents a `pane` in the page.
@@ -220,7 +258,7 @@ impl From<Message> for MenuOpts {
         match value {
             Message::RaceButtonPressed => Self::Race,
             Message::ClassButtonPressed => Self::Class,
-            Message::RaceSelected(_) | Message::CustomRaceButtonPressed => unreachable!(),
+            Message::RaceSelected(_) | Message::CustomRaceButtonPressed(_) => unreachable!(),
         }
     }
 }

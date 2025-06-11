@@ -2,8 +2,9 @@ use iced::{Element, Task};
 
 use crate::{
     page::{self, Page},
-    pages::new_character_page,
+    pages::{custom_race_page::CustomRace, new_character_page},
     race::{Race, Subrace},
+    races,
 };
 
 /// The main application.
@@ -28,14 +29,20 @@ impl App {
                 self.current_page = Page::new(page, self.new_character_page_props.clone());
                 Task::none()
             }
-
             page::Command::UpdateSelectedRace(race) => {
                 self.new_character_page_props.selected_race = Some(race);
                 Task::none()
             }
-
             page::Command::UpdateSelectedSubrace(subrace) => {
                 self.new_character_page_props.selected_subrace = Some(subrace);
+                Task::none()
+            }
+            page::Command::UpdateCustomRace(custom_race) => {
+                self.new_character_page_props.custom_race = custom_race;
+                Task::none()
+            }
+            page::Command::AddToAvailabeRaces(race) => {
+                self.new_character_page_props.available_races.push(race);
                 Task::none()
             }
         }
@@ -48,10 +55,23 @@ impl App {
 }
 
 /// Props to pass to the `NewCharacterPage`.
-#[derive(Default, Clone)]
+#[derive(Clone)]
 pub struct NewCharacterPageProps {
     pub selected_race: Option<Race>,
     pub selected_subrace: Option<Subrace>,
+    pub available_races: Vec<Race>,
+    pub custom_race: CustomRace,
+}
+
+impl Default for NewCharacterPageProps {
+    fn default() -> Self {
+        Self {
+            selected_race: Default::default(),
+            selected_subrace: Default::default(),
+            available_races: races::races(),
+            custom_race: CustomRace::default(),
+        }
+    }
 }
 
 /// The messages sent by the app.

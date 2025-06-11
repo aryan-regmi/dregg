@@ -120,19 +120,26 @@ impl Race {
             container(content).padding(styles::SUBSECTION_PADDING)
         };
 
-        let speed = if self.speed.len() > 0 {
+        let speed = {
             let mut content = row![Text::new("Speed: ")
                 .font(utils::styles::bold_font())
                 .size(styles::SUBSECTION_TITLE_SIZE)];
-            for speed in &self.speed {
+
+            if self.speed.is_empty() {
                 content = content.push(
-                    container(Text::new(format!("{speed}")))
+                    container(Text::new(format!("You have a walking speed of 30 feet. ")))
                         .padding(utils::styles::row_adjusted_padding()),
                 )
+            } else {
+                for speed in &self.speed {
+                    content = content.push(
+                        container(Text::new(format!("{speed}")))
+                            .padding(utils::styles::row_adjusted_padding()),
+                    )
+                }
             }
+
             container(content).padding(styles::SUBSECTION_PADDING)
-        } else {
-            panic!("Races must provide at least one speed.")
         };
 
         let traits = if let Some(traits) = &self.traits {

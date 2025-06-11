@@ -6,7 +6,10 @@ use iced::{
 
 use crate::{
     app::{Message, NewCharacterPageProps},
-    pages::new_character_page::{self, NewCharacterPage},
+    pages::{
+        custom_race_page::CustomRace,
+        new_character_page::{self, NewCharacterPage},
+    },
     race::{Race, Subrace},
 };
 
@@ -41,6 +44,8 @@ impl Page {
                 let mut new_character_page = NewCharacterPage::new(
                     self.new_character_page_props.selected_race.clone(),
                     self.new_character_page_props.selected_subrace.clone(),
+                    self.new_character_page_props.available_races.clone(),
+                    self.new_character_page_props.custom_race.clone(),
                 );
 
                 let command = new_character_page.update(msg);
@@ -48,19 +53,32 @@ impl Page {
                     new_character_page::Command::None => {
                         Command::ChangePage(Pages::NewCharacter(new_character_page))
                     }
-
                     new_character_page::Command::RaceSelected(race) => {
                         self.new_character_page_props.selected_race = Some(race.clone());
                         new_character_page.selected_race = Some(race.clone());
                         self.current = Pages::NewCharacter(new_character_page);
                         Command::UpdateSelectedRace(race)
                     }
-
                     new_character_page::Command::SubraceSelected(subrace) => {
                         self.new_character_page_props.selected_subrace = Some(subrace.clone());
                         new_character_page.selected_subrace = Some(subrace.clone());
                         self.current = Pages::NewCharacter(new_character_page);
                         Command::UpdateSelectedSubrace(subrace)
+                    }
+                    new_character_page::Command::CustomRaceUpdated(race) => {
+                        self.new_character_page_props.custom_race = race.clone();
+                        new_character_page.custom_race = race.clone();
+                        self.current = Pages::NewCharacter(new_character_page);
+                        Command::UpdateCustomRace(race)
+                    }
+                    new_character_page::Command::CustomRaceAdded(race) => {
+                        self.new_character_page_props
+                            .available_races
+                            .push(race.clone());
+                        new_character_page.create_custom_race = false;
+                        new_character_page.availabe_races.push(race.clone());
+                        self.current = Pages::NewCharacter(new_character_page);
+                        Command::AddToAvailabeRaces(race)
                     }
                 }
             }
@@ -124,4 +142,6 @@ pub enum Command {
     ChangePage(Pages),
     UpdateSelectedRace(Race),
     UpdateSelectedSubrace(Subrace),
+    UpdateCustomRace(CustomRace),
+    AddToAvailabeRaces(Race),
 }
