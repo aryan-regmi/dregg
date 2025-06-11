@@ -18,19 +18,19 @@ pub struct NewCharacterPage {
     current_menu: MenuOpts,
 
     /// The possible races to choose from.
-    pub(crate) availabe_races: Vec<Race>,
+    availabe_races: Vec<Race>,
 
     /// Determines wheter to display the custom race overlay.
-    pub(crate) create_custom_race: bool,
+    create_custom_race: bool,
 
     /// Used to build a custom race.
-    pub(crate) custom_race: CustomRace,
+    custom_race: CustomRace,
 
     /// The currently selected race.
-    pub(crate) selected_race: Option<Race>,
+    selected_race: Option<Race>,
 
     /// The currently selected subrace.
-    pub(crate) selected_subrace: Option<Subrace>,
+    selected_subrace: Option<Subrace>,
 }
 
 impl NewCharacterPage {
@@ -88,6 +88,8 @@ impl NewCharacterPage {
                         Command::CustomRaceUpdated(race)
                     }
                     custom_race_page::Command::CustomRaceCreated(race) => {
+                        self.create_custom_race = false;
+                        self.availabe_races.push(race.clone());
                         Command::CustomRaceAdded(race)
                     }
                 }

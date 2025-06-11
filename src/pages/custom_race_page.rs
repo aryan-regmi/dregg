@@ -16,11 +16,18 @@ impl CustomRace {
     pub fn view(&self) -> Element<Message> {
         let input = text_input("Enter name here...", &self.0.name).on_input(Message::NameEntered);
 
-        container(column![
-            row![text("Race Name: "), input],
-            button("Create").on_press(Message::CreateButtonPressed)
-        ])
-        .padding(utils::styles::BASE_PADDING)
+        container(
+            column![
+                row![
+                    container(text("Race Name: ")).padding(utils::styles::row_adjusted_padding()),
+                    input
+                ]
+                .spacing(2),
+                button("Create").on_press(Message::CreateButtonPressed)
+            ]
+            .spacing(5),
+        )
+        .padding(styles::BASE_PADDING)
         .into()
     }
 
@@ -50,4 +57,16 @@ pub enum Command {
     None,
     UpdatedCustomRace(CustomRace),
     CustomRaceCreated(Race),
+}
+
+mod styles {
+    use iced::Padding;
+
+    use crate::utils;
+
+    pub const BASE_PADDING: Padding = Padding {
+        top: 15.0,
+        bottom: 15.0,
+        ..utils::styles::BASE_PADDING
+    };
 }
