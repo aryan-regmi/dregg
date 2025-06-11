@@ -61,7 +61,11 @@ impl Race {
 
         let summary = self
             .summary
-            .view()
+            .view(
+                utils::styles::BASE_PADDING,
+                utils::styles::SUMMARY_PADDING,
+                utils::styles::SUMMARY_SUBSECTION_PADDING,
+            )
             .map(|_| Message::RaceSelected(self.clone()));
 
         let asi = if let Some(asi_list) = &self.asi {
@@ -244,8 +248,7 @@ pub struct Subrace {
 
 impl Subrace {
     fn view(&self) -> Element<Message> {
-        let line =
-            || container(horizontal_rule(1.0)).padding(utils::styles::HORIZONTAL_LINE_PADDING);
+        let line = || container(horizontal_rule(1.0)).padding(styles::SUBRACE_LINE_PADDING);
 
         let title = container(
             container(Text::new(&self.name).size(utils::styles::TITLE_FONT_SIZE))
@@ -253,11 +256,15 @@ impl Subrace {
                 .padding(utils::styles::TITLE_INNER_PAD)
                 .style(utils::styles::title),
         )
-        .padding(utils::styles::TITLE_OUTER_PAD);
+        .padding(styles::SUBRACE_TITLE_PADDING);
 
         let summary = self
             .summary
-            .view()
+            .view(
+                styles::SUBRACE_PADDING,
+                styles::SUBRACE_SUMMARY_PADDING,
+                styles::SUBRACE_SUMMARY_SUBSECTION_PADDING,
+            )
             .map(|_| Message::SubraceSelected(self.clone()));
 
         let asi = if let Some(asi_list) = &self.asi {
@@ -278,7 +285,7 @@ impl Subrace {
             content = content.push(
                 container(Text::new(asi_text)).padding(utils::styles::row_adjusted_padding()),
             );
-            container(content).padding(styles::SUBSECTION_PADDING)
+            container(content).padding(styles::SUBRACE_PADDING)
         } else {
             container(row![])
         };
@@ -291,9 +298,9 @@ impl Subrace {
                     .size(styles::SUBSECTION_TITLE_SIZE);
                 let summary = container(Text::new(&tr.summary))
                     .padding(utils::styles::row_adjusted_padding());
-                content = content.push(row![name, summary].padding(styles::SUBSECTION_PADDING))
+                content = content.push(row![name, summary])
             }
-            container(content) // .padding(styles::SUBSECTION_PADDING)
+            container(content).padding(styles::SUBRACE_PADDING)
         } else {
             container(row![])
         };
@@ -333,7 +340,7 @@ impl Subrace {
                 }
             }
 
-            container(content) // .padding(styles::new_character_page::SUBSECTION_PADDING)
+            container(content).padding(styles::SUBRACE_PADDING)
         } else {
             container(row![])
         };
@@ -366,6 +373,8 @@ mod styles {
 
     use iced::{widget::container, Background, Border, Padding, Theme};
 
+    use crate::utils;
+
     /// The size of the subsections of a race (i.e ASI, Age, etc.).
     pub const SUBSECTION_TITLE_SIZE: f32 = 18.0;
 
@@ -397,5 +406,32 @@ mod styles {
         left: 30.0,
         right: 0.0,
         ..BASE_PADDING
+    };
+
+    pub const SUBRACE_PADDING: Padding = Padding {
+        left: 0.0,
+        ..BASE_PADDING
+    };
+
+    pub const SUBRACE_TITLE_PADDING: Padding = Padding {
+        left: 0.0,
+        right: 30.0,
+        top: 30.0,
+        bottom: 30.0,
+    };
+
+    pub const SUBRACE_SUMMARY_PADDING: Padding = Padding {
+        left: 0.0,
+        ..utils::styles::SUMMARY_PADDING
+    };
+
+    pub const SUBRACE_SUMMARY_SUBSECTION_PADDING: Padding = Padding {
+        left: 0.0,
+        ..utils::styles::SUMMARY_SUBSECTION_PADDING
+    };
+
+    pub const SUBRACE_LINE_PADDING: Padding = Padding {
+        left: 0.0,
+        ..utils::styles::HORIZONTAL_LINE_PADDING
     };
 }

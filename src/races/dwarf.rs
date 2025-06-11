@@ -1,7 +1,7 @@
 use crate::{
     race::Race,
     utils::{
-        self, darkvision, Age, AgeInfo, Attribute, Height, Language, LanguageLevel, Range, RangeTrait, Size, SizeInfo, Speed, Summary, Weight, ASI
+         darkvision, Age, AgeInfo, Attribute, Height, Language, LanguageLevel, Range, RangeTrait, Size, SizeInfo, Speed, Summary, Weight, ASI
     },
 };
 
@@ -53,9 +53,6 @@ fn summary() -> Summary {
     Summary {
         main: "Summary Here".into(),
         subsections: vec![("H1".into(), "Paragraph".into())],
-        base_padding: utils::styles::BASE_PADDING,
-        summary_padding: utils::styles::SUMMARY_PADDING,
-        summary_subsection_padding: utils::styles::SUMMARY_SUBSECTION_PADDING,
     }
 }
 
@@ -188,15 +185,12 @@ pub(super)  fn stonecunning() -> Trait {
 }
 
 mod subraces {
-    use crate::{race::Subrace, utils::{self, ArmorType, Attribute, Choice, HpIncrease, Proficiency, ProficiencyLevel, ProficiencyType, Summary, Trait, TraitEffect, ASI}};
+    use crate::{race::Subrace, utils::{ArmorType, Attribute, Choice, HpIncrease, Proficiency, ProficiencyLevel, ProficiencyType, Summary, Trait, TraitEffect, ASI}};
 
     pub fn hill_dwarf() -> Subrace {
         let summary = Summary { 
             main: "As a hill dwarf, you have keen senses, deep intuition, and remarkable resilience. The gold dwarves of Faerûn in their mighty southern kingdom are hill dwarves, as are the exiled Neidar and the debased Klar of Krynn in the Dragonlance setting.".into(),
             subsections: vec![],
-            base_padding: utils::styles::BASE_PADDING,
-            summary_padding: utils::styles::SUMMARY_PADDING,
-            summary_subsection_padding: utils::styles::SUMMARY_SUBSECTION_PADDING,
         };
         
         Subrace{
@@ -221,9 +215,6 @@ mod subraces {
         let summary = Summary { 
             main: "As a mountain dwarf, you’re strong and hardy, accustomed to a difficult life in rugged terrain. You’re probably on the tall side (for a dwarf), and tend toward lighter coloration. The shield dwarves of northern Faerûn, as well as the ruling Hylar clan and the noble Daewar clan of Dragonlance, are mountain dwarves.s a hill dwarf, you have keen senses, deep intuition, and remarkable resilience. The gold dwarves of Faerûn in their mighty southern kingdom are hill dwarves, as are the exiled Neidar and the debased Klar of Krynn in the Dragonlance setting.".into(),
             subsections: vec![],
-            base_padding: utils::styles::BASE_PADDING,
-            summary_padding: utils::styles::SUMMARY_PADDING,
-            summary_subsection_padding: utils::styles::SUMMARY_SUBSECTION_PADDING,
         };
         
         Subrace {
