@@ -1,5 +1,7 @@
 use super::{Action, Advantage, Attribute, DamageType, Die};
 
+// TODO: Add school of magic!
+//
 /// Represents a spell.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Spell {
@@ -7,7 +9,7 @@ pub struct Spell {
     pub level: u8,
 
     /// The time required to cast the spell.
-    pub casting_time: Action,
+    pub casting_time: CastingTime,
 
     /// The max range of the spell.
     pub range: u8,
@@ -26,6 +28,12 @@ pub struct Spell {
 
     /// Extra effects of the spell at higher level character levels.
     pub higher_levels: Option<Vec<HigherLevelEffect>>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum CastingTime {
+    Action(Action),
+    Time(std::time::Duration),
 }
 
 /// Represents spell components.
