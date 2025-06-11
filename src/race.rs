@@ -73,7 +73,7 @@ impl Race {
                 .font(utils::styles::bold_font())
                 .size(styles::SUBSECTION_TITLE_SIZE)];
 
-            // TODO: Add dropdown of attributes to choose if ASI is `Any`
+            // FIXME: https://github.com/aryan-regmi/dregg/issues/3
             let mut asi_text = String::with_capacity(128);
             for asi in asi_list {
                 if asi.attribute == Attribute::Any {
@@ -279,7 +279,7 @@ impl Subrace {
                 .font(utils::styles::bold_font())
                 .size(styles::SUBSECTION_TITLE_SIZE)];
 
-            // TODO: Add dropdown of attributes to choose if ASI is `Any`
+            // FIXME: https://github.com/aryan-regmi/dregg/issues/3
             let mut asi_text = String::with_capacity(128);
             for asi in asi_list {
                 if asi.attribute == Attribute::Any {

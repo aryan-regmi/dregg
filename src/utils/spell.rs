@@ -1,6 +1,6 @@
 use super::{Action, Advantage, Attribute, DamageType, Die};
 
-// TODO: Add school of magic!
+// FIXME: https://github.com/aryan-regmi/dregg/issues/4
 //
 /// Represents a spell.
 #[derive(Debug, Clone, PartialEq, Eq)]

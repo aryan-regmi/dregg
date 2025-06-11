@@ -3,7 +3,7 @@ use iced::{
     Element,
 };
 
-use crate::race::Race;
+use crate::{race::Race, utils};
 
 #[derive(Debug, Clone, Default)]
 pub struct CustomRace(pub(crate) Race);
@@ -14,14 +14,13 @@ impl CustomRace {
     }
 
     pub fn view(&self) -> Element<Message> {
-        // TODO: Add fields to create race, then add the created race to `self.availabe_races`
-
-        let input = text_input("", &self.0.name).on_input(Message::NameEntered);
+        let input = text_input("Enter name here...", &self.0.name).on_input(Message::NameEntered);
 
         container(column![
-            row![text("Enter Name: "), input],
+            row![text("Race Name: "), input],
             button("Create").on_press(Message::CreateButtonPressed)
         ])
+        .padding(utils::styles::BASE_PADDING)
         .into()
     }
 

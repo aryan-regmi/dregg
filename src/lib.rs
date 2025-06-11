@@ -4,5 +4,3 @@ pub mod pages;
 pub mod race;
 pub mod races;
 pub mod utils;
-
-// FIXME: Implment custom race first!

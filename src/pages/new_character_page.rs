@@ -369,7 +369,7 @@ mod styles {
         let palette = theme.extended_palette();
 
         overlay::menu::Style {
-            background: Background::Color(palette.background.weak.color),
+            background: Background::Color(palette.background.strong.color),
             border: Border {
                 radius: 1.5.into(),
                 ..Default::default()

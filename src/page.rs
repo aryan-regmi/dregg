@@ -54,11 +54,13 @@ impl Page {
                         Command::ChangePage(Pages::NewCharacter(new_character_page))
                     }
                     new_character_page::Command::RaceSelected(race) => {
+                        self.new_character_page_props.selected_race = Some(race.clone());
                         new_character_page.selected_race = Some(race.clone());
                         self.current = Pages::NewCharacter(new_character_page);
                         Command::UpdateSelectedRace(race)
                     }
                     new_character_page::Command::SubraceSelected(subrace) => {
+                        self.new_character_page_props.selected_subrace = Some(subrace.clone());
                         new_character_page.selected_subrace = Some(subrace.clone());
                         self.current = Pages::NewCharacter(new_character_page);
                         Command::UpdateSelectedSubrace(subrace)
@@ -69,6 +71,9 @@ impl Page {
                         Command::UpdateCustomRace(race)
                     }
                     new_character_page::Command::CustomRaceAdded(race) => {
+                        self.new_character_page_props
+                            .available_races
+                            .push(race.clone());
                         new_character_page.create_custom_race = false;
                         new_character_page.availabe_races.push(race.clone());
                         self.current = Pages::NewCharacter(new_character_page);
