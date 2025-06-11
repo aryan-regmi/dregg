@@ -6,7 +6,7 @@ use iced::{
 use crate::utils;
 
 /// Represents a summary/description.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, Default)]
 pub struct Summary {
     pub main: String,
     pub subsections: Vec<(String, String)>,
@@ -15,8 +15,16 @@ pub struct Summary {
     pub summary_subsection_padding: Padding,
 }
 
+impl PartialEq for Summary {
+    fn eq(&self, other: &Self) -> bool {
+        self.main == other.main && self.subsections == other.subsections
+    }
+}
+
+impl Eq for Summary {}
+
 impl Summary {
-    pub fn view<'a, Message: 'a>(&'a self) -> iced::Element<Message> {
+    pub fn view(&self) -> iced::Element<()> {
         let mut content = column![];
 
         let main = container(Text::new(self.main.clone())).padding(self.summary_padding);

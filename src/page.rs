@@ -7,7 +7,7 @@ use iced::{
 use crate::{
     app::{Message, NewCharacterPageProps},
     pages::new_character_page::{self, NewCharacterPage},
-    race::Race,
+    race::{Race, Subrace},
 };
 
 /// Represents the various pages of the application.
@@ -38,18 +38,24 @@ impl Page {
             Message::MainMenuButtonPressed => Command::ChangePage(Pages::Main),
 
             Message::NewCharacterButtonPressed(msg) => {
-                let mut new_character_page =
-                    NewCharacterPage::new(self.new_character_page_props.selected_race.clone());
+                let mut new_character_page = NewCharacterPage::new(
+                    self.new_character_page_props.selected_race.clone(),
+                    self.new_character_page_props.selected_subrace.clone(),
+                );
                 let command = new_character_page.update(msg);
                 match command {
                     new_character_page::Command::None => {
                         Command::ChangePage(Pages::NewCharacter(new_character_page))
                     }
-
                     new_character_page::Command::RaceSelected(race) => {
-                        self.new_character_page_props.selected_race = race.clone();
+                        self.new_character_page_props.selected_race = Some(race.clone());
                         self.current = Pages::NewCharacter(new_character_page);
                         Command::UpdateSelectedRace(race)
+                    }
+                    new_character_page::Command::SubraceSelected(subrace) => {
+                        self.new_character_page_props.selected_subrace = Some(subrace.clone());
+                        self.current = Pages::NewCharacter(new_character_page);
+                        Command::UpdateSelectedSubrace(subrace)
                     }
                 }
             }
@@ -111,5 +117,6 @@ impl Page {
 /// Represents commands a page can send to the application.
 pub enum Command {
     ChangePage(Pages),
-    UpdateSelectedRace(Option<Race>),
+    UpdateSelectedRace(Race),
+    UpdateSelectedSubrace(Subrace),
 }

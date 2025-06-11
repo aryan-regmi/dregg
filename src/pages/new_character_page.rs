@@ -3,7 +3,10 @@ use iced::{
     Element, Length,
 };
 
-use crate::{race::Race, races};
+use crate::{
+    race::{self, Race, Subrace},
+    races,
+};
 
 /// Represents the `New Character` page.
 #[derive(Debug)]
@@ -16,10 +19,13 @@ pub struct NewCharacterPage {
 
     /// The currently selected race.
     selected_race: Option<Race>,
+
+    /// The currently selected subrace.
+    selected_subrace: Option<Subrace>,
 }
 
 impl NewCharacterPage {
-    pub fn new(selected_race: Option<Race>) -> Self {
+    pub fn new(selected_race: Option<Race>, selected_subrace: Option<Subrace>) -> Self {
         // Ratio of the menu pane to the content pane.
         const SPLIT_RATIO: f32 = 0.2;
 
@@ -34,6 +40,7 @@ impl NewCharacterPage {
             panes: pane_state,
             current_menu: MenuOpts::Race,
             selected_race,
+            selected_subrace,
         }
     }
 
@@ -47,9 +54,18 @@ impl NewCharacterPage {
                 self.current_menu = MenuOpts::Class;
                 Command::None
             }
-            Message::RaceSelected(race) => {
-                self.selected_race = Some(race.clone());
-                Command::RaceSelected(Some(race))
+            Message::RaceSelected((mut race, msg)) => {
+                let command = race.update(msg);
+                match command {
+                    race::Command::None => {
+                        self.selected_race = Some(race.clone());
+                        Command::RaceSelected(race)
+                    }
+                    race::Command::SubraceSelected(subrace) => {
+                        self.selected_subrace = Some(subrace.clone());
+                        Command::SubraceSelected(subrace)
+                    }
+                }
             }
         }
     }
@@ -78,11 +94,16 @@ impl NewCharacterPage {
     /// Creates the content pane.
     fn create_content_pane(&self) -> Element<Message> {
         match self.current_menu {
-            MenuOpts::Race => column![
-                self.create_race_dropdown(races::races()),
-                self.create_race_info()
-            ]
+            MenuOpts::Race => scrollable(
+                column![
+                    self.create_race_dropdown(races::races()),
+                    self.create_race_info()
+                ]
+                .padding(5),
+            )
+            .spacing(1)
             .into(),
+
             MenuOpts::Class => column![].into(),
         }
     }
@@ -109,10 +130,12 @@ impl NewCharacterPage {
 
     /// Creates a dropdown list of all availabe races.
     fn create_race_dropdown<'a>(&'a self, races: Vec<Race>) -> Element<Message> {
-        let dropdown = pick_list(races, self.selected_race.as_ref(), Message::RaceSelected)
-            .style(styles::dropdown)
-            .menu_style(styles::dropdown_item)
-            .placeholder("Select your race:");
+        let dropdown = pick_list(races, self.selected_race.as_ref(), |race| {
+            Message::RaceSelected((race, race::Message::NoSubraceSelected))
+        })
+        .style(styles::dropdown)
+        .menu_style(styles::dropdown_item)
+        .placeholder("Select your race:");
 
         container(scrollable(column![dropdown]))
             .padding(5)
@@ -123,7 +146,7 @@ impl NewCharacterPage {
     /// Creates a container to display info for the selected race.
     fn create_race_info(&self) -> Element<Message> {
         if let Some(race) = &self.selected_race {
-            container(race.view()).into()
+            container(race.view().map(|_| Message::RaceButtonPressed)).into()
         } else {
             column![].into()
         }
@@ -132,7 +155,7 @@ impl NewCharacterPage {
 
 impl Clone for NewCharacterPage {
     fn clone(&self) -> Self {
-        let mut cloned = Self::new(self.selected_race.clone());
+        let mut cloned = Self::new(self.selected_race.clone(), self.selected_subrace.clone());
         cloned.current_menu = self.current_menu.clone();
         cloned
     }
@@ -143,13 +166,14 @@ impl Clone for NewCharacterPage {
 pub enum Message {
     RaceButtonPressed,
     ClassButtonPressed,
-    RaceSelected(Race),
+    RaceSelected((Race, race::Message)),
 }
 
 /// Represents commands this page can send to the application.
 pub enum Command {
     None,
-    RaceSelected(Option<Race>),
+    RaceSelected(Race),
+    SubraceSelected(Subrace),
 }
 
 /// Represents a `pane` in the page.

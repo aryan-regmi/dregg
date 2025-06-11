@@ -51,7 +51,7 @@ impl std::fmt::Display for Size {
 }
 
 /// Represents the size info for a race.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Default)]
 pub struct SizeInfo {
     /// The size category.
     pub category: Size,

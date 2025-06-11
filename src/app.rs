@@ -3,7 +3,7 @@ use iced::{Element, Task};
 use crate::{
     page::{self, Page},
     pages::new_character_page,
-    race::Race,
+    race::{Race, Subrace},
 };
 
 /// The main application.
@@ -30,7 +30,12 @@ impl App {
             }
 
             page::Command::UpdateSelectedRace(race) => {
-                self.new_character_page_props.selected_race = race;
+                self.new_character_page_props.selected_race = Some(race);
+                Task::none()
+            }
+
+            page::Command::UpdateSelectedSubrace(subrace) => {
+                self.new_character_page_props.selected_subrace = Some(subrace);
                 Task::none()
             }
         }
@@ -46,6 +51,7 @@ impl App {
 #[derive(Default, Clone)]
 pub struct NewCharacterPageProps {
     pub selected_race: Option<Race>,
+    pub selected_subrace: Option<Subrace>,
 }
 
 /// The messages sent by the app.
