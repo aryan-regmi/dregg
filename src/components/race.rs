@@ -15,6 +15,11 @@ pub enum Action {
 pub struct Race {
     /// The name of the race.
     pub name: String,
+
+    /// The plural name of the race.
+    ///
+    /// This is used for stringifying certain values.
+    pub plural_name: String,
 }
 
 impl Display for Race {

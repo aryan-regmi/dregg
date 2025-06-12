@@ -15,6 +15,9 @@ pub enum Message {
 
     /// Update selected race.
     RaceSelected(Race),
+
+    /// Create a custom race
+    CustomRaceCreator,
 }
 
 /// Actions to communicate with parent of the component.
@@ -27,6 +30,9 @@ pub enum Action {
 
     /// Update selected race.
     UpdateSelectedRace(Race),
+
+    /// Opens the custom race creator.
+    OpenCustomRaceCreator,
 }
 
 /// The different types of panes in the `NewCharacter` component.
@@ -89,14 +95,17 @@ impl NewCharacter {
                 Action::None
             }
 
-            // Return to main menu
+            // Display main menu
             Message::MainMenu => Action::MainMenu,
 
-            // Update the selected race
+            // Update selected race
             Message::RaceSelected(race) => {
                 self.selected_race = Some(race.clone());
                 Action::UpdateSelectedRace(race)
             }
+
+            // Create custom race
+            Message::CustomRaceCreator => Action::OpenCustomRaceCreator,
         }
     }
 
@@ -113,7 +122,10 @@ impl NewCharacter {
 
                 // The content pane
                 Pane::Content => {
-                    widget::column![self.race_dropdown(all_races())]
+                    widget::column![widget::row![
+                        self.race_dropdown(all_races()),
+                        widget::button("+ Race").on_press(Message::CustomRaceCreator)
+                    ],]
                 }
             })
         });
