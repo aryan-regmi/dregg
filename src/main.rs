@@ -15,7 +15,7 @@ enum Message {
 
     LoadCharacterView,
 
-    RaceCreator(custom_race_creator::Message),
+    RaceCreatorView(custom_race_creator::Message),
 }
 
 #[derive(Default)]
@@ -61,7 +61,6 @@ impl App {
 
                     // Open the custom race creator
                     new_character::Action::OpenCustomRaceCreator => {
-                        // TODO: Call update func of `race_creator`
                         let race_creator = CustomRaceCreator::new(&self.race_creator_summary);
                         self.view = View::CustomRaceCreator(race_creator);
                         return iced::Task::none();
@@ -76,7 +75,7 @@ impl App {
             }
 
             // Create and update `CustomRaceCreator`
-            Message::RaceCreator(message) => {
+            Message::RaceCreatorView(message) => {
                 if let View::CustomRaceCreator(component) = &mut self.view {
                     match component.update(message) {
                         custom_race_creator::Action::None => {}
@@ -116,7 +115,7 @@ impl App {
             .into(),
 
             View::CustomRaceCreator(component) => {
-                widget::column![component.view().map(Message::RaceCreator)]
+                widget::column![component.view().map(Message::RaceCreatorView)]
                     .padding(10)
                     .into()
             }
