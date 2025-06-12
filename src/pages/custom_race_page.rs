@@ -14,16 +14,10 @@ pub struct CustomRace {
 
 impl Clone for CustomRace {
     fn clone(&self) -> Self {
-        // let rev = self
-        //     .summary_content
-        //     .text()
-        //     .chars()
-        //     .rev()
-        //     .collect::<String>();
-
         Self {
             race: self.race.clone(),
-            summary_content: text_editor::Content::with_text(&self.summary_content.text()),
+            // summary_content: text_editor::Content::with_text(&self.summary_content.text()),
+            summary_content: text_editor::Content::new(),
             summary_text: self.summary_text.clone(),
         }
     }
@@ -67,7 +61,9 @@ impl CustomRace {
 
         let summary = row![
             container(text("Summary: ")).padding(utils::styles::row_adjusted_padding()),
-            text_editor(&self.summary_content).on_action(Message::SummaryEdited),
+            text_editor(&self.summary_content)
+                .placeholder(&self.summary_text)
+                .on_action(Message::SummaryEdited),
         ];
 
         let create_race_button = button("Create").on_press(Message::CreateButtonPressed);
@@ -89,39 +85,75 @@ impl CustomRace {
                 Command::UpdatedCustomRace(self.clone())
             }
             Message::SummaryEdited(action) => {
-                match action {
-                    text_editor::Action::Move(motion) => {}
-                    text_editor::Action::Select(motion) => {}
-                    text_editor::Action::SelectWord => {}
-                    text_editor::Action::SelectLine => {}
-                    text_editor::Action::SelectAll => {}
-                    text_editor::Action::Edit(edit) => match edit {
-                        text_editor::Edit::Insert(c) => {
-                            self.summary_text.push(c);
-                        }
-                        text_editor::Edit::Paste(val) => {
-                            self.summary_text = (*val).clone();
-                        }
-                        text_editor::Edit::Enter => {}
-                        text_editor::Edit::Backspace => {
-                            self.summary_text.pop();
-                        }
-                        text_editor::Edit::Delete => {
-                            self.summary_text.remove(0);
-                        }
-                    },
-                    text_editor::Action::Click(point) => {}
-                    text_editor::Action::Drag(point) => {}
-                    text_editor::Action::Scroll { lines } => {}
-                }
-                self.summary_content = text_editor::Content::with_text(&self.summary_text);
+                self.handle_editor2(action);
+                self.summary_text.push_str(&self.summary_content.text());
                 Command::UpdatedCustomRace(self.clone())
             }
             Message::CreateButtonPressed => {
                 self.race.summary.main = self.summary_text.clone();
+                self.summary_text.clear();
                 Command::CustomRaceCreated(self.race.clone())
             }
         }
+    }
+
+    fn handle_editor(&mut self, action: text_editor::Action) {
+        let mut remove = 0;
+        match action {
+            text_editor::Action::Move(motion) => {
+                self.summary_content
+                    .perform(text_editor::Action::Move(motion));
+            }
+            text_editor::Action::Select(motion) => {
+                self.summary_content
+                    .perform(text_editor::Action::Select(motion));
+            }
+            text_editor::Action::SelectWord => {
+                self.summary_content
+                    .perform(text_editor::Action::SelectWord);
+            }
+            text_editor::Action::SelectLine => {
+                self.summary_content
+                    .perform(text_editor::Action::SelectLine);
+            }
+            text_editor::Action::SelectAll => {
+                self.summary_content.perform(text_editor::Action::SelectAll);
+            }
+            text_editor::Action::Edit(edit) => match edit {
+                text_editor::Edit::Insert(c) => {
+                    self.summary_text.push(c);
+                }
+                text_editor::Edit::Paste(val) => {
+                    self.summary_text = (*val).clone();
+                }
+                text_editor::Edit::Enter => {
+                    self.summary_text.push('\n');
+                }
+                text_editor::Edit::Backspace => {
+                    self.summary_text.pop();
+                }
+                text_editor::Edit::Delete => {
+                    remove += 1;
+                    self.summary_text.remove(remove - 1);
+                }
+            },
+            text_editor::Action::Click(point) => {
+                self.summary_content
+                    .perform(text_editor::Action::Click(point));
+            }
+            text_editor::Action::Drag(point) => {
+                self.summary_content
+                    .perform(text_editor::Action::Drag(point));
+            }
+            text_editor::Action::Scroll { lines } => {
+                self.summary_content
+                    .perform(text_editor::Action::Scroll { lines });
+            }
+        }
+    }
+
+    fn handle_editor2(&mut self, action: text_editor::Action) {
+        self.summary_content.perform(action);
     }
 }
 
