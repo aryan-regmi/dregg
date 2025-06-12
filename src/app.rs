@@ -55,7 +55,6 @@ impl App {
 }
 
 /// Props to pass to the `NewCharacterPage`.
-#[derive(Clone)]
 pub struct NewCharacterPageProps {
     pub selected_race: Option<Race>,
     pub selected_subrace: Option<Subrace>,
@@ -70,6 +69,17 @@ impl Default for NewCharacterPageProps {
             selected_subrace: Default::default(),
             available_races: races::races(),
             custom_race: CustomRace::default(),
+        }
+    }
+}
+
+impl Clone for NewCharacterPageProps {
+    fn clone(&self) -> Self {
+        Self {
+            selected_race: self.selected_race.clone(),
+            selected_subrace: self.selected_subrace.clone(),
+            available_races: self.available_races.clone(),
+            custom_race: self.custom_race.clone(),
         }
     }
 }
