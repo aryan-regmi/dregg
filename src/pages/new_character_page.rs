@@ -61,6 +61,7 @@ impl NewCharacterPage {
 
     pub fn update(&mut self, message: Message) -> Command {
         match message {
+            Message::InitialEntry => Command::InitialView,
             Message::RaceButtonPressed => {
                 self.current_menu = MenuOpts::Race;
                 Command::None
@@ -84,6 +85,7 @@ impl NewCharacterPage {
                 self.create_custom_race = true;
                 match self.custom_race.update(msg) {
                     custom_race_page::Command::None => Command::None,
+                    custom_race_page::Command::InitialView => Command::InitialView,
                     custom_race_page::Command::UpdatedCustomRace(race) => {
                         Command::CustomRaceUpdated(race)
                     }
@@ -201,7 +203,7 @@ impl NewCharacterPage {
     fn create_custom_race_button(&self) -> Element<Message> {
         container(
             container(button(Text::new("Custom Race").center()).on_press(
-                Message::CustomRaceButtonPressed(custom_race_page::Message::None),
+                Message::CustomRaceButtonPressed(custom_race_page::Message::InitialEntry),
             ))
             .padding(0),
         )
@@ -226,6 +228,7 @@ impl Clone for NewCharacterPage {
 /// Represents the messages/events handled by the `NewCharacterPage`.
 #[derive(Debug, Clone)]
 pub enum Message {
+    InitialEntry,
     RaceButtonPressed,
     ClassButtonPressed,
     RaceSelected(race::Message),
@@ -235,6 +238,7 @@ pub enum Message {
 /// Represents commands this page can send to the application.
 pub enum Command {
     None,
+    InitialView,
     RaceSelected(Race),
     SubraceSelected(Subrace),
     CustomRaceAdded(Race),
@@ -258,7 +262,7 @@ enum MenuOpts {
 impl From<Message> for MenuOpts {
     fn from(value: Message) -> Self {
         match value {
-            Message::RaceButtonPressed => Self::Race,
+            Message::RaceButtonPressed | Message::InitialEntry => Self::Race,
             Message::ClassButtonPressed => Self::Class,
             Message::RaceSelected(_) | Message::CustomRaceButtonPressed(_) => unreachable!(),
         }

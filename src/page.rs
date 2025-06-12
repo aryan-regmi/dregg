@@ -50,7 +50,8 @@ impl Page {
 
                 let command = new_character_page.update(msg);
                 match command {
-                    new_character_page::Command::None => {
+                    new_character_page::Command::None => Command::None,
+                    new_character_page::Command::InitialView => {
                         Command::ChangePage(Pages::NewCharacter(new_character_page))
                     }
                     new_character_page::Command::RaceSelected(race) => {
@@ -102,7 +103,7 @@ impl Page {
                     Self::main_opts_button(
                         "New Character",
                         Message::NewCharacterButtonPressed(
-                            new_character_page::Message::RaceButtonPressed
+                            new_character_page::Message::InitialEntry
                         )
                     ),
                     Self::main_opts_button("Load Character", Message::LoadCharacterButtonPressed)
@@ -134,6 +135,7 @@ impl Page {
 
 /// Represents commands a page can send to the application.
 pub enum Command {
+    None,
     ChangePage(Pages),
     UpdateSelectedRace(Race),
     UpdateSelectedSubrace(Subrace),

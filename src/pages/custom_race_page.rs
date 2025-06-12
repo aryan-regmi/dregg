@@ -16,8 +16,8 @@ impl Clone for CustomRace {
     fn clone(&self) -> Self {
         Self {
             race: self.race.clone(),
-            // summary_content: text_editor::Content::with_text(&self.summary_content.text()),
-            summary_content: text_editor::Content::new(),
+            summary_content: text_editor::Content::with_text(&self.summary_text),
+            // summary_content: text_editor::Content::new(),
             summary_text: self.summary_text.clone(),
         }
     }
@@ -27,7 +27,7 @@ impl CustomRace {
     pub fn new(race: Race, summary_text: String) -> Self {
         Self {
             race,
-            summary_content: text_editor::Content::with_text(&summary_text),
+            summary_content: text_editor::Content::new(),
             summary_text,
         }
     }
@@ -76,6 +76,7 @@ impl CustomRace {
     pub fn update(&mut self, message: Message) -> Command {
         match message {
             Message::None => Command::None,
+            Message::InitialEntry => Command::InitialView,
             Message::NameEntered(name) => {
                 self.race.name = name.clone();
                 Command::UpdatedCustomRace(self.clone())
@@ -85,80 +86,26 @@ impl CustomRace {
                 Command::UpdatedCustomRace(self.clone())
             }
             Message::SummaryEdited(action) => {
-                self.handle_editor2(action);
-                self.summary_text.push_str(&self.summary_content.text());
-                Command::UpdatedCustomRace(self.clone())
+                self.summary_content.perform(action);
+                self.summary_text = self.summary_content.text().chars().rev().collect();
+                self.summary_content = text_editor::Content::with_text(&self.summary_text);
+                // self.summary_text = self.summary_content.text();
+                // self.summary_text.push_str(&self.summary_content.text());
+                // Command::UpdatedCustomRace(self.clone())
+                Command::None
             }
             Message::CreateButtonPressed => {
                 self.race.summary.main = self.summary_text.clone();
-                self.summary_text.clear();
+                // self.summary_text.clear();
                 Command::CustomRaceCreated(self.race.clone())
             }
         }
-    }
-
-    fn handle_editor(&mut self, action: text_editor::Action) {
-        let mut remove = 0;
-        match action {
-            text_editor::Action::Move(motion) => {
-                self.summary_content
-                    .perform(text_editor::Action::Move(motion));
-            }
-            text_editor::Action::Select(motion) => {
-                self.summary_content
-                    .perform(text_editor::Action::Select(motion));
-            }
-            text_editor::Action::SelectWord => {
-                self.summary_content
-                    .perform(text_editor::Action::SelectWord);
-            }
-            text_editor::Action::SelectLine => {
-                self.summary_content
-                    .perform(text_editor::Action::SelectLine);
-            }
-            text_editor::Action::SelectAll => {
-                self.summary_content.perform(text_editor::Action::SelectAll);
-            }
-            text_editor::Action::Edit(edit) => match edit {
-                text_editor::Edit::Insert(c) => {
-                    self.summary_text.push(c);
-                }
-                text_editor::Edit::Paste(val) => {
-                    self.summary_text = (*val).clone();
-                }
-                text_editor::Edit::Enter => {
-                    self.summary_text.push('\n');
-                }
-                text_editor::Edit::Backspace => {
-                    self.summary_text.pop();
-                }
-                text_editor::Edit::Delete => {
-                    remove += 1;
-                    self.summary_text.remove(remove - 1);
-                }
-            },
-            text_editor::Action::Click(point) => {
-                self.summary_content
-                    .perform(text_editor::Action::Click(point));
-            }
-            text_editor::Action::Drag(point) => {
-                self.summary_content
-                    .perform(text_editor::Action::Drag(point));
-            }
-            text_editor::Action::Scroll { lines } => {
-                self.summary_content
-                    .perform(text_editor::Action::Scroll { lines });
-            }
-        }
-    }
-
-    fn handle_editor2(&mut self, action: text_editor::Action) {
-        self.summary_content.perform(action);
     }
 }
 
 #[derive(Debug, Clone)]
 pub enum Message {
+    InitialEntry,
     None,
     NameEntered(String),
     PluralNameEntered(String),
@@ -169,6 +116,7 @@ pub enum Message {
 #[derive(Debug)]
 pub enum Command {
     None,
+    InitialView,
     UpdatedCustomRace(CustomRace),
     CustomRaceCreated(Race),
 }

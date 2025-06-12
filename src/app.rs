@@ -25,6 +25,8 @@ impl App {
     pub fn update(&mut self, message: Message) -> Task<Message> {
         let command = self.current_page.update(message);
         match command {
+            page::Command::None => Task::none(),
+
             page::Command::ChangePage(page) => {
                 self.current_page = Page::new(page, self.new_character_page_props.clone());
                 Task::none()
