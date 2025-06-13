@@ -1,9 +1,21 @@
 use iced::widget;
 
+use crate::{components::race::Race, utils};
+
 #[derive(Debug, Clone)]
 pub enum Message {
-    Edit(widget::text_editor::Action),
+    /// The race name was edited.
+    NameEdit(String),
 
+    /// The race summary was edited.
+    SummaryEdit(widget::text_editor::Action),
+
+    /// The race plural name was edited.
+    PluralNameEdit(String),
+
+    // TODO: Validate inputs!
+    //
+    /// The custom race is ready to be created.
     Create,
 }
 
@@ -11,34 +23,35 @@ pub enum Action {
     /// No action required.
     None,
 
-    /// Update the summary text.
-    UpdateSummaryText(String),
-
     /// Returns to `NewCharacter` page.
-    CreateAndReturn,
+    CreateAndReturn(Race),
 }
 
 /// The custom race creator component.
 #[derive(Default, Debug)]
 pub struct CustomRaceCreator {
     /// The name of the race.
-    pub name: Option<String>,
+    name: String,
 
     /// The plural name of the race.
     ///
     /// This is used for stringifying certain values.
-    pub plural_name: Option<String>,
+    plural_name: Option<String>,
 
-    pub summary_editor: widget::text_editor::Content,
+    /// The content of the summary text input field.
+    summary_editor: widget::text_editor::Content,
+
+    /// Ability score increases provided by the race.
+    asi: Option<Vec<utils::ASI>>,
 }
 
 impl CustomRaceCreator {
-    pub fn new(summary_text: &str) -> Self {
-        let summary_editor = widget::text_editor::Content::with_text(summary_text);
+    pub fn new() -> Self {
         Self {
-            name: None,
+            name: String::with_capacity(256),
             plural_name: None,
-            summary_editor,
+            summary_editor: widget::text_editor::Content::new(),
+            asi: None,
         }
     }
 }
@@ -46,20 +59,66 @@ impl CustomRaceCreator {
 impl CustomRaceCreator {
     pub fn update(&mut self, message: Message) -> Action {
         match message {
-            Message::Edit(action) => {
+            Message::SummaryEdit(action) => {
                 self.summary_editor.perform(action);
                 Action::UpdateSummaryText(self.summary_editor.text())
             }
-            Message::Create => Action::CreateAndReturn,
+            Message::NameEdit(name) => {
+                self.name = name.clone();
+                Action::UpdateName(name)
+            }
+            Message::PluralNameEdit(plural_name) => {
+                self.plural_name = Some(plural_name.clone());
+                Action::UpdatePluralName(plural_name)
+            }
+            Message::Create => Action::CreateAndReturn(self.into()),
         }
     }
 
     pub fn view(&self) -> iced::Element<Message> {
+        let title =
+            widget::container(widget::text("Create Custom Race:").center()).center_x(iced::Fill);
+
+        let name = widget::row![
+            widget::container(widget::text("Name: ")),
+            widget::text_input("Enter name here...", &self.name).on_input(Message::NameEdit)
+        ];
+
+        let plural_name = widget::row![
+            widget::container(widget::text("Plural Name: ")),
+            widget::text_input(
+                "Enter plural name here...",
+                self.plural_name.as_ref().unwrap_or_else(|| &self.name)
+            )
+            .on_input(Message::PluralNameEdit)
+        ];
+
+        let summary = widget::row![
+            widget::container(widget::text("Summary: ")),
+            widget::text_editor(&self.summary_editor).on_action(Message::SummaryEdit),
+        ];
+
         widget::column![
-            widget::text_editor(&self.summary_editor).on_action(Message::Edit),
+            title,
+            name,
+            plural_name,
+            summary,
             widget::button("Create").on_press(Message::Create)
         ]
+        .spacing(5)
         .padding(20)
         .into()
+    }
+}
+
+impl Into<Race> for &mut CustomRaceCreator {
+    fn into(self) -> Race {
+        Race {
+            name: self.name.clone(),
+            plural_name: self
+                .plural_name
+                .clone()
+                .unwrap_or_else(|| self.name.clone()),
+        }
     }
 }

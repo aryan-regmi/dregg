@@ -1,7 +1,10 @@
-use dregg::components::{
-    custom_race_creator::{self, CustomRaceCreator},
-    new_character::{self, NewCharacter},
-    race::Race,
+use dregg::{
+    all_races,
+    components::{
+        custom_race_creator::{self, CustomRaceCreator},
+        new_character::{self, NewCharacter},
+        race::Race,
+    },
 };
 use iced::widget;
 
@@ -27,7 +30,7 @@ enum View {
     CustomRaceCreator(custom_race_creator::CustomRaceCreator),
 }
 
-#[derive(Default)]
+// TODO: Move props to specific structs/types.
 struct App {
     /// The current view.
     view: View,
@@ -35,8 +38,26 @@ struct App {
     /// The selected race.
     selected_race: Option<Race>,
 
-    /// Summary for the race creator.
-    race_creator_summary: String,
+    /// The available races for a character.
+    available_races: Vec<Race>,
+
+    /// The name for the custom race.
+    custom_race_name: String,
+
+    /// The plural name for the custom race.
+    custom_race_plural_name: String,
+}
+
+impl Default for App {
+    fn default() -> Self {
+        Self {
+            view: Default::default(),
+            selected_race: Default::default(),
+            available_races: all_races(),
+            custom_race_name: Default::default(),
+            custom_race_plural_name: Default::default(),
+        }
+    }
 }
 
 impl App {
@@ -44,7 +65,8 @@ impl App {
         match message {
             // Create and update `NewCharacterView`
             Message::NewCharacterView(msg) => {
-                let mut component = NewCharacter::new(self.selected_race.clone());
+                let mut component =
+                    NewCharacter::new(self.selected_race.clone(), self.available_races.clone());
                 match component.update(msg) {
                     new_character::Action::None => {}
 
@@ -61,7 +83,7 @@ impl App {
 
                     // Open the custom race creator
                     new_character::Action::OpenCustomRaceCreator => {
-                        let race_creator = CustomRaceCreator::new(&self.race_creator_summary);
+                        let race_creator = CustomRaceCreator::new();
                         self.view = View::CustomRaceCreator(race_creator);
                         return iced::Task::none();
                     }
@@ -76,22 +98,7 @@ impl App {
 
             // Create and update `CustomRaceCreator`
             Message::RaceCreatorView(message) => {
-                if let View::CustomRaceCreator(component) = &mut self.view {
-                    match component.update(message) {
-                        custom_race_creator::Action::None => {}
-
-                        // Update the summary text
-                        custom_race_creator::Action::UpdateSummaryText(txt) => {
-                            self.race_creator_summary = txt
-                        }
-
-                        // Create the custom race and return to the `NewCharacterView`
-                        custom_race_creator::Action::CreateAndReturn => {
-                            let new_character = NewCharacter::new(self.selected_race.clone());
-                            self.view = View::NewCharacter(new_character);
-                        }
-                    }
-                }
+                self.handle_race_creator_events(message);
             }
         }
 
@@ -118,6 +125,35 @@ impl App {
                 widget::column![component.view().map(Message::RaceCreatorView)]
                     .padding(10)
                     .into()
+            }
+        }
+    }
+}
+
+impl App {
+    /// Handles the `RaceCreatorView` events.
+    fn handle_race_creator_events(&mut self, message: custom_race_creator::Message) {
+        if let View::CustomRaceCreator(component) = &mut self.view {
+            match component.update(message) {
+                custom_race_creator::Action::None => {}
+
+                custom_race_creator::Action::CreateAndReturn(race) => {
+                    // Add to available races
+                    self.available_races.push(race);
+
+                    // Return to `NewCharacter` page
+                    let new_character =
+                        NewCharacter::new(self.selected_race.clone(), self.available_races.clone());
+                    self.view = View::NewCharacter(new_character);
+                }
+
+                custom_race_creator::Action::UpdateName(name) => {
+                    self.custom_race_name = name;
+                }
+
+                custom_race_creator::Action::UpdatePluralName(plural_name) => {
+                    self.custom_race_plural_name = plural_name;
+                }
             }
         }
     }

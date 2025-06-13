@@ -1,5 +1,6 @@
 pub mod components;
 pub mod races;
+pub mod utils;
 
 pub use races::all_races;
 

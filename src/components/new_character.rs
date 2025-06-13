@@ -1,6 +1,6 @@
 use iced::widget;
 
-use crate::{all_races, components::race::Race};
+use crate::components::race::Race;
 
 #[derive(Debug, Clone)]
 pub enum Message {
@@ -60,10 +60,13 @@ pub struct NewCharacter {
 
     /// The race chosen by the user.
     selected_race: Option<Race>,
+
+    /// Available races to choose from.
+    available_races: Vec<Race>,
 }
 
 impl NewCharacter {
-    pub fn new(selected_race: Option<Race>) -> Self {
+    pub fn new(selected_race: Option<Race>, available_races: Vec<Race>) -> Self {
         // Ratio of the menu pane to the content pane.
         const SPLIT_RATIO: f32 = 0.2;
 
@@ -76,6 +79,7 @@ impl NewCharacter {
             panes,
             selected_menu: MenuOpts::Race,
             selected_race,
+            available_races,
         }
     }
 }
@@ -113,20 +117,17 @@ impl NewCharacter {
         let panes = widget::pane_grid(&self.panes, |_, state, _| {
             widget::pane_grid::Content::new(match state {
                 // The navigation menu pane
-                Pane::Menu => {
-                    widget::column![
-                        self.menu_button("Race", Message::RaceView),
-                        self.menu_button("Class", Message::ClassView),
-                    ]
-                }
+                Pane::Menu => widget::column![
+                    self.menu_button("Race", Message::RaceView),
+                    self.menu_button("Class", Message::ClassView),
+                ]
+                .into(),
 
                 // The content pane
-                Pane::Content => {
-                    widget::column![widget::row![
-                        self.race_dropdown(all_races()),
-                        widget::button("+ Race").on_press(Message::CustomRaceCreator)
-                    ],]
-                }
+                Pane::Content => match self.selected_menu {
+                    MenuOpts::Race => self.race_content(),
+                    MenuOpts::Class => self.class_content(),
+                },
             })
         });
 
@@ -150,6 +151,7 @@ impl NewCharacter {
         .into()
     }
 
+    /// Creates the dropdown of races to choose from.
     fn race_dropdown<'a>(&'a self, races: Vec<Race>) -> iced::Element<Message> {
         let dropdown = widget::pick_list(races, self.selected_race.as_ref(), |race| {
             Message::RaceSelected(race)
@@ -158,5 +160,19 @@ impl NewCharacter {
         widget::container(widget::scrollable(dropdown))
             .center_x(iced::Fill)
             .into()
+    }
+
+    /// Displays the content pane of the race.
+    fn race_content(&self) -> iced::Element<Message> {
+        widget::column![widget::row![
+            self.race_dropdown(self.available_races.clone()),
+            widget::button("+ Race").on_press(Message::CustomRaceCreator)
+        ],]
+        .into()
+    }
+
+    /// Displays the content pane of the class.
+    fn class_content(&self) -> iced::Element<Message> {
+        widget::column![].into()
     }
 }
