@@ -1,6 +1,6 @@
 use iced::widget;
 
-use crate::{components::race::Race, utils};
+use crate::components::race::Race;
 
 #[derive(Debug, Clone)]
 pub enum Message {
@@ -40,9 +40,8 @@ pub struct CustomRaceCreator {
 
     /// The content of the summary text input field.
     summary_editor: widget::text_editor::Content,
-
-    /// Ability score increases provided by the race.
-    asi: Option<Vec<utils::ASI>>,
+    // /// Ability score increases provided by the race.
+    // asi: Option<Vec<utils::ASI>>,
 }
 
 impl CustomRaceCreator {
@@ -51,7 +50,7 @@ impl CustomRaceCreator {
             name: String::with_capacity(256),
             plural_name: None,
             summary_editor: widget::text_editor::Content::new(),
-            asi: None,
+            // asi: None,
         }
     }
 }
@@ -61,15 +60,15 @@ impl CustomRaceCreator {
         match message {
             Message::SummaryEdit(action) => {
                 self.summary_editor.perform(action);
-                Action::UpdateSummaryText(self.summary_editor.text())
+                Action::None
             }
             Message::NameEdit(name) => {
-                self.name = name.clone();
-                Action::UpdateName(name)
+                self.name = name;
+                Action::None
             }
             Message::PluralNameEdit(plural_name) => {
-                self.plural_name = Some(plural_name.clone());
-                Action::UpdatePluralName(plural_name)
+                self.plural_name = Some(plural_name);
+                Action::None
             }
             Message::Create => Action::CreateAndReturn(self.into()),
         }

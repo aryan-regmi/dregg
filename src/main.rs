@@ -40,12 +40,6 @@ struct App {
 
     /// The available races for a character.
     available_races: Vec<Race>,
-
-    /// The name for the custom race.
-    custom_race_name: String,
-
-    /// The plural name for the custom race.
-    custom_race_plural_name: String,
 }
 
 impl Default for App {
@@ -54,8 +48,6 @@ impl Default for App {
             view: Default::default(),
             selected_race: Default::default(),
             available_races: all_races(),
-            custom_race_name: Default::default(),
-            custom_race_plural_name: Default::default(),
         }
     }
 }
@@ -145,14 +137,6 @@ impl App {
                     let new_character =
                         NewCharacter::new(self.selected_race.clone(), self.available_races.clone());
                     self.view = View::NewCharacter(new_character);
-                }
-
-                custom_race_creator::Action::UpdateName(name) => {
-                    self.custom_race_name = name;
-                }
-
-                custom_race_creator::Action::UpdatePluralName(plural_name) => {
-                    self.custom_race_plural_name = plural_name;
                 }
             }
         }
