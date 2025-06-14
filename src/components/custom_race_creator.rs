@@ -75,16 +75,10 @@ pub struct CustomRaceCreator {
     size: Option<utils::Size>,
 
     /// The average height for the race.
-    height: Option<f32>,
+    height: Option<String>,
 
-    /// Determines if the height input has been edited.
-    height_first_edit: bool,
-
-    /// The average weight for the race..
-    weight: Option<f32>,
-
-    /// Determines if the height input has been edited.
-    weight_first_edit: bool,
+    /// The average weight for the race.
+    weight: Option<String>,
 }
 
 impl CustomRaceCreator {
@@ -105,27 +99,17 @@ impl CustomRaceCreator {
                 lifespan: None,
             },
             size: Some(utils::Size::Medium),
-            height: Some(0.0),
-            height_first_edit: true,
-            weight: Some(0.0),
-            weight_first_edit: true,
+            height: None,
+            weight: None,
         }
     }
 
-    /// Correctly displays a float value text input.
-    fn format_float(value: Option<f32>, first_edit: bool) -> String {
+    /// Correctly displays an int value text input.
+    fn format_int(value: Option<usize>, default_repr: &str) -> String {
         if let Some(value) = value {
-            if first_edit {
-                String::new()
-            } else {
-                if value.fract() == 0.0 {
-                    format!("{value:.0}.")
-                } else {
-                    format!("{value:.}")
-                }
-            }
+            format!("{value}")
         } else {
-            String::new()
+            default_repr.into()
         }
     }
 }
@@ -179,17 +163,11 @@ impl CustomRaceCreator {
                 Action::None
             }
             Message::SizeHeightEdit(height) => {
-                self.height_first_edit = false;
-                if let Ok(height) = height.parse::<f32>() {
-                    self.height = Some(height);
-                }
+                self.height = Some(height);
                 Action::None
             }
             Message::SizeWeightEdit(weight) => {
-                self.weight_first_edit = false;
-                if let Ok(weight) = weight.parse::<f32>() {
-                    self.weight = Some(weight);
-                }
+                self.weight = Some(weight);
                 Action::None
             }
             Message::Create => Action::CreateAndReturn(self.into()),
@@ -243,19 +221,18 @@ impl CustomRaceCreator {
         };
 
         let age = {
-            let adult_age = self.age.adult.as_ref().unwrap_or_else(|| &utils::Age(0));
-            let lifespan = self.age.lifespan.as_ref().unwrap_or_else(|| &utils::Age(0));
+            let adult_age = Self::format_int(self.age.adult.clone().map(|v| v.0), "");
+            let lifespan = Self::format_int(self.age.lifespan.clone().map(|v| v.0), "");
 
             widget::row![
                 widget::container(widget::text("Age (when considered adult): ")),
-                widget::text_input("", &adult_age.to_string()).on_input(Message::AgeAdultEdit),
+                widget::text_input("", &adult_age).on_input(Message::AgeAdultEdit),
                 widget::container(widget::text("Age (average lifespan): ")),
                 widget::text_input("", &lifespan.to_string()).on_input(Message::AgeLifespanEdit),
             ]
         };
 
         let size = {
-            // TODO: Add category radio button, add height and weight inputs
             let mut content = widget::row![widget::container(widget::text("Size: ")),];
 
             // Size category
@@ -272,23 +249,18 @@ impl CustomRaceCreator {
             // Height
             {
                 let label = widget::container(widget::text("Height (ft): "));
-                let input_str = &Self::format_float(self.height, self.height_first_edit);
-                let input = widget::text_input("", input_str).on_input(Message::SizeHeightEdit);
+                let input =
+                    widget::text_input("", &self.height.clone().unwrap_or_else(|| String::new()))
+                        .on_input(Message::SizeHeightEdit);
                 content = content.push(widget::row![label, input]);
             }
 
             // Weight
             {
                 let label = widget::container(widget::text("Weight (lbs): "));
-                let input_str = {
-                    let weight = self.weight.unwrap_or_else(|| 0.0);
-                    if weight == 0.0 {
-                        ""
-                    } else {
-                        &weight.to_string()
-                    }
-                };
-                let input = widget::text_input("", input_str).on_input(Message::SizeWeightEdit);
+                let input =
+                    widget::text_input("", &self.weight.clone().unwrap_or_else(|| String::new()))
+                        .on_input(Message::SizeWeightEdit);
                 content = content.push(widget::row![label, input]);
             }
 
@@ -322,6 +294,3 @@ impl Into<Race> for &mut CustomRaceCreator {
         }
     }
 }
-
-/// Determines if this the initial render.
-static mut FIRST_ZERO: bool = true;
