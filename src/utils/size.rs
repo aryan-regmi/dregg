@@ -28,7 +28,7 @@ impl std::fmt::Display for Weight {
 }
 
 /// Represents the size of a character.
-#[derive(Debug, Clone, PartialEq, Default)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum Size {
     Tiny,
     Small,
@@ -49,6 +49,15 @@ impl std::fmt::Display for Size {
         }
     }
 }
+
+/// All the sizes.
+pub const SIZES: [Size; 5] = [
+    Size::Tiny,
+    Size::Small,
+    Size::Medium,
+    Size::Large,
+    Size::Gargantuan,
+];
 
 /// Represents the size info for a race.
 #[derive(Debug, Clone, PartialEq, Default)]

@@ -12,8 +12,8 @@ impl std::fmt::Display for Age {
 #[derive(Debug, Default, Clone, PartialEq)]
 pub struct AgeInfo {
     /// The age at which a character is considered an adult.
-    pub adult: Age,
+    pub adult: Option<Age>,
 
     /// The average lifespan of a character.
-    pub lifespan: Age,
+    pub lifespan: Option<Age>,
 }
