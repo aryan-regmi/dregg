@@ -107,7 +107,11 @@ impl CustomRaceCreator {
     /// Correctly displays an int value text input.
     fn format_int(value: Option<usize>, default_repr: &str) -> String {
         if let Some(value) = value {
-            format!("{value}")
+            if value == 0 {
+                default_repr.into()
+            } else {
+                format!("{value}")
+            }
         } else {
             default_repr.into()
         }
@@ -194,7 +198,9 @@ impl CustomRaceCreator {
 
         let summary = widget::row![
             widget::container(widget::text("Summary: ")),
-            widget::text_editor(&self.summary_editor).on_action(Message::SummaryEdit),
+            widget::text_editor(&self.summary_editor)
+                .on_action(Message::SummaryEdit)
+                .height(iced::Length::FillPortion(1))
         ];
 
         let asi = {
@@ -203,7 +209,9 @@ impl CustomRaceCreator {
             let mut inner = widget::column![];
             for asi in &self.asi {
                 let label = widget::container(widget::text(format!("{}: ", asi.attribute)));
-                let input = widget::text_input("0", &asi.value.to_string())
+                let input_str = Self::format_int(Some(asi.value as usize), "");
+                // let input = widget::text_input("0", &asi.value.to_string())
+                let input = widget::text_input("0", &input_str)
                     .on_input(|value| Message::UpdateASI((asi.attribute, value)));
                 let counters = {
                     let increment =
