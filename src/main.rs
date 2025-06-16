@@ -128,11 +128,16 @@ impl App {
         if let View::CustomRaceCreator(component) = &mut self.view {
             match component.update(message) {
                 custom_race_creator::Action::None => {}
-
                 custom_race_creator::Action::CreateAndReturn(race) => {
                     // Add to available races
                     self.available_races.push(race);
 
+                    // Return to `NewCharacter` page
+                    let new_character =
+                        NewCharacter::new(self.selected_race.clone(), self.available_races.clone());
+                    self.view = View::NewCharacter(new_character);
+                }
+                custom_race_creator::Action::Cancel => {
                     // Return to `NewCharacter` page
                     let new_character =
                         NewCharacter::new(self.selected_race.clone(), self.available_races.clone());

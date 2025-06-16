@@ -62,14 +62,20 @@ pub enum Message {
     //
     /// The custom race is ready to be created.
     Create,
+
+    /// Cancels the creation of a new race and returns to the previous page.
+    Cancel,
 }
 
 pub enum Action {
     /// No action required.
     None,
 
-    /// Returns to `NewCharacter` page.
+    /// Creates a new race and returns to `NewCharacter` page.
     CreateAndReturn(Race),
+
+    /// Returns to `NewCharacter` page without creating a new race.
+    Cancel,
 }
 
 /// The custom race creator component.
@@ -104,16 +110,13 @@ pub struct CustomRaceCreator {
     /// The speed for the race.
     speed: Vec<utils::Speed>,
 
-    // TODO: Replace this with view field like the `App` struct
-    //   - Main with this struct's contents
-    //   - TraitCreator(CustomTraitCreator)
-    //   - SpellCreator(CustomTraitCreator)  --> Maybe
-    //
     /// Determines whether a new trait is being added to the race.
     display_trait_creator: bool,
 
     /// The custom trait creator used to add traits to the race.
     trait_creator: Option<custom_trait_creator::CustomTraitCreator>,
+
+    traits: Vec<utils::Trait>,
 }
 
 impl CustomRaceCreator {
@@ -139,6 +142,7 @@ impl CustomRaceCreator {
             speed: utils::SPEEDS.into(),
             display_trait_creator: false,
             trait_creator: None,
+            traits: vec![],
         }
     }
 
@@ -242,18 +246,22 @@ impl CustomRaceCreator {
                 if let Some(trait_creator) = &mut self.trait_creator {
                     let command = trait_creator.update(message);
                     match command {
-                        custom_trait_creator::Action::None => Action::None,
+                        custom_trait_creator::Action::None => {}
                         custom_trait_creator::Action::Cancel => {
                             self.display_trait_creator = false;
                             self.trait_creator = None;
-                            Action::None
+                        }
+                        custom_trait_creator::Action::Create(custom_trait) => {
+                            self.traits.push(custom_trait);
+                            self.display_trait_creator = false;
+                            self.trait_creator = None;
                         }
                     }
-                } else {
-                    Action::None
                 }
+                Action::None
             }
             Message::Create => Action::CreateAndReturn(self.into()),
+            Message::Cancel => Action::Cancel,
         }
     }
 
@@ -386,16 +394,19 @@ impl CustomRaceCreator {
                 content
             };
 
-            // TODO: Add Traits fields
-            //  - "Add Effect" button:
-            //      - Name and summary inputs
-            //      - Required level input
-            //      - Input for tags (separated by comma)
-            //      - Dropdown list of trait effects
-            //      - Display corresponding inputs, depending on the type
-
-            let traits =
-                widget::row![widget::button("Add Effect").on_press(Message::DisplayTraitCreator)];
+            let traits = if self.traits.is_empty() {
+                widget::container(widget::column![
+                    widget::button("Add Trait").on_press(Message::DisplayTraitCreator)
+                ])
+            } else {
+                let mut content = widget::column![widget::text("Traits:")];
+                for tr in &self.traits {
+                    let name = widget::text(format!("{}: ", tr.name));
+                    let summary = widget::text(tr.summary.clone());
+                    content = content.push(widget::row![name, summary]);
+                }
+                widget::container(content)
+            };
 
             widget::scrollable(
                 widget::column![
@@ -408,7 +419,10 @@ impl CustomRaceCreator {
                     size,
                     speed,
                     traits,
-                    widget::button("Create").on_press(Message::Create)
+                    widget::row![
+                        widget::button("Back").on_press(Message::Cancel),
+                        widget::button("Create").on_press(Message::Create)
+                    ]
                 ]
                 .spacing(5)
                 .padding(20),
