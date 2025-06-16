@@ -1,12 +1,22 @@
 pub mod age;
 pub mod attributes;
+pub mod proficiency;
 pub mod range;
 pub mod size;
+pub mod skills;
+pub mod speed;
+pub mod spell;
+pub mod traits;
 
 pub use age::*;
 pub use attributes::*;
+pub use proficiency::*;
 pub use range::*;
 pub use size::*;
+pub use skills::*;
+pub use speed::*;
+pub use spell::*;
+pub use traits::*;
 
 /// Represents various choices a character can make.
 #[derive(Debug, Clone, PartialEq, Eq)]

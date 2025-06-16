@@ -13,14 +13,14 @@ pub enum Message {
     /// The race plural name was edited.
     PluralNameEdit(String),
 
-    /// Increase the given ASI value by one.
-    IncrementCounter(utils::Attribute),
-
-    /// Decrease the given ASI value by one.
-    DecrementCounter(utils::Attribute),
-
     /// Updates the ASI to the given value.
     UpdateASI((utils::Attribute, String)),
+
+    /// Increase the given ASI value by one.
+    IncrementASI(utils::Attribute),
+
+    /// Decrease the given ASI value by one.
+    DecrementASI(utils::Attribute),
 
     /// Updates the selected size of the race.
     SizeSelected(utils::Size),
@@ -36,6 +36,15 @@ pub enum Message {
 
     /// The height of the race was edited.
     SizeWeightEdit(String),
+
+    /// Updates the speed to the given value.
+    UpdateSpeed((utils::Movement, String)),
+
+    /// Increase the given Speed value by one.
+    IncrementSpeed(utils::Movement),
+
+    /// Decrease the given Speed value by one.
+    DecrementSpeed(utils::Movement),
 
     // TODO: Validate inputs!
     //
@@ -79,6 +88,9 @@ pub struct CustomRaceCreator {
 
     /// The average weight for the race.
     weight: Option<String>,
+
+    /// The speed for the race.
+    speed: Vec<utils::Speed>,
 }
 
 impl CustomRaceCreator {
@@ -101,6 +113,7 @@ impl CustomRaceCreator {
             size: Some(utils::Size::Medium),
             height: None,
             weight: None,
+            speed: utils::SPEEDS.into(),
         }
     }
 
@@ -133,24 +146,24 @@ impl CustomRaceCreator {
                 self.plural_name = Some(plural_name);
                 Action::None
             }
-            Message::IncrementCounter(attribute) => {
+            Message::UpdateASI((attribute, value)) => {
+                let asi = self.asi.iter_mut().find(|v| v.attribute == attribute);
+                if let Some(asi) = asi {
+                    asi.value = value.parse().unwrap_or_default();
+                }
+                Action::None
+            }
+            Message::IncrementASI(attribute) => {
                 let asi = self.asi.iter_mut().find(|v| v.attribute == attribute);
                 if let Some(asi) = asi {
                     asi.value = asi.value.checked_add(1).unwrap_or_else(|| asi.value);
                 }
                 Action::None
             }
-            Message::DecrementCounter(attribute) => {
+            Message::DecrementASI(attribute) => {
                 let asi = self.asi.iter_mut().find(|v| v.attribute == attribute);
                 if let Some(asi) = asi {
                     asi.value = asi.value.checked_sub(1).unwrap_or_else(|| asi.value);
-                }
-                Action::None
-            }
-            Message::UpdateASI((attribute, value)) => {
-                let asi = self.asi.iter_mut().find(|v| v.attribute == attribute);
-                if let Some(asi) = asi {
-                    asi.value = value.parse().unwrap_or_default();
                 }
                 Action::None
             }
@@ -172,6 +185,27 @@ impl CustomRaceCreator {
             }
             Message::SizeWeightEdit(weight) => {
                 self.weight = Some(weight);
+                Action::None
+            }
+            Message::UpdateSpeed((movement, value)) => {
+                let speed = self.speed.iter_mut().find(|s| s.movement == movement);
+                if let Some(speed) = speed {
+                    speed.value = value.parse().unwrap_or_default();
+                }
+                Action::None
+            }
+            Message::IncrementSpeed(movement) => {
+                let speed = self.speed.iter_mut().find(|s| s.movement == movement);
+                if let Some(speed) = speed {
+                    speed.value = speed.value.checked_add(1).unwrap_or_else(|| 0);
+                }
+                Action::None
+            }
+            Message::DecrementSpeed(movement) => {
+                let speed = self.speed.iter_mut().find(|s| s.movement == movement);
+                if let Some(speed) = speed {
+                    speed.value = speed.value.checked_sub(1).unwrap_or_else(|| 0);
+                }
                 Action::None
             }
             Message::Create => Action::CreateAndReturn(self.into()),
@@ -196,34 +230,30 @@ impl CustomRaceCreator {
             .on_input(Message::PluralNameEdit)
         ];
 
-        let summary = widget::row![
+        let summary = widget::column![widget::row![
             widget::container(widget::text("Summary: ")),
             widget::text_editor(&self.summary_editor)
                 .on_action(Message::SummaryEdit)
-                .height(iced::Length::FillPortion(1))
-        ];
+                .height(iced::Length::Fixed(200.0))
+        ]];
 
         let asi = {
-            let mut content = widget::row![widget::container(widget::text("Choose ASIs: "))];
+            let mut content = widget::column![widget::container(widget::text("Choose ASIs: "))];
 
-            let mut inner = widget::column![];
             for asi in &self.asi {
                 let label = widget::container(widget::text(format!("{}: ", asi.attribute)));
                 let input_str = Self::format_int(Some(asi.value as usize), "");
-                // let input = widget::text_input("0", &asi.value.to_string())
                 let input = widget::text_input("0", &input_str)
                     .on_input(|value| Message::UpdateASI((asi.attribute, value)));
                 let counters = {
                     let increment =
-                        widget::button("+").on_press(Message::IncrementCounter(asi.attribute));
+                        widget::button("+").on_press(Message::IncrementASI(asi.attribute));
                     let decrement =
-                        widget::button("-").on_press(Message::DecrementCounter(asi.attribute));
+                        widget::button("-").on_press(Message::DecrementASI(asi.attribute));
                     widget::row![increment, decrement]
                 };
-                inner = inner.push(widget::row![label, input, counters]);
-                inner = inner.push(widget::vertical_space());
+                content = content.push(widget::row![label, input, counters]);
             }
-            content = content.push(inner);
 
             content
         };
@@ -275,18 +305,42 @@ impl CustomRaceCreator {
             content
         };
 
-        widget::column![
-            title,
-            name,
-            plural_name,
-            summary,
-            asi,
-            age,
-            size,
-            widget::button("Create").on_press(Message::Create)
-        ]
-        .spacing(5)
-        .padding(20)
+        let speed = {
+            let mut content = widget::column![widget::container(widget::text("Choose Speeds: "))];
+
+            for speed in &self.speed {
+                let label = widget::container(widget::text(format!("{}: ", speed.to_string())));
+                let input_str = Self::format_int(Some(speed.value as usize), "");
+                let input = widget::text_input("0", &input_str)
+                    .on_input(|value| Message::UpdateSpeed((speed.movement, value)));
+                let counters = {
+                    let increment =
+                        widget::button("+").on_press(Message::IncrementSpeed(speed.movement));
+                    let decrement =
+                        widget::button("-").on_press(Message::DecrementSpeed(speed.movement));
+                    widget::row![increment, decrement]
+                };
+                content = content.push(widget::row![label, input, counters]);
+            }
+
+            content
+        };
+
+        widget::scrollable(
+            widget::column![
+                title,
+                name,
+                plural_name,
+                summary,
+                asi,
+                age,
+                size,
+                speed,
+                widget::button("Create").on_press(Message::Create)
+            ]
+            .spacing(5)
+            .padding(20),
+        )
         .into()
     }
 }
