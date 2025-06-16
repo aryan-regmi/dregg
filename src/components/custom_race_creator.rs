@@ -104,6 +104,11 @@ pub struct CustomRaceCreator {
     /// The speed for the race.
     speed: Vec<utils::Speed>,
 
+    // TODO: Replace this with view field like the `App` struct
+    //   - Main with this struct's contents
+    //   - TraitCreator(CustomTraitCreator)
+    //   - SpellCreator(CustomTraitCreator)  --> Maybe
+    //
     /// Determines whether a new trait is being added to the race.
     display_trait_creator: bool,
 

@@ -20,10 +20,10 @@ pub enum Action {
 #[derive(Default, Debug)]
 pub struct CustomTraitCreator {
     /// The name of the trait.
-    name: String,
+    _name: String,
 
     /// The content of the summary text input field.
-    summary_editor: widget::text_editor::Content,
+    _summary_editor: widget::text_editor::Content,
 
     /// The required level to gain access to the trait.
     pub required_level: Option<u8>,
