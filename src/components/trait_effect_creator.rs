@@ -7,6 +7,21 @@ pub enum Message {
     /// The vision type has been selected.
     VisionRadioSelected(utils::Vision),
 
+    /// The vision value has been updated.
+    VisionInputEdit(String),
+
+    /// The saving throw advantage type has been selected.
+    SavingThrowAdvantageSelected(utils::Advantage),
+
+    /// The saving throw type has been selected.
+    SavingThrowTypeSelected(utils::SavingThrowType),
+
+    /// The saving throw attribute has been selected.
+    SavingThrowAttributeSelected(utils::Attribute),
+
+    /// The saving throw damage has been selected.
+    SavingThrowDamageSelected(utils::DamageType),
+
     /// Back button pressed.
     BackButtonPressed,
 
@@ -32,6 +47,18 @@ pub struct TraitEffectCreator {
 
     /// Currently selected vision radio button.
     selected_vision: Option<utils::Vision>,
+
+    /// Currently selected saving throw advantage radio button.
+    selected_saving_throw_advantage: Option<utils::Advantage>,
+
+    /// Currently selected saving throw type radio button.
+    selected_saving_throw_type: Option<utils::SavingThrowType>,
+
+    /// Currently selected saving throw attribute radio button.
+    selected_saving_throw_attribute: Option<utils::Attribute>,
+
+    /// Currently selected saving throw attribute radio button.
+    selected_saving_throw_damage: Option<utils::DamageType>,
 }
 
 impl TraitEffectCreator {
@@ -40,6 +67,10 @@ impl TraitEffectCreator {
         Self {
             effect,
             selected_vision: None,
+            selected_saving_throw_advantage: None,
+            selected_saving_throw_type: None,
+            selected_saving_throw_attribute: None,
+            selected_saving_throw_damage: None,
         }
     }
 
@@ -52,6 +83,123 @@ impl TraitEffectCreator {
             utils::Vision::DevilsSight(0),
         ]
     }
+
+    /// Returns a list of all advantage types.
+    fn all_advantage_types() -> Vec<utils::Advantage> {
+        vec![utils::Advantage::Advantage, utils::Advantage::Disadvantage]
+    }
+
+    /// Returns a list of all damage types.
+    fn all_damage_types() -> Vec<utils::DamageType> {
+        vec![
+            utils::DamageType::Acid,
+            utils::DamageType::Bludgeoning,
+            utils::DamageType::Cold,
+            utils::DamageType::Fire,
+            utils::DamageType::Force,
+            utils::DamageType::Lightning,
+            utils::DamageType::Necrotic,
+            utils::DamageType::Piercing,
+            utils::DamageType::Poison,
+            utils::DamageType::Psychic,
+            utils::DamageType::Radiant,
+            utils::DamageType::Slashing,
+            utils::DamageType::Thunder,
+        ]
+    }
+
+    /// Returns a list of all damage types.
+    fn all_saving_throw_types() -> Vec<utils::SavingThrowType> {
+        vec![
+            utils::SavingThrowType::Attribute(utils::Attribute::Any),
+            utils::SavingThrowType::Damage(utils::DamageType::Acid),
+        ]
+    }
+
+    fn display_vision(&self) -> iced::Element<Message> {
+        let mut inner = widget::row![];
+        for vision in Self::all_visions() {
+            let radio = widget::radio(
+                vision.to_string(),
+                vision,
+                self.selected_vision,
+                Message::VisionRadioSelected,
+            );
+            inner = inner.push(widget::container(radio));
+        }
+
+        if let Some(selected_vision) = &self.selected_vision {
+            let input_str = utils::format_int(Some(selected_vision.value() as usize), "");
+            let input = widget::text_input("0", &input_str).on_input(Message::VisionInputEdit);
+            inner = inner.push(widget::container(input));
+        }
+
+        widget::container(inner).into()
+    }
+
+    fn display_saving_throws(&self) -> iced::Element<Message> {
+        let mut inner = widget::row![];
+
+        let mut adv_radios = widget::column![];
+        for adv in Self::all_advantage_types() {
+            let radio = widget::radio(
+                adv.to_string(),
+                adv,
+                self.selected_saving_throw_advantage,
+                Message::SavingThrowAdvantageSelected,
+            );
+            adv_radios = adv_radios.push(radio);
+        }
+        inner = inner.push(adv_radios);
+
+        let mut kind_radios = widget::column![];
+        for kind in Self::all_saving_throw_types() {
+            let radio = widget::radio(
+                kind.to_string(),
+                kind,
+                self.selected_saving_throw_type,
+                Message::SavingThrowTypeSelected,
+            );
+            kind_radios = kind_radios.push(radio);
+        }
+        inner = inner.push(kind_radios);
+
+        if let Some(saving_throw_type) = &self.selected_saving_throw_type {
+            match saving_throw_type {
+                utils::SavingThrowType::Attribute(_) => {
+                    let mut attr_radios = widget::column![];
+                    for attr in utils::ATTRIBUTES {
+                        if attr != utils::Attribute::Any {
+                            let radio = widget::radio(
+                                attr.to_string(),
+                                attr,
+                                self.selected_saving_throw_attribute,
+                                Message::SavingThrowAttributeSelected,
+                            );
+                            attr_radios = attr_radios.push(radio);
+                        }
+                    }
+                    inner = inner.push(attr_radios);
+                }
+
+                utils::SavingThrowType::Damage(_) => {
+                    let mut dmg_radios = widget::column![];
+                    for dmg in Self::all_damage_types() {
+                        let radio = widget::radio(
+                            &format!("{:?}", dmg),
+                            dmg,
+                            self.selected_saving_throw_damage,
+                            Message::SavingThrowDamageSelected,
+                        );
+                        dmg_radios = dmg_radios.push(radio);
+                    }
+                    inner = inner.push(dmg_radios);
+                }
+            }
+        }
+
+        widget::container(inner).into()
+    }
 }
 
 impl TraitEffectCreator {
@@ -59,33 +207,17 @@ impl TraitEffectCreator {
         let mut content = widget::column![];
 
         match &self.effect {
-            utils::TraitEffect::Vision(_) => {
-                let mut inner = widget::row![];
-                for vision in Self::all_visions() {
-                    let radio = widget::radio(
-                        vision.to_string(),
-                        vision,
-                        self.selected_vision,
-                        Message::VisionRadioSelected,
-                    );
-                    inner = inner.push(radio);
-                }
+            utils::TraitEffect::Vision(_) => content = content.push(self.display_vision()),
 
-                if let Some(selected_vision) = &self.selected_vision {
-                    let input = widget::text_input("", &selected_vision.get_value().to_string());
-                    inner = inner.push(input);
-                }
-
-                content = content.push(inner);
+            utils::TraitEffect::SavingThrows { .. } => {
+                content = content.push(self.display_saving_throws())
             }
 
-            utils::TraitEffect::SavingThrows { advantage, kind } => todo!(),
-
-            utils::TraitEffect::Resistances(resistance) => todo!(),
-            utils::TraitEffect::Proficiencies(choice) => todo!(),
-            utils::TraitEffect::Spell(spell) => todo!(),
-            utils::TraitEffect::Action { kind, effects } => todo!(),
-            utils::TraitEffect::HpIncrease(hp_increase) => todo!(),
+            utils::TraitEffect::Resistances(_) => todo!(),
+            utils::TraitEffect::Proficiencies(_) => todo!(),
+            utils::TraitEffect::Spell(_) => todo!(),
+            utils::TraitEffect::Action { .. } => todo!(),
+            utils::TraitEffect::HpIncrease(_) => todo!(),
             utils::TraitEffect::NoSpeedReduction => todo!(),
         }
 
@@ -106,6 +238,28 @@ impl TraitEffectCreator {
             Message::VisionRadioSelected(vision) => {
                 self.selected_vision = Some(vision);
                 self.effect = utils::TraitEffect::Vision(vision);
+                Action::None
+            }
+            Message::VisionInputEdit(value) => {
+                if let Some(vision) = &mut self.selected_vision {
+                    vision.set_value(value.parse().unwrap_or_default());
+                }
+                Action::None
+            }
+            Message::SavingThrowAdvantageSelected(advantage) => {
+                self.selected_saving_throw_advantage = Some(advantage);
+                Action::None
+            }
+            Message::SavingThrowTypeSelected(saving_throw_type) => {
+                self.selected_saving_throw_type = Some(saving_throw_type);
+                Action::None
+            }
+            Message::SavingThrowAttributeSelected(attribute) => {
+                self.selected_saving_throw_attribute = Some(attribute);
+                Action::None
+            }
+            Message::SavingThrowDamageSelected(damage_type) => {
+                self.selected_saving_throw_damage = Some(damage_type);
                 Action::None
             }
             Message::BackButtonPressed => Action::Cancel,

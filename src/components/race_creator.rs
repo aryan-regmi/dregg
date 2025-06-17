@@ -146,19 +146,6 @@ impl RaceCreator {
             traits: vec![],
         }
     }
-
-    /// Correctly displays an int value text input.
-    fn format_int(value: Option<usize>, default_repr: &str) -> String {
-        if let Some(value) = value {
-            if value == 0 {
-                default_repr.into()
-            } else {
-                format!("{value}")
-            }
-        } else {
-            default_repr.into()
-        }
-    }
 }
 
 impl RaceCreator {
@@ -305,7 +292,7 @@ impl RaceCreator {
 
                 for asi in &self.asi {
                     let label = widget::container(widget::text(format!("{}: ", asi.attribute)));
-                    let input_str = Self::format_int(Some(asi.value as usize), "");
+                    let input_str = utils::format_int(Some(asi.value as usize), "");
                     let input = widget::text_input("0", &input_str)
                         .on_input(|value| Message::UpdateASI((asi.attribute, value)));
                     let counters = {
@@ -322,8 +309,8 @@ impl RaceCreator {
             };
 
             let age = {
-                let adult_age = Self::format_int(self.age.adult.clone().map(|v| v.0), "");
-                let lifespan = Self::format_int(self.age.lifespan.clone().map(|v| v.0), "");
+                let adult_age = utils::format_int(self.age.adult.clone().map(|v| v.0), "");
+                let lifespan = utils::format_int(self.age.lifespan.clone().map(|v| v.0), "");
 
                 widget::row![
                     widget::container(widget::text("Age (when considered adult): ")),
@@ -379,7 +366,7 @@ impl RaceCreator {
 
                 for speed in &self.speed {
                     let label = widget::container(widget::text(format!("{}: ", speed.to_string())));
-                    let input_str = Self::format_int(Some(speed.value as usize), "");
+                    let input_str = utils::format_int(Some(speed.value as usize), "");
                     let input = widget::text_input("0", &input_str)
                         .on_input(|value| Message::UpdateSpeed((speed.movement, value)));
                     let counters = {
@@ -395,10 +382,12 @@ impl RaceCreator {
                 content
             };
 
+            let add_traits = widget::container(widget::column![
+                widget::button("Add Trait").on_press(Message::DisplayTraitCreator)
+            ]);
+
             let traits = if self.traits.is_empty() {
-                widget::container(widget::column![
-                    widget::button("Add Trait").on_press(Message::DisplayTraitCreator)
-                ])
+                widget::container(widget::column![])
             } else {
                 let mut content = widget::column![widget::text("Traits:")];
                 for tr in &self.traits {
@@ -419,6 +408,7 @@ impl RaceCreator {
                     age,
                     size,
                     speed,
+                    add_traits,
                     traits,
                     widget::row![
                         widget::button("Back").on_press(Message::Cancel),

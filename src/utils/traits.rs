@@ -30,7 +30,7 @@ pub enum TraitEffect {
     /// A trait that effects the saving throws of the character.
     SavingThrows {
         advantage: Advantage,
-        kind: SavingThrowsType,
+        kind: SavingThrowType,
     },
 
     /// A trait that effects the resistances and vulnerabilities of the character.
@@ -80,12 +80,21 @@ pub enum Vision {
 }
 
 impl Vision {
-    pub fn get_value(&self) -> u16 {
+    pub fn value(&self) -> u16 {
         match self {
             Vision::Normal(amt) => *amt,
             Vision::Darkvision(amt) => *amt,
             Vision::Truesight(amt) => *amt,
             Vision::DevilsSight(amt) => *amt,
+        }
+    }
+
+    pub fn set_value(&mut self, value: u16) {
+        match self {
+            Vision::Normal(amt) => *amt = value,
+            Vision::Darkvision(amt) => *amt = value,
+            Vision::Truesight(amt) => *amt = value,
+            Vision::DevilsSight(amt) => *amt = value,
         }
     }
 }
@@ -102,22 +111,39 @@ impl std::fmt::Display for Vision {
 }
 
 /// Represents a type of saving throw.
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum SavingThrowsType {
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum SavingThrowType {
     Attribute(Attribute),
     Damage(DamageType),
 }
 
+impl std::fmt::Display for SavingThrowType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            SavingThrowType::Attribute(_) => f.write_str("Attribute"),
+            SavingThrowType::Damage(_) => f.write_str("Damage Type"),
+        }
+    }
+}
+
 /// Represents advantage or disadvantage.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum Advantage {
-    None,
     Advantage,
     Disadvantage,
 }
 
+impl std::fmt::Display for Advantage {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Advantage::Advantage => f.write_str("Advantage"),
+            Advantage::Disadvantage => f.write_str("Disadvantage"),
+        }
+    }
+}
+
 /// Represents the various types of damage.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum DamageType {
     Acid,
     Bludgeoning,

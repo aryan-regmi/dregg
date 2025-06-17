@@ -50,3 +50,16 @@ pub enum ActionType {
     BonusAction,
     Reaction,
 }
+
+/// Correctly displays an int value text input.
+pub fn format_int(value: Option<usize>, default_repr: &str) -> String {
+    if let Some(value) = value {
+        if value == 0 {
+            default_repr.into()
+        } else {
+            format!("{value}")
+        }
+    } else {
+        default_repr.into()
+    }
+}

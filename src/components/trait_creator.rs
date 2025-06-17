@@ -1,6 +1,9 @@
 use iced::widget;
 
-use crate::utils;
+use crate::{
+    components::trait_effect_creator::{self, TraitEffectCreator},
+    utils,
+};
 
 #[derive(Debug, Clone)]
 pub enum Message {
@@ -10,8 +13,11 @@ pub enum Message {
     /// The trait name was edited.
     SummaryEdit(widget::text_editor::Action),
 
-    /// Adds an effect to the trait
-    AddEffect,
+    /// Display the trait effect creator.
+    DisplayTraitEffectCreator,
+
+    /// Adds an effect to the trait.
+    TraitEffectCreatorView(trait_effect_creator::Message),
 
     /// A trait effect was selected in the dropdown.
     EffectSelected(utils::TraitEffect),
@@ -43,19 +49,22 @@ pub struct TraitCreator {
     summary_editor: widget::text_editor::Content,
 
     /// The required level to gain access to the trait.
-    required_level: Option<u8>,
+    _required_level: Option<u8>,
 
     /// Tags the trait belongs under.
-    tags: Vec<String>,
+    _tags: Vec<String>,
 
-    /// Determines whether or not to display the `Add Effect` page.
-    display_add_effect: bool,
+    /// Determines whether a new effect is being added to the trait.
+    display_effect_creator: bool,
 
-    /// The effects of the trait.
-    effects: Vec<utils::TraitEffect>,
+    /// The custom trait effect creator used to add effects to the trait.
+    effect_creator: Option<trait_effect_creator::TraitEffectCreator>,
 
     /// The trait effect selected in the dropdown.
     effects_dropdown_selection: Option<utils::TraitEffect>,
+
+    /// The effects of the trait.
+    effects: Vec<utils::TraitEffect>,
 }
 
 impl TraitCreator {
@@ -68,8 +77,8 @@ impl TraitCreator {
         vec![
             utils::TraitEffect::Vision(utils::Vision::Normal(60)),
             utils::TraitEffect::SavingThrows {
-                advantage: utils::Advantage::None,
-                kind: utils::SavingThrowsType::Attribute(utils::Attribute::Strength),
+                advantage: utils::Advantage::Advantage,
+                kind: utils::SavingThrowType::Attribute(utils::Attribute::Strength),
             },
             utils::TraitEffect::Resistances(utils::Resistance::Resistance(
                 utils::DamageType::Slashing,
@@ -97,81 +106,69 @@ impl TraitCreator {
             utils::TraitEffect::NoSpeedReduction,
         ]
     }
-
-    /// Handles the trait effect selection.
-    fn handle_effect_selection(&self) -> iced::Element<Message> {
-        if let Some(selection) = self.effects_dropdown_selection.as_ref() {
-            match selection {
-                utils::TraitEffect::Vision(vision) => todo!(),
-                utils::TraitEffect::SavingThrows { advantage, kind } => todo!(),
-                utils::TraitEffect::Resistances(resistance) => todo!(),
-                utils::TraitEffect::Proficiencies(choice) => todo!(),
-                utils::TraitEffect::Spell(spell) => todo!(),
-                utils::TraitEffect::Action { kind, effects } => todo!(),
-                utils::TraitEffect::HpIncrease(hp_increase) => todo!(),
-                utils::TraitEffect::NoSpeedReduction => todo!(),
-            }
-        } else {
-            widget::column![].into()
-        }
-    }
 }
 
 impl TraitCreator {
     pub fn view(&self) -> iced::Element<Message> {
-        let title =
-            widget::container(widget::text("Create Custom Race:").center()).center_x(iced::Fill);
-
-        let name = widget::row![
-            widget::container(widget::text("Name: ")),
-            widget::text_input("Enter name here...", &self.name).on_input(Message::NameEdit)
-        ];
-
-        let summary = widget::column![widget::row![
-            widget::container(widget::text("Summary: ")),
-            widget::text_editor(&self.summary_editor)
-                .on_action(Message::SummaryEdit)
-                .height(iced::Length::Fixed(200.0))
-        ]];
-
-        let add_effect = widget::button("+ Effect").on_press(Message::AddEffect);
-
-        // TODO: Add Traits fields
-        //  - "Add Effect" button:
-        //      - Required level input
-        //      - Input for tags (separated by comma)
-        //      - Dropdown list of trait effects
-        //          -
-        //              let dropdown = widget::pick_list(races, self.selected_race.as_ref(), |race| {
-        //                  Message::RaceSelected(race)
-        //              });
-        //
-        //      - Display corresponding inputs, depending on the type
-
-        let effect_adder = if self.display_add_effect {
+        if self.display_effect_creator {
             let dropdown = widget::pick_list(
                 Self::all_trait_effects(),
                 self.effects_dropdown_selection.as_ref(),
                 Message::EffectSelected,
             );
-            let selection_view = self.handle_effect_selection();
-            widget::container(widget::column![dropdown, selection_view])
-        } else {
-            widget::container(widget::column![])
-        };
 
-        widget::column![
-            title,
-            name,
-            summary,
-            add_effect,
-            effect_adder,
-            widget::row![
-                widget::button("Back").on_press(Message::BackButtonPressed),
-                widget::button("Create").on_press(Message::CreateButtonPressed),
+            let effect_creator = if let Some(effect_creator) = &self.effect_creator {
+                effect_creator.view().map(Message::TraitEffectCreatorView)
+            } else {
+                widget::column![].into()
+            };
+
+            widget::column![dropdown, effect_creator].into()
+        } else {
+            let title = widget::container(widget::text("Create Custom Race:").center())
+                .center_x(iced::Fill);
+
+            let name = widget::row![
+                widget::container(widget::text("Name: ")),
+                widget::text_input("Enter name here...", &self.name).on_input(Message::NameEdit)
+            ];
+
+            let summary = widget::column![widget::row![
+                widget::container(widget::text("Summary: ")),
+                widget::text_editor(&self.summary_editor)
+                    .on_action(Message::SummaryEdit)
+                    .height(iced::Length::Fixed(200.0))
+            ]];
+
+            let add_effects = widget::container(widget::column![
+                widget::button("Add Effect").on_press(Message::DisplayTraitEffectCreator)
+            ]);
+
+            let effects = if self.effects.is_empty() {
+                widget::container(widget::column![])
+            } else {
+                let mut content = widget::column![widget::text("Effects: ")];
+                for effect in &self.effects {
+                    let info = widget::text(format!("{:?}", effect));
+                    content = content.push(info);
+                }
+
+                widget::container(content)
+            };
+
+            widget::column![
+                title,
+                name,
+                summary,
+                add_effects,
+                effects,
+                widget::row![
+                    widget::button("Back").on_press(Message::BackButtonPressed),
+                    widget::button("Create").on_press(Message::CreateButtonPressed),
+                ]
             ]
-        ]
-        .into()
+            .into()
+        }
     }
 
     pub fn update(&mut self, message: Message) -> Action {
@@ -184,12 +181,30 @@ impl TraitCreator {
                 self.summary_editor.perform(action);
                 Action::None
             }
-            Message::AddEffect => {
-                self.display_add_effect = true;
+            Message::EffectSelected(trait_effect) => {
+                self.effect_creator = Some(TraitEffectCreator::new(trait_effect.clone()));
+                self.effects_dropdown_selection = Some(trait_effect);
                 Action::None
             }
-            Message::EffectSelected(trait_effect) => {
-                self.effects_dropdown_selection = Some(trait_effect);
+            Message::DisplayTraitEffectCreator => {
+                self.display_effect_creator = true;
+                Action::None
+            }
+            Message::TraitEffectCreatorView(message) => {
+                if let Some(effect_creator) = &mut self.effect_creator {
+                    match effect_creator.update(message) {
+                        trait_effect_creator::Action::None => {}
+                        trait_effect_creator::Action::Cancel => {
+                            self.display_effect_creator = false;
+                            self.effect_creator = None;
+                        }
+                        trait_effect_creator::Action::Create(trait_effect) => {
+                            self.effects.push(trait_effect);
+                            self.display_effect_creator = false;
+                            self.effect_creator = None;
+                        }
+                    }
+                }
                 Action::None
             }
             Message::BackButtonPressed => Action::Cancel,
