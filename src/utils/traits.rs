@@ -55,13 +55,50 @@ pub enum TraitEffect {
     NoSpeedReduction,
 }
 
+impl std::fmt::Display for TraitEffect {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            TraitEffect::Vision(_) => f.write_str("Vision"),
+            TraitEffect::SavingThrows { .. } => f.write_str("Saving Throws"),
+            TraitEffect::Resistances(_) => f.write_str("Resistances"),
+            TraitEffect::Proficiencies(_) => f.write_str("Proficiencies"),
+            TraitEffect::Spell(_) => f.write_str("Spell"),
+            TraitEffect::Action { .. } => f.write_str("Action"),
+            TraitEffect::HpIncrease(_) => f.write_str("Health Increase"),
+            TraitEffect::NoSpeedReduction => f.write_str("No Speed Reduction"),
+        }
+    }
+}
+
 /// Represents the types of visions.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Vision {
     Normal(u16),
     Darkvision(u16),
     Truesight(u16),
     DevilsSight(u16),
+}
+
+impl Vision {
+    pub fn get_value(&self) -> u16 {
+        match self {
+            Vision::Normal(amt) => *amt,
+            Vision::Darkvision(amt) => *amt,
+            Vision::Truesight(amt) => *amt,
+            Vision::DevilsSight(amt) => *amt,
+        }
+    }
+}
+
+impl std::fmt::Display for Vision {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Vision::Normal(_) => f.write_str("Normal"),
+            Vision::Darkvision(_) => f.write_str("Darkvision"),
+            Vision::Truesight(_) => f.write_str("Truesight"),
+            Vision::DevilsSight(_) => f.write_str("Devil's Sight"),
+        }
+    }
 }
 
 /// Represents a type of saving throw.
@@ -74,6 +111,7 @@ pub enum SavingThrowsType {
 /// Represents advantage or disadvantage.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Advantage {
+    None,
     Advantage,
     Disadvantage,
 }

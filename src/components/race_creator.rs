@@ -2,8 +2,8 @@ use iced::widget;
 
 use crate::{
     components::{
-        custom_trait_creator::{self, CustomTraitCreator},
         race::Race,
+        trait_creator::{self, TraitCreator},
     },
     utils,
 };
@@ -56,7 +56,7 @@ pub enum Message {
     DisplayTraitCreator,
 
     /// Add a trait to the race.
-    TraitCreatorView(custom_trait_creator::Message),
+    TraitCreatorView(trait_creator::Message),
 
     // TODO: Validate inputs!
     //
@@ -80,7 +80,7 @@ pub enum Action {
 
 /// The custom race creator component.
 #[derive(Default, Debug)]
-pub struct CustomRaceCreator {
+pub struct RaceCreator {
     /// The name of the race.
     name: String,
 
@@ -114,12 +114,13 @@ pub struct CustomRaceCreator {
     display_trait_creator: bool,
 
     /// The custom trait creator used to add traits to the race.
-    trait_creator: Option<custom_trait_creator::CustomTraitCreator>,
+    trait_creator: Option<trait_creator::TraitCreator>,
 
+    /// List of traits of the race.
     traits: Vec<utils::Trait>,
 }
 
-impl CustomRaceCreator {
+impl RaceCreator {
     pub fn new() -> Self {
         Self {
             name: String::with_capacity(256),
@@ -160,7 +161,7 @@ impl CustomRaceCreator {
     }
 }
 
-impl CustomRaceCreator {
+impl RaceCreator {
     pub fn update(&mut self, message: Message) -> Action {
         match message {
             Message::SummaryEdit(action) => {
@@ -239,19 +240,19 @@ impl CustomRaceCreator {
             }
             Message::DisplayTraitCreator => {
                 self.display_trait_creator = true;
-                self.trait_creator = Some(CustomTraitCreator::new());
+                self.trait_creator = Some(TraitCreator::new());
                 Action::None
             }
             Message::TraitCreatorView(message) => {
                 if let Some(trait_creator) = &mut self.trait_creator {
                     let command = trait_creator.update(message);
                     match command {
-                        custom_trait_creator::Action::None => {}
-                        custom_trait_creator::Action::Cancel => {
+                        trait_creator::Action::None => {}
+                        trait_creator::Action::Cancel => {
                             self.display_trait_creator = false;
                             self.trait_creator = None;
                         }
-                        custom_trait_creator::Action::Create(custom_trait) => {
+                        trait_creator::Action::Create(custom_trait) => {
                             self.traits.push(custom_trait);
                             self.display_trait_creator = false;
                             self.trait_creator = None;
@@ -432,7 +433,7 @@ impl CustomRaceCreator {
     }
 }
 
-impl Into<Race> for &mut CustomRaceCreator {
+impl Into<Race> for &mut RaceCreator {
     fn into(self) -> Race {
         Race {
             name: self.name.clone(),

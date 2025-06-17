@@ -1,9 +1,9 @@
 use dregg::{
     all_races,
     components::{
-        custom_race_creator::{self, CustomRaceCreator},
         new_character::{self, NewCharacter},
         race::Race,
+        race_creator::{self, RaceCreator},
     },
 };
 use iced::widget;
@@ -18,7 +18,7 @@ enum Message {
 
     LoadCharacterView,
 
-    RaceCreatorView(custom_race_creator::Message),
+    RaceCreatorView(race_creator::Message),
 }
 
 #[derive(Default)]
@@ -27,7 +27,7 @@ enum View {
     Main,
     NewCharacter(new_character::NewCharacter),
     LoadCharacter,
-    CustomRaceCreator(custom_race_creator::CustomRaceCreator),
+    CustomRaceCreator(race_creator::RaceCreator),
 }
 
 // TODO: Move props to specific structs/types.
@@ -75,7 +75,7 @@ impl App {
 
                     // Open the custom race creator
                     new_character::Action::OpenCustomRaceCreator => {
-                        let race_creator = CustomRaceCreator::new();
+                        let race_creator = RaceCreator::new();
                         self.view = View::CustomRaceCreator(race_creator);
                         return iced::Task::none();
                     }
@@ -124,11 +124,11 @@ impl App {
 
 impl App {
     /// Handles the `RaceCreatorView` events.
-    fn handle_race_creator_events(&mut self, message: custom_race_creator::Message) {
+    fn handle_race_creator_events(&mut self, message: race_creator::Message) {
         if let View::CustomRaceCreator(component) = &mut self.view {
             match component.update(message) {
-                custom_race_creator::Action::None => {}
-                custom_race_creator::Action::CreateAndReturn(race) => {
+                race_creator::Action::None => {}
+                race_creator::Action::CreateAndReturn(race) => {
                     // Add to available races
                     self.available_races.push(race);
 
@@ -137,7 +137,7 @@ impl App {
                         NewCharacter::new(self.selected_race.clone(), self.available_races.clone());
                     self.view = View::NewCharacter(new_character);
                 }
-                custom_race_creator::Action::Cancel => {
+                race_creator::Action::Cancel => {
                     // Return to `NewCharacter` page
                     let new_character =
                         NewCharacter::new(self.selected_race.clone(), self.available_races.clone());
