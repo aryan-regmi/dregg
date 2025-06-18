@@ -83,11 +83,11 @@ impl TraitCreator {
             utils::TraitEffect::Resistances(utils::Resistance::Resistance(
                 utils::DamageType::Slashing,
             )),
-            utils::TraitEffect::Proficiencies(utils::Choice::Single(utils::Proficiency {
+            utils::TraitEffect::Proficiencies(utils::Choice::AllOf(vec![utils::Proficiency {
                 level: utils::ProficiencyLevel::Proficient,
                 kind: utils::ProficiencyType::SavingThrows(utils::Attribute::Strength),
                 context: None,
-            })),
+            }])),
             utils::TraitEffect::Spell(utils::Spell {
                 level: 0,
                 casting_time: utils::CastingTime::Action(utils::ActionType::Action),

@@ -26,9 +26,6 @@ pub enum Choice<T> {
 
     /// A list of choices from which all are selected.
     AllOf(Vec<T>),
-
-    /// A single choice.
-    Single(T),
 }
 
 /// Represents a die.
