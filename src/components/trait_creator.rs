@@ -196,12 +196,10 @@ impl TraitCreator {
                         trait_effect_creator::Action::None => {}
                         trait_effect_creator::Action::Cancel => {
                             self.display_effect_creator = false;
-                            self.effect_creator = None;
                         }
                         trait_effect_creator::Action::Create(trait_effect) => {
                             self.effects.push(trait_effect);
                             self.display_effect_creator = false;
-                            self.effect_creator = None;
                         }
                     }
                 }

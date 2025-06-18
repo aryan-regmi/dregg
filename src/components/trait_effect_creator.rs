@@ -22,6 +22,12 @@ pub enum Message {
     /// The saving throw damage has been selected.
     SavingThrowDamageSelected(utils::DamageType),
 
+    /// The resistance type has been selected.
+    ResistanceTypeSelected(utils::Resistance),
+
+    /// The resistance damage type has been selected.
+    ResistanceDamageSelected(utils::DamageType),
+
     /// Back button pressed.
     BackButtonPressed,
 
@@ -57,8 +63,14 @@ pub struct TraitEffectCreator {
     /// Currently selected saving throw attribute radio button.
     selected_saving_throw_attribute: Option<utils::Attribute>,
 
-    /// Currently selected saving throw attribute radio button.
+    /// Currently selected saving throw damage radio button.
     selected_saving_throw_damage: Option<utils::DamageType>,
+
+    /// Currently selected resistance radio button.
+    selected_resistance_type: Option<utils::Resistance>,
+
+    /// Currently selected resistance damage type radio button.
+    selected_resistance_damage: Option<utils::DamageType>,
 }
 
 impl TraitEffectCreator {
@@ -71,7 +83,132 @@ impl TraitEffectCreator {
             selected_saving_throw_type: None,
             selected_saving_throw_attribute: None,
             selected_saving_throw_damage: None,
+            selected_resistance_type: None,
+            selected_resistance_damage: None,
         }
+    }
+
+    /// Displays the vision options.
+    fn display_vision(&self) -> iced::Element<Message> {
+        let mut inner = widget::row![];
+        for vision in Self::all_visions() {
+            let radio = widget::radio(
+                vision.to_string(),
+                vision,
+                self.selected_vision,
+                Message::VisionRadioSelected,
+            );
+            inner = inner.push(widget::container(radio));
+        }
+
+        if let Some(selected_vision) = &self.selected_vision {
+            let input_str = utils::format_int(Some(selected_vision.value() as usize), "");
+            let input = widget::text_input("0", &input_str).on_input(Message::VisionInputEdit);
+            inner = inner.push(widget::container(input));
+        }
+
+        widget::container(inner).into()
+    }
+
+    /// Displays the saving throw options.
+    fn display_saving_throws(&self) -> iced::Element<Message> {
+        let mut inner = widget::row![];
+
+        // Advantage radio buttons
+        let mut adv_radios = widget::column![];
+        for adv in Self::all_advantage_types() {
+            let radio = widget::radio(
+                adv.to_string(),
+                adv,
+                self.selected_saving_throw_advantage,
+                Message::SavingThrowAdvantageSelected,
+            );
+            adv_radios = adv_radios.push(radio);
+        }
+        inner = inner.push(adv_radios);
+
+        // Saving throw type radio buttons
+        let mut kind_radios = widget::column![];
+        for kind in Self::all_saving_throw_types() {
+            let radio = widget::radio(
+                kind.to_string(),
+                kind,
+                self.selected_saving_throw_type,
+                Message::SavingThrowTypeSelected,
+            );
+            kind_radios = kind_radios.push(radio);
+        }
+        inner = inner.push(kind_radios);
+
+        if let Some(saving_throw_type) = &self.selected_saving_throw_type {
+            match saving_throw_type {
+                // Attribute radio buttons
+                utils::SavingThrowType::Attribute(_) => {
+                    let mut attr_radios = widget::column![];
+                    for attr in utils::ATTRIBUTES {
+                        if attr != utils::Attribute::Any {
+                            let radio = widget::radio(
+                                attr.to_string(),
+                                attr,
+                                self.selected_saving_throw_attribute,
+                                Message::SavingThrowAttributeSelected,
+                            );
+                            attr_radios = attr_radios.push(radio);
+                        }
+                    }
+                    inner = inner.push(attr_radios);
+                }
+
+                // Damage radio buttons
+                utils::SavingThrowType::Damage(_) => {
+                    let mut dmg_radios = widget::column![];
+                    for dmg in Self::all_damage_types() {
+                        let radio = widget::radio(
+                            &format!("{:?}", dmg),
+                            dmg,
+                            self.selected_saving_throw_damage,
+                            Message::SavingThrowDamageSelected,
+                        );
+                        dmg_radios = dmg_radios.push(radio);
+                    }
+                    inner = inner.push(dmg_radios);
+                }
+            }
+        }
+
+        widget::container(inner).into()
+    }
+
+    /// Displays the resistance options.
+    fn display_resistances(&self) -> iced::Element<Message> {
+        let mut inner = widget::row![];
+
+        // Resistance radio buttons
+        for resistance in Self::all_resistance_types() {
+            let radio = widget::radio(
+                resistance.to_string(),
+                resistance,
+                self.selected_resistance_type,
+                Message::ResistanceTypeSelected,
+            );
+            inner = inner.push(radio);
+        }
+
+        // Damage radio buttons
+        let mut dmg_radios = widget::column![];
+        for dmg in Self::all_damage_types() {
+            let radio = widget::radio(
+                &format!("{:?}", dmg),
+                dmg,
+                self.selected_resistance_damage,
+                Message::ResistanceDamageSelected,
+            );
+            // inner = inner.push(radio);
+            dmg_radios = dmg_radios.push(radio);
+        }
+        inner = inner.push(dmg_radios);
+
+        widget::container(inner).into()
     }
 
     /// Returns a list of all vision types.
@@ -116,89 +253,12 @@ impl TraitEffectCreator {
         ]
     }
 
-    fn display_vision(&self) -> iced::Element<Message> {
-        let mut inner = widget::row![];
-        for vision in Self::all_visions() {
-            let radio = widget::radio(
-                vision.to_string(),
-                vision,
-                self.selected_vision,
-                Message::VisionRadioSelected,
-            );
-            inner = inner.push(widget::container(radio));
-        }
-
-        if let Some(selected_vision) = &self.selected_vision {
-            let input_str = utils::format_int(Some(selected_vision.value() as usize), "");
-            let input = widget::text_input("0", &input_str).on_input(Message::VisionInputEdit);
-            inner = inner.push(widget::container(input));
-        }
-
-        widget::container(inner).into()
-    }
-
-    fn display_saving_throws(&self) -> iced::Element<Message> {
-        let mut inner = widget::row![];
-
-        let mut adv_radios = widget::column![];
-        for adv in Self::all_advantage_types() {
-            let radio = widget::radio(
-                adv.to_string(),
-                adv,
-                self.selected_saving_throw_advantage,
-                Message::SavingThrowAdvantageSelected,
-            );
-            adv_radios = adv_radios.push(radio);
-        }
-        inner = inner.push(adv_radios);
-
-        let mut kind_radios = widget::column![];
-        for kind in Self::all_saving_throw_types() {
-            let radio = widget::radio(
-                kind.to_string(),
-                kind,
-                self.selected_saving_throw_type,
-                Message::SavingThrowTypeSelected,
-            );
-            kind_radios = kind_radios.push(radio);
-        }
-        inner = inner.push(kind_radios);
-
-        if let Some(saving_throw_type) = &self.selected_saving_throw_type {
-            match saving_throw_type {
-                utils::SavingThrowType::Attribute(_) => {
-                    let mut attr_radios = widget::column![];
-                    for attr in utils::ATTRIBUTES {
-                        if attr != utils::Attribute::Any {
-                            let radio = widget::radio(
-                                attr.to_string(),
-                                attr,
-                                self.selected_saving_throw_attribute,
-                                Message::SavingThrowAttributeSelected,
-                            );
-                            attr_radios = attr_radios.push(radio);
-                        }
-                    }
-                    inner = inner.push(attr_radios);
-                }
-
-                utils::SavingThrowType::Damage(_) => {
-                    let mut dmg_radios = widget::column![];
-                    for dmg in Self::all_damage_types() {
-                        let radio = widget::radio(
-                            &format!("{:?}", dmg),
-                            dmg,
-                            self.selected_saving_throw_damage,
-                            Message::SavingThrowDamageSelected,
-                        );
-                        dmg_radios = dmg_radios.push(radio);
-                    }
-                    inner = inner.push(dmg_radios);
-                }
-            }
-        }
-
-        widget::container(inner).into()
+    /// Returns a list of all resistance types.
+    fn all_resistance_types() -> Vec<utils::Resistance> {
+        vec![
+            utils::Resistance::Resistance(utils::DamageType::Acid),
+            utils::Resistance::Vulnerability(utils::DamageType::Acid),
+        ]
     }
 }
 
@@ -208,12 +268,12 @@ impl TraitEffectCreator {
 
         match &self.effect {
             utils::TraitEffect::Vision(_) => content = content.push(self.display_vision()),
-
             utils::TraitEffect::SavingThrows { .. } => {
                 content = content.push(self.display_saving_throws())
             }
-
-            utils::TraitEffect::Resistances(_) => todo!(),
+            utils::TraitEffect::Resistances(_) => {
+                content = content.push(self.display_resistances())
+            }
             utils::TraitEffect::Proficiencies(_) => todo!(),
             utils::TraitEffect::Spell(_) => todo!(),
             utils::TraitEffect::Action { .. } => todo!(),
@@ -260,6 +320,15 @@ impl TraitEffectCreator {
             }
             Message::SavingThrowDamageSelected(damage_type) => {
                 self.selected_saving_throw_damage = Some(damage_type);
+                Action::None
+            }
+
+            Message::ResistanceTypeSelected(resistance) => {
+                self.selected_resistance_type = Some(resistance);
+                Action::None
+            }
+            Message::ResistanceDamageSelected(damage_type) => {
+                self.selected_resistance_damage = Some(damage_type);
                 Action::None
             }
             Message::BackButtonPressed => Action::Cancel,

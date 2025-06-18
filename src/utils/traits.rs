@@ -161,10 +161,19 @@ pub enum DamageType {
 }
 
 /// Represents the either a resistance or vulnerability to a damage type.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Resistance {
     Resistance(DamageType),
     Vulnerability(DamageType),
+}
+
+impl std::fmt::Display for Resistance {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Resistance::Resistance(_) => f.write_str("Resistance"),
+            Resistance::Vulnerability(_) => f.write_str("Vulnerability"),
+        }
+    }
 }
 
 /// Represents an increase in hit points.
