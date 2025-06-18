@@ -28,6 +28,9 @@ pub enum Message {
     /// The resistance damage type has been selected.
     ResistanceDamageSelected(utils::DamageType),
 
+    /// The proficiency level has been selected.
+    ProficiencyLevelSelected(utils::ProficiencyLevel),
+
     /// Back button pressed.
     BackButtonPressed,
 
@@ -71,6 +74,9 @@ pub struct TraitEffectCreator {
 
     /// Currently selected resistance damage type radio button.
     selected_resistance_damage: Option<utils::DamageType>,
+
+    /// Currently selected proficiency level radio button.
+    selected_proficiency_level: Option<utils::ProficiencyLevel>,
 }
 
 impl TraitEffectCreator {
@@ -85,6 +91,7 @@ impl TraitEffectCreator {
             selected_saving_throw_damage: None,
             selected_resistance_type: None,
             selected_resistance_damage: None,
+            selected_proficiency_level: None,
         }
     }
 
@@ -203,10 +210,28 @@ impl TraitEffectCreator {
                 self.selected_resistance_damage,
                 Message::ResistanceDamageSelected,
             );
-            // inner = inner.push(radio);
             dmg_radios = dmg_radios.push(radio);
         }
         inner = inner.push(dmg_radios);
+
+        widget::container(inner).into()
+    }
+
+    /// Displays the proficiency options.
+    fn display_proficiencies(&self) -> iced::Element<Message> {
+        let mut inner = widget::row![];
+
+        let mut level_radios = widget::column![];
+        for proficiency in Self::all_proficiency_levels() {
+            let radio = widget::radio(
+                &format!("{:?}", proficiency),
+                proficiency,
+                self.selected_proficiency_level,
+                Message::ProficiencyLevelSelected,
+            );
+            level_radios = level_radios.push(radio);
+        }
+        inner = inner.push(level_radios);
 
         widget::container(inner).into()
     }
@@ -260,6 +285,14 @@ impl TraitEffectCreator {
             utils::Resistance::Vulnerability(utils::DamageType::Acid),
         ]
     }
+
+    /// Returns a list of all proficiency types.
+    fn all_proficiency_levels() -> Vec<utils::ProficiencyLevel> {
+        vec![
+            utils::ProficiencyLevel::Proficient,
+            utils::ProficiencyLevel::Expertise,
+        ]
+    }
 }
 
 impl TraitEffectCreator {
@@ -274,7 +307,9 @@ impl TraitEffectCreator {
             utils::TraitEffect::Resistances(_) => {
                 content = content.push(self.display_resistances())
             }
-            utils::TraitEffect::Proficiencies(_) => todo!(),
+            utils::TraitEffect::Proficiencies(_) => {
+                content = content.push(self.display_proficiencies())
+            }
             utils::TraitEffect::Spell(_) => todo!(),
             utils::TraitEffect::Action { .. } => todo!(),
             utils::TraitEffect::HpIncrease(_) => todo!(),
@@ -322,13 +357,16 @@ impl TraitEffectCreator {
                 self.selected_saving_throw_damage = Some(damage_type);
                 Action::None
             }
-
             Message::ResistanceTypeSelected(resistance) => {
                 self.selected_resistance_type = Some(resistance);
                 Action::None
             }
             Message::ResistanceDamageSelected(damage_type) => {
                 self.selected_resistance_damage = Some(damage_type);
+                Action::None
+            }
+            Message::ProficiencyLevelSelected(proficiency_level) => {
+                self.selected_proficiency_level = Some(proficiency_level);
                 Action::None
             }
             Message::BackButtonPressed => Action::Cancel,

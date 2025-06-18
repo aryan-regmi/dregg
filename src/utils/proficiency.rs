@@ -14,7 +14,7 @@ pub struct Proficiency {
 }
 
 /// Represents a level of proficiency.
-#[derive(Debug, Default, Clone, PartialEq, Eq)]
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
 pub enum ProficiencyLevel {
     #[default]
     Proficient,
@@ -22,7 +22,7 @@ pub enum ProficiencyLevel {
 }
 
 /// Represents a type of proficiency.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ProficiencyType {
     Armor(ArmorType),
     Weapons(WeaponType),
@@ -32,7 +32,7 @@ pub enum ProficiencyType {
 }
 
 /// Represents types of armors.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ArmorType {
     /// Light armor.
     Light,
@@ -48,7 +48,7 @@ pub enum ArmorType {
 }
 
 /// Represents types of weapons.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum WeaponType {
     SimpleMelee,
     SimpleRanged,
@@ -94,7 +94,7 @@ pub enum WeaponType {
 }
 
 /// Represents types of tools.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ToolType {
     ArtisansTools(ArtisansTools),
     DisguiseKit,
