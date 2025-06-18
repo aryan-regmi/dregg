@@ -31,6 +31,15 @@ pub enum Message {
     /// The proficiency level has been selected.
     ProficiencyLevelSelected(utils::ProficiencyLevel),
 
+    /// The proficiency type has been selected.
+    ProficiencyTypeSelected(utils::ProficiencyType),
+
+    /// The proficiency armor type has been selected.
+    ProficiencyArmorTypeSelected(utils::ArmorType),
+
+    /// The proficiency armor type has been selected.
+    ProficiencyWeaponTypeSelected(utils::WeaponType),
+
     /// Back button pressed.
     BackButtonPressed,
 
@@ -49,34 +58,62 @@ pub enum Action {
     Create(utils::TraitEffect),
 }
 
+/// Represents the vision radio buttons.
+#[derive(Debug, Default)]
+struct VisionRadios(Option<utils::Vision>);
+
+/// Represents the saving throw radio buttons.
+#[derive(Debug, Default)]
+struct SavingThrowRadios {
+    advantage: Option<utils::Advantage>,
+    kind: Option<utils::SavingThrowType>,
+    attribute: Option<utils::Attribute>,
+    damage_type: Option<utils::DamageType>,
+}
+
+/// Represents the resistance radio buttons.
+#[derive(Debug, Default)]
+struct ResistanceRadios {
+    /// Currently selected resistance.
+    kind: Option<utils::Resistance>,
+
+    /// Currently selected resistance damage type.
+    damage_type: Option<utils::DamageType>,
+}
+
+/// Represents the proficiency radio buttons.
+#[derive(Debug, Default)]
+struct ProficiencyRadios {
+    /// Currently selected proficiency level.
+    level: Option<utils::ProficiencyLevel>,
+
+    /// Currently selected proficiency type.
+    kind: Option<utils::ProficiencyType>,
+
+    /// Currently selected armor type.
+    armor_type: Option<utils::ArmorType>,
+
+    /// Currently selected weapon type.
+    weapon_type: Option<utils::WeaponType>,
+}
+
+// TODO: Extract `selected` props into structs
 #[derive(Debug)]
 pub struct TraitEffectCreator {
     /// The trait effect to display.
     effect: utils::TraitEffect,
 
-    /// Currently selected vision radio button.
-    selected_vision: Option<utils::Vision>,
+    /// Vision radio button.
+    vision_radios: VisionRadios,
 
-    /// Currently selected saving throw advantage radio button.
-    selected_saving_throw_advantage: Option<utils::Advantage>,
+    /// Saving throw radio buttons.
+    saving_throw_radios: SavingThrowRadios,
 
-    /// Currently selected saving throw type radio button.
-    selected_saving_throw_type: Option<utils::SavingThrowType>,
+    /// Resistance radio buttons.
+    resistance_radios: ResistanceRadios,
 
-    /// Currently selected saving throw attribute radio button.
-    selected_saving_throw_attribute: Option<utils::Attribute>,
-
-    /// Currently selected saving throw damage radio button.
-    selected_saving_throw_damage: Option<utils::DamageType>,
-
-    /// Currently selected resistance radio button.
-    selected_resistance_type: Option<utils::Resistance>,
-
-    /// Currently selected resistance damage type radio button.
-    selected_resistance_damage: Option<utils::DamageType>,
-
-    /// Currently selected proficiency level radio button.
-    selected_proficiency_level: Option<utils::ProficiencyLevel>,
+    /// Proficiency radio buttons.
+    proficiency_radios: ProficiencyRadios,
 }
 
 impl TraitEffectCreator {
@@ -84,14 +121,10 @@ impl TraitEffectCreator {
     pub fn new(effect: utils::TraitEffect) -> Self {
         Self {
             effect,
-            selected_vision: None,
-            selected_saving_throw_advantage: None,
-            selected_saving_throw_type: None,
-            selected_saving_throw_attribute: None,
-            selected_saving_throw_damage: None,
-            selected_resistance_type: None,
-            selected_resistance_damage: None,
-            selected_proficiency_level: None,
+            vision_radios: Default::default(),
+            saving_throw_radios: Default::default(),
+            resistance_radios: Default::default(),
+            proficiency_radios: Default::default(),
         }
     }
 
@@ -102,13 +135,13 @@ impl TraitEffectCreator {
             let radio = widget::radio(
                 vision.to_string(),
                 vision,
-                self.selected_vision,
+                self.vision_radios.0,
                 Message::VisionRadioSelected,
             );
             inner = inner.push(widget::container(radio));
         }
 
-        if let Some(selected_vision) = &self.selected_vision {
+        if let Some(selected_vision) = &self.vision_radios.0 {
             let input_str = utils::format_int(Some(selected_vision.value() as usize), "");
             let input = widget::text_input("0", &input_str).on_input(Message::VisionInputEdit);
             inner = inner.push(widget::container(input));
@@ -127,7 +160,7 @@ impl TraitEffectCreator {
             let radio = widget::radio(
                 adv.to_string(),
                 adv,
-                self.selected_saving_throw_advantage,
+                self.saving_throw_radios.advantage,
                 Message::SavingThrowAdvantageSelected,
             );
             adv_radios = adv_radios.push(radio);
@@ -140,14 +173,14 @@ impl TraitEffectCreator {
             let radio = widget::radio(
                 kind.to_string(),
                 kind,
-                self.selected_saving_throw_type,
+                self.saving_throw_radios.kind,
                 Message::SavingThrowTypeSelected,
             );
             kind_radios = kind_radios.push(radio);
         }
         inner = inner.push(kind_radios);
 
-        if let Some(saving_throw_type) = &self.selected_saving_throw_type {
+        if let Some(saving_throw_type) = &self.saving_throw_radios.kind {
             match saving_throw_type {
                 // Attribute radio buttons
                 utils::SavingThrowType::Attribute(_) => {
@@ -157,7 +190,7 @@ impl TraitEffectCreator {
                             let radio = widget::radio(
                                 attr.to_string(),
                                 attr,
-                                self.selected_saving_throw_attribute,
+                                self.saving_throw_radios.attribute,
                                 Message::SavingThrowAttributeSelected,
                             );
                             attr_radios = attr_radios.push(radio);
@@ -173,7 +206,7 @@ impl TraitEffectCreator {
                         let radio = widget::radio(
                             &format!("{:?}", dmg),
                             dmg,
-                            self.selected_saving_throw_damage,
+                            self.saving_throw_radios.damage_type,
                             Message::SavingThrowDamageSelected,
                         );
                         dmg_radios = dmg_radios.push(radio);
@@ -191,15 +224,17 @@ impl TraitEffectCreator {
         let mut inner = widget::row![];
 
         // Resistance radio buttons
+        let mut resist_radios = widget::column![];
         for resistance in Self::all_resistance_types() {
             let radio = widget::radio(
                 resistance.to_string(),
                 resistance,
-                self.selected_resistance_type,
+                self.resistance_radios.kind,
                 Message::ResistanceTypeSelected,
             );
-            inner = inner.push(radio);
+            resist_radios = resist_radios.push(radio);
         }
+        inner = inner.push(resist_radios);
 
         // Damage radio buttons
         let mut dmg_radios = widget::column![];
@@ -207,7 +242,7 @@ impl TraitEffectCreator {
             let radio = widget::radio(
                 &format!("{:?}", dmg),
                 dmg,
-                self.selected_resistance_damage,
+                self.resistance_radios.damage_type,
                 Message::ResistanceDamageSelected,
             );
             dmg_radios = dmg_radios.push(radio);
@@ -221,17 +256,90 @@ impl TraitEffectCreator {
     fn display_proficiencies(&self) -> iced::Element<Message> {
         let mut inner = widget::row![];
 
+        // Level radio buttons
         let mut level_radios = widget::column![];
         for proficiency in Self::all_proficiency_levels() {
             let radio = widget::radio(
                 &format!("{:?}", proficiency),
                 proficiency,
-                self.selected_proficiency_level,
+                self.proficiency_radios.level,
                 Message::ProficiencyLevelSelected,
             );
             level_radios = level_radios.push(radio);
         }
         inner = inner.push(level_radios);
+
+        // Type radio buttons
+        let mut type_radios = widget::column![];
+        for kind in Self::all_proficiency_types() {
+            let radio = widget::radio(
+                kind.to_string(),
+                kind,
+                self.proficiency_radios.kind,
+                Message::ProficiencyTypeSelected,
+            );
+            type_radios = type_radios.push(radio);
+        }
+        inner = inner.push(type_radios);
+
+        // Display proficiency sub-radios, matching on the type
+        if let Some(kind) = &self.proficiency_radios.kind {
+            match kind {
+                utils::ProficiencyType::Armor(_) => {
+                    let mut armor_radios = widget::column![];
+                    for armor in Self::all_armor_types() {
+                        let radio = widget::radio(
+                            &format!("{:?}", armor),
+                            armor,
+                            self.proficiency_radios.armor_type,
+                            Message::ProficiencyArmorTypeSelected,
+                        );
+                        armor_radios = armor_radios.push(radio);
+                    }
+                    inner = inner.push(armor_radios);
+                }
+
+                utils::ProficiencyType::Weapons(_) => {
+                    let mut weapon_radios = widget::column![];
+                    let mut weapon_radios2 = widget::column![];
+                    let weapons = Self::all_weapon_types();
+                    let num_weapons = weapons.len();
+                    for (i, weapon) in weapons.into_iter().enumerate() {
+                        let label = match weapon {
+                            utils::WeaponType::SimpleMelee => "Simple Melee",
+                            utils::WeaponType::SimpleRanged => "Simple Ranged",
+                            utils::WeaponType::MartialMelee => "Martial Melee",
+                            utils::WeaponType::MaritalRanged => "Marital Ranged",
+                            utils::WeaponType::LightHammer => "Light Hammer",
+                            utils::WeaponType::LightCrossbow => "Light Crossbow",
+                            utils::WeaponType::WarPick => "War Pick",
+                            utils::WeaponType::HandCrossbow => "Hand Crossbow",
+                            utils::WeaponType::HeavyCrossbow => "Heavy Crossbow",
+                            _ => &format!("{:?}", weapon),
+                        };
+                        let radio = widget::radio(
+                            label,
+                            weapon,
+                            self.proficiency_radios.weapon_type,
+                            Message::ProficiencyWeaponTypeSelected,
+                        );
+                        if i % 2 == 0 || i == num_weapons {
+                            weapon_radios2 = weapon_radios2.push(radio);
+                        } else {
+                            weapon_radios = weapon_radios.push(radio);
+                        }
+                    }
+                    inner = inner.push(weapon_radios);
+                    inner = inner.push(weapon_radios2);
+                }
+
+                utils::ProficiencyType::Tools(_) => todo!(),
+                utils::ProficiencyType::SavingThrows(_) => todo!(),
+                utils::ProficiencyType::Skills(_) => todo!(),
+            }
+        }
+
+        // TODO: Add input filed for extra context
 
         widget::container(inner).into()
     }
@@ -286,11 +394,79 @@ impl TraitEffectCreator {
         ]
     }
 
-    /// Returns a list of all proficiency types.
+    /// Returns a list of all proficiency levels.
     fn all_proficiency_levels() -> Vec<utils::ProficiencyLevel> {
         vec![
             utils::ProficiencyLevel::Proficient,
             utils::ProficiencyLevel::Expertise,
+        ]
+    }
+
+    /// Returns a list of all proficiency types.
+    fn all_proficiency_types() -> Vec<utils::ProficiencyType> {
+        vec![
+            utils::ProficiencyType::Armor(utils::ArmorType::Light),
+            utils::ProficiencyType::Weapons(utils::WeaponType::SimpleMelee),
+            utils::ProficiencyType::Tools(utils::ToolType::DisguiseKit),
+            utils::ProficiencyType::SavingThrows(utils::Attribute::Any),
+            utils::ProficiencyType::Skills(utils::Skills::Arcana),
+        ]
+    }
+
+    /// Returns a list of all armor types.
+    fn all_armor_types() -> Vec<utils::ArmorType> {
+        vec![
+            utils::ArmorType::Light,
+            utils::ArmorType::Medium,
+            utils::ArmorType::Heavy,
+            utils::ArmorType::Shield,
+        ]
+    }
+
+    /// Returns a list of all weapon types.
+    fn all_weapon_types() -> Vec<utils::WeaponType> {
+        vec![
+            utils::WeaponType::SimpleMelee,
+            utils::WeaponType::SimpleRanged,
+            utils::WeaponType::MartialMelee,
+            utils::WeaponType::MaritalRanged,
+            utils::WeaponType::Club,
+            utils::WeaponType::Dagger,
+            utils::WeaponType::Greatclub,
+            utils::WeaponType::Handaxe,
+            utils::WeaponType::Javelin,
+            utils::WeaponType::LightHammer,
+            utils::WeaponType::Mace,
+            utils::WeaponType::Quarterstaff,
+            utils::WeaponType::Sickle,
+            utils::WeaponType::Spear,
+            utils::WeaponType::LightCrossbow,
+            utils::WeaponType::Dart,
+            utils::WeaponType::Shortbow,
+            utils::WeaponType::Sling,
+            utils::WeaponType::Battleaxe,
+            utils::WeaponType::Flail,
+            utils::WeaponType::Glaive,
+            utils::WeaponType::Greataxe,
+            utils::WeaponType::Greatsword,
+            utils::WeaponType::Halberd,
+            utils::WeaponType::Lance,
+            utils::WeaponType::Longsword,
+            utils::WeaponType::Maul,
+            utils::WeaponType::Morningstar,
+            utils::WeaponType::Pike,
+            utils::WeaponType::Rapier,
+            utils::WeaponType::Scimitar,
+            utils::WeaponType::Shortsword,
+            utils::WeaponType::Trident,
+            utils::WeaponType::WarPick,
+            utils::WeaponType::Warhammer,
+            utils::WeaponType::Whip,
+            utils::WeaponType::Blowgun,
+            utils::WeaponType::HandCrossbow,
+            utils::WeaponType::HeavyCrossbow,
+            utils::WeaponType::Longbow,
+            utils::WeaponType::Net,
         ]
     }
 }
@@ -325,48 +501,60 @@ impl TraitEffectCreator {
             content = content.push(navigation_buttons);
         }
 
-        widget::container(content).into()
+        widget::scrollable(content).width(iced::Fill).into()
     }
 
     pub fn update(&mut self, message: Message) -> Action {
         match message {
             Message::VisionRadioSelected(vision) => {
-                self.selected_vision = Some(vision);
+                self.vision_radios.0 = Some(vision);
                 self.effect = utils::TraitEffect::Vision(vision);
                 Action::None
             }
             Message::VisionInputEdit(value) => {
-                if let Some(vision) = &mut self.selected_vision {
+                if let Some(vision) = &mut self.vision_radios.0 {
                     vision.set_value(value.parse().unwrap_or_default());
                 }
                 Action::None
             }
             Message::SavingThrowAdvantageSelected(advantage) => {
-                self.selected_saving_throw_advantage = Some(advantage);
+                self.saving_throw_radios.advantage = Some(advantage);
                 Action::None
             }
             Message::SavingThrowTypeSelected(saving_throw_type) => {
-                self.selected_saving_throw_type = Some(saving_throw_type);
+                self.saving_throw_radios.kind = Some(saving_throw_type);
                 Action::None
             }
             Message::SavingThrowAttributeSelected(attribute) => {
-                self.selected_saving_throw_attribute = Some(attribute);
+                self.saving_throw_radios.attribute = Some(attribute);
                 Action::None
             }
             Message::SavingThrowDamageSelected(damage_type) => {
-                self.selected_saving_throw_damage = Some(damage_type);
+                self.saving_throw_radios.damage_type = Some(damage_type);
                 Action::None
             }
             Message::ResistanceTypeSelected(resistance) => {
-                self.selected_resistance_type = Some(resistance);
+                self.resistance_radios.kind = Some(resistance);
                 Action::None
             }
             Message::ResistanceDamageSelected(damage_type) => {
-                self.selected_resistance_damage = Some(damage_type);
+                self.resistance_radios.damage_type = Some(damage_type);
                 Action::None
             }
             Message::ProficiencyLevelSelected(proficiency_level) => {
-                self.selected_proficiency_level = Some(proficiency_level);
+                self.proficiency_radios.level = Some(proficiency_level);
+                Action::None
+            }
+            Message::ProficiencyTypeSelected(proficiency_type) => {
+                self.proficiency_radios.kind = Some(proficiency_type);
+                Action::None
+            }
+            Message::ProficiencyArmorTypeSelected(armor_type) => {
+                self.proficiency_radios.armor_type = Some(armor_type);
+                Action::None
+            }
+            Message::ProficiencyWeaponTypeSelected(weapon_type) => {
+                self.proficiency_radios.weapon_type = Some(weapon_type);
                 Action::None
             }
             Message::BackButtonPressed => Action::Cancel,

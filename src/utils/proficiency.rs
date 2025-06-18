@@ -31,6 +31,18 @@ pub enum ProficiencyType {
     Skills(Skills),
 }
 
+impl std::fmt::Display for ProficiencyType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            ProficiencyType::Armor(_) => f.write_str("Armor"),
+            ProficiencyType::Weapons(_) => f.write_str("Weapons"),
+            ProficiencyType::Tools(_) => f.write_str("Tools"),
+            ProficiencyType::SavingThrows(_) => f.write_str("Saving Throws"),
+            ProficiencyType::Skills(_) => f.write_str("Skills"),
+        }
+    }
+}
+
 /// Represents types of armors.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ArmorType {
