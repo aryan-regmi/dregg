@@ -141,7 +141,7 @@ impl NewCharacter {
 
 impl NewCharacter {
     /// Creates a menu button.
-    fn menu_button<'a>(&'a self, label: &'a str, on_press: Message) -> iced::Element<Message> {
+    fn menu_button<'a>(&'a self, label: &'a str, on_press: Message) -> iced::Element<'a, Message> {
         widget::container(widget::container(
             widget::button(widget::text(label).width(iced::Fill).center())
                 .on_press(on_press)
@@ -152,7 +152,7 @@ impl NewCharacter {
     }
 
     /// Creates the dropdown of races to choose from.
-    fn race_dropdown<'a>(&'a self, races: Vec<Race>) -> iced::Element<Message> {
+    fn race_dropdown<'a>(&'a self, races: Vec<Race>) -> iced::Element<'a, Message> {
         let dropdown = widget::pick_list(races, self.selected_race.as_ref(), |race| {
             Message::RaceSelected(race)
         });
